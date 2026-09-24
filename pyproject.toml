@@ -1,0 +1,20 @@
+[project]
+name = "forensic-q"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "vikashgraja", email = "vikashgraja@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "django>=6.1.1",
+]
+
+[dependency-groups]
+dev = [
+    "django-debug-toolbar>=8.0.0",
+]
+prod = [
+    "gunicorn>=26.2.0",
+]
