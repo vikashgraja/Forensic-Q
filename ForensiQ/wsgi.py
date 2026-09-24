@@ -1,5 +1,5 @@
 """
-WSGI config for Forensic_Q project.
+WSGI config for ForensiQ project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Forensic_Q.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ForensiQ.settings')
 
 application = get_wsgi_application()

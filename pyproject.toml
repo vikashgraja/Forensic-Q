@@ -1,5 +1,5 @@
 [project]
-name = "forensic-q"
+name = "forensi-q"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "django>=6.1.1",
+    "django-cotton>=2.7.2",
 ]
 
 [dependency-groups]

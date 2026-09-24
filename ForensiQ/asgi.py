@@ -1,5 +1,5 @@
 """
-ASGI config for Forensic_Q project.
+ASGI config for ForensiQ project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Forensic_Q.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ForensiQ.settings')
 
 application = get_asgi_application()
