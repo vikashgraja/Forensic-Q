@@ -51,7 +51,7 @@ wheels = [
 ]
 
 [[package]]
-name = "forensic-q"
+name = "forensi-q"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
