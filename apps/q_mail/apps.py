@@ -10,7 +10,7 @@ class QMailConfig(AppConfig):
     module_num = "03"
     module_category = "COMMUNICATIONS"
     module_name = "Mail"
-    module_tag = "LIVE"
+    module_tag = "BUILDING"
     module_accent = "purple"
     module_tagline = "PST at the speed of audit."
     module_features = [

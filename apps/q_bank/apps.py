@@ -10,7 +10,7 @@ class QBankConfig(AppConfig):
     module_num = "01"
     module_category = "MONEY"
     module_name = "Bank"
-    module_tag = "LIVE"
+    module_tag = "BUILDING"
     module_accent = "orange"
     module_tagline = "Reads statements. Flags keywords."
     module_features = [

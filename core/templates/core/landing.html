@@ -37,6 +37,8 @@
                         {% elif module.accent == 'teal' %} text-[#4a9d90] dark:text-[#7ec7bb]
                         {% elif module.accent == 'rose' %} text-[#b85761] dark:text-[#df7e88]
                         {% elif module.accent == 'amber' %} text-[#c99238] dark:text-[#e8b765]
+                        {% elif module.accent == 'steel' or module.accent == 'blue' %} text-[#5a92b8] dark:text-[#7eaecf]
+                        {% elif module.accent == 'copper' or module.accent == 'terracotta' %} text-[#b85a38] dark:text-[#d67b59]
                         {% else %} text-amber-500 {% endif %}">→</span> {{ feature }}
                 </p>
                 {% endfor %}

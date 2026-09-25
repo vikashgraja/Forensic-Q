@@ -6,13 +6,16 @@ class QChatConfig(AppConfig):
     name = "q_chat"
     verbose_name = "Q-Chat"
 
-    # Forensic Module Metadata (Under Construction)
-    module_num = ""
+    # Forensic Module Metadata (In Development)
+    module_num = "09"
     module_category = "COMMUNICATIONS"
     module_name = "Chat"
     module_tag = "BUILDING"
     module_accent = "steel"
-    module_tagline = "Teams & corporate chat search · threads."
-    module_features = []
+    module_tagline = "Reconstructs team chat threads."
+    module_features = [
+        "Teams, Slack & WhatsApp thread correlation",
+        "Off-the-record chat keyword alerts",
+    ]
     module_url = "/demo/sandbox/"
     module_order = 9

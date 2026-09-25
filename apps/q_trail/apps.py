@@ -10,7 +10,7 @@ class QTrailConfig(AppConfig):
     module_num = "02"
     module_category = "MONEY"
     module_name = "Trail"
-    module_tag = "LIVE"
+    module_tag = "BUILDING"
     module_accent = "gold"
     module_tagline = "Stitches flows. Sees the loop."
     module_features = [

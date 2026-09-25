@@ -6,13 +6,16 @@ class QLedgerConfig(AppConfig):
     name = "q_ledger"
     verbose_name = "Q-Ledger"
 
-    # Forensic Module Metadata (Under Construction)
-    module_num = ""
+    # Forensic Module Metadata (In Development)
+    module_num = "08"
     module_category = "ERP / RECORDS"
     module_name = "Ledger"
     module_tag = "BUILDING"
     module_accent = "copper"
-    module_tagline = "SAP / ERP anomalies · PO · GRN · invoice."
-    module_features = []
+    module_tagline = "Reconciles PO, GRN and invoices."
+    module_features = [
+        "SAP / ERP variance analysis",
+        "Phantom vendor & duplicate invoice alerts",
+    ]
     module_url = "/demo/tabulator/"
     module_order = 8

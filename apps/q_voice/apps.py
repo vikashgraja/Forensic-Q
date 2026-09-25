@@ -6,13 +6,16 @@ class QVoiceConfig(AppConfig):
     name = "q_voice"
     verbose_name = "Q-Voice"
 
-    # Forensic Module Metadata (Under Construction)
-    module_num = ""
+    # Forensic Module Metadata (In Development)
+    module_num = "07"
     module_category = "VOICE"
     module_name = "Voice"
     module_tag = "BUILDING"
     module_accent = "steel"
-    module_tagline = "Call transcripts · entities · intent flags."
-    module_features = []
+    module_tagline = "Transcribes speech. Flags intent."
+    module_features = [
+        "Call transcripts, entity & speaker matrix",
+        "Concealment and intent detection",
+    ]
     module_url = "/demo/sandbox/"
     module_order = 7

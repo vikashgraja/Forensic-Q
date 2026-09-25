@@ -10,7 +10,7 @@ class QLinkConfig(AppConfig):
     module_num = "06"
     module_category = "CORRELATOR"
     module_name = "Link"
-    module_tag = "LIVE"
+    module_tag = "BUILDING"
     module_accent = "amber"
     module_tagline = "Joins the dots across modules."
     module_features = [
