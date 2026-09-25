@@ -2,9 +2,9 @@ from django.apps import AppConfig
 
 
 class QChatConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'q_chat'
-    verbose_name = 'Q-Chat'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "q_chat"
+    verbose_name = "Q-Chat"
 
     # Forensic Module Metadata (Under Construction)
     module_num = ""

@@ -1,6 +1,6 @@
 import importlib
 import inspect
-from pathlib import Path
+
 from django.apps import AppConfig
 from django.conf import settings
 
@@ -145,7 +145,7 @@ def get_discovered_modules():
 
     for idx, folder in enumerate(sorted(app_folders, key=lambda f: f.name)):
         app_name = folder.name
-        
+
         # Explicit exclusion rule
         if app_name in EXCLUDED_MODULES:
             continue
@@ -159,32 +159,46 @@ def get_discovered_modules():
                 module_obj = importlib.import_module(f"{app_name}.apps")
                 for attr_name in dir(module_obj):
                     attr = getattr(module_obj, attr_name)
-                    if inspect.isclass(attr) and issubclass(attr, AppConfig) and attr is not AppConfig:
+                    if (
+                        inspect.isclass(attr)
+                        and issubclass(attr, AppConfig)
+                        and attr is not AppConfig
+                    ):
                         config = attr
                         break
-            except Exception:
-                pass
+            except (ImportError, AttributeError, ValueError):
+                config = None
 
         # Check default catalog
         default_spec = DEFAULT_MODULE_SPECS.get(app_name, {})
 
         # Extract attributes with fallback hierarchy: AppConfig > default_spec > auto-generated
         clean_name = app_name.replace("q_", "").replace("_", " ").title()
-        accent = getattr(config, "module_accent", None) or default_spec.get("accent") or ACCENT_ROTATION[idx % len(ACCENT_ROTATION)]
-        
+        accent = (
+            getattr(config, "module_accent", None)
+            or default_spec.get("accent")
+            or ACCENT_ROTATION[idx % len(ACCENT_ROTATION)]
+        )
+
         # num can be empty string for BUILDING modules
         if hasattr(config, "module_num"):
             num = config.module_num
         elif "num" in default_spec:
             num = default_spec["num"]
         else:
-            num = f"{idx+1:02d}"
+            num = f"{idx + 1:02d}"
 
-        category = getattr(config, "module_category", None) or default_spec.get("category") or "FORENSIC"
+        category = (
+            getattr(config, "module_category", None) or default_spec.get("category") or "FORENSIC"
+        )
         name = getattr(config, "module_name", None) or default_spec.get("name") or clean_name
         tag = getattr(config, "module_tag", None) or default_spec.get("tag") or "LIVE"
-        tagline = getattr(config, "module_tagline", None) or default_spec.get("tagline") or f"Forensic analysis and investigation engine for {clean_name}."
-        
+        tagline = (
+            getattr(config, "module_tagline", None)
+            or default_spec.get("tagline")
+            or f"Forensic analysis and investigation engine for {clean_name}."
+        )
+
         if hasattr(config, "module_features"):
             features = config.module_features
         elif "features" in default_spec:
@@ -195,21 +209,23 @@ def get_discovered_modules():
                 "Cross-correlation with case dossier",
             ]
 
-        href = getattr(config, "module_url", None) or default_spec.get("href") or f"/demo/tabulator/"
+        href = getattr(config, "module_url", None) or default_spec.get("href") or "/demo/tabulator/"
         order = getattr(config, "module_order", None) or default_spec.get("order") or idx + 1
 
-        modules.append({
-            "app_name": app_name,
-            "num": num,
-            "category": category,
-            "name": name,
-            "tag": tag,
-            "accent": accent,
-            "tagline": tagline,
-            "features": features,
-            "href": href,
-            "order": order,
-        })
+        modules.append(
+            {
+                "app_name": app_name,
+                "num": num,
+                "category": category,
+                "name": name,
+                "tag": tag,
+                "accent": accent,
+                "tagline": tagline,
+                "features": features,
+                "href": href,
+                "order": order,
+            }
+        )
 
     # Sort modules by designated order and num
     modules.sort(key=lambda m: (m["order"], str(m["num"])))

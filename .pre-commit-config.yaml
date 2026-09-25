@@ -1,0 +1,12 @@
+# ForensiQ Pre-Commit Configuration
+# See https://pre-commit.com for more information
+
+repos:
+  - repo: local
+    hooks:
+      - id: forensiq-validator
+        name: ForensiQ Architecture & Doc Validator
+        entry: uv run python scripts/validate_project.py
+        language: system
+        pass_filenames: false
+        always_run: true

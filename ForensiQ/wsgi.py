@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ForensiQ.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ForensiQ.settings")
 
 application = get_wsgi_application()

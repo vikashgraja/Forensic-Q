@@ -2,9 +2,9 @@ from django.apps import AppConfig
 
 
 class QBankConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'q_bank'
-    verbose_name = 'Q-Bank'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "q_bank"
+    verbose_name = "Q-Bank"
 
     # Forensic Module Metadata
     module_num = "01"

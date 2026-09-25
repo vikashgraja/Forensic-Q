@@ -2,9 +2,9 @@ from django.apps import AppConfig
 
 
 class QTrailConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'q_trail'
-    verbose_name = 'Q-Trail'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "q_trail"
+    verbose_name = "Q-Trail"
 
     # Forensic Module Metadata
     module_num = "02"

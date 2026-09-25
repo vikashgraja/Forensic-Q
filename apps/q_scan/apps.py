@@ -2,9 +2,9 @@ from django.apps import AppConfig
 
 
 class QScanConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'q_scan'
-    verbose_name = 'Q-Scan'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "q_scan"
+    verbose_name = "Q-Scan"
 
     # Forensic Module Metadata
     module_num = "04"

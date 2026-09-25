@@ -138,16 +138,17 @@ To configure an app's display card, define metadata attributes in its `AppConfig
 ```python
 from django.apps import AppConfig
 
+
 class QBankConfig(AppConfig):
-    name = 'q_bank'
-    verbose_name = 'Q-Bank'
+    name = "q_bank"
+    verbose_name = "Q-Bank"
 
     # Forensic Landing Page Card Metadata
     module_num = "01"
     module_category = "MONEY"
     module_name = "Bank"
     module_tag = "LIVE"
-    module_accent = "orange" # orange, gold, purple, teal, rose, amber
+    module_accent = "orange"  # orange, gold, purple, teal, rose, amber
     module_tagline = "Reads statements. Flags keywords."
     module_features = [
         "Flagged transactions, vendor & party summary",

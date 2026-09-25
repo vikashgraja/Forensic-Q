@@ -2,9 +2,9 @@ from django.apps import AppConfig
 
 
 class QVoiceConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'q_voice'
-    verbose_name = 'Q-Voice'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "q_voice"
+    verbose_name = "Q-Voice"
 
     # Forensic Module Metadata (Under Construction)
     module_num = ""

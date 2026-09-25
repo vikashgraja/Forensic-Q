@@ -1,25 +1,27 @@
 import json
+
 import plotly.express as px
 from django.shortcuts import render
+
 
 def component_test_view(request):
     """
     Component Sandbox View for testing Plotly and Tabulator Cotton tags.
     """
     fig = px.bar(
-        x=["Acme Logistics", "Krishna Ent", "Atul Billing", "Shadow Corp", "Nexus Trade"], 
+        x=["Acme Logistics", "Krishna Ent", "Atul Billing", "Shadow Corp", "Nexus Trade"],
         y=[240000, 185000, 42000, 520000, 310000],
         labels={"x": "Vendor / Counterparty", "y": "Transfer Amount (INR)"},
-        color_discrete_sequence=["#f59e0b"] # Amber-500
+        color_discrete_sequence=["#f59e0b"],  # Amber-500
     )
     fig.update_layout(
         template="plotly_dark",
-        margin=dict(l=20, r=20, t=30, b=20),
+        margin={"l": 20, "r": 20, "t": 30, "b": 20},
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter, sans-serif", color="#a1a1aa"),
-        xaxis=dict(gridcolor="#27272a", linecolor="#27272a"),
-        yaxis=dict(gridcolor="#27272a", linecolor="#27272a"),
+        font={"family": "Inter, sans-serif", "color": "#a1a1aa"},
+        xaxis={"gridcolor": "#27272a", "linecolor": "#27272a"},
+        yaxis={"gridcolor": "#27272a", "linecolor": "#27272a"},
     )
     chart_html = fig.to_html(full_html=False, include_plotlyjs=False)
 
@@ -27,23 +29,67 @@ def component_test_view(request):
         {"title": "Date", "field": "date", "width": 120},
         {"title": "Counterparty", "field": "party"},
         {"title": "Direction", "field": "direction", "width": 100},
-        {"title": "Amount", "field": "amount", "formatter": "money", "formatterParams": {"symbol": "INR ", "precision": 2}},
+        {
+            "title": "Amount",
+            "field": "amount",
+            "formatter": "money",
+            "formatterParams": {"symbol": "INR ", "precision": 2},
+        },
         {"title": "Status", "field": "status", "width": 130},
     ]
-    
+
     table_data = [
-        {"id": 1, "date": "2026-03-12", "party": "Acme Logistics", "direction": "IN", "amount": 240000, "status": "Cleared"},
-        {"id": 2, "date": "2026-03-19", "party": "Atul Enterprises", "direction": "OUT", "amount": -185000, "status": "Flagged"},
-        {"id": 3, "date": "2026-03-26", "party": "Krishna Contractor", "direction": "OUT", "amount": -320500, "status": "Under Review"},
-        {"id": 4, "date": "2026-03-28", "party": "Shadow Holdings LLC", "direction": "OUT", "amount": -520000, "status": "Escalated"},
-        {"id": 5, "date": "2026-03-30", "party": "Apex Global Traders", "direction": "IN", "amount": 1250000, "status": "Cleared"},
+        {
+            "id": 1,
+            "date": "2026-03-12",
+            "party": "Acme Logistics",
+            "direction": "IN",
+            "amount": 240000,
+            "status": "Cleared",
+        },
+        {
+            "id": 2,
+            "date": "2026-03-19",
+            "party": "Atul Enterprises",
+            "direction": "OUT",
+            "amount": -185000,
+            "status": "Flagged",
+        },
+        {
+            "id": 3,
+            "date": "2026-03-26",
+            "party": "Krishna Contractor",
+            "direction": "OUT",
+            "amount": -320500,
+            "status": "Under Review",
+        },
+        {
+            "id": 4,
+            "date": "2026-03-28",
+            "party": "Shadow Holdings LLC",
+            "direction": "OUT",
+            "amount": -520000,
+            "status": "Escalated",
+        },
+        {
+            "id": 5,
+            "date": "2026-03-30",
+            "party": "Apex Global Traders",
+            "direction": "IN",
+            "amount": 1250000,
+            "status": "Cleared",
+        },
     ]
 
-    return render(request, "demo/test_dashboard.html", {
-        "chart_html": chart_html,
-        "table_columns": json.dumps(table_columns),
-        "table_data": json.dumps(table_data),
-    })
+    return render(
+        request,
+        "demo/test_dashboard.html",
+        {
+            "chart_html": chart_html,
+            "table_columns": json.dumps(table_columns),
+            "table_data": json.dumps(table_data),
+        },
+    )
 
 
 def tabulator_demo_view(request):
@@ -268,11 +314,15 @@ def tabulator_demo_view(request):
     high_risk_count = sum(1 for r in forensic_records if r["risk_level"] == "High")
     escalated_count = sum(1 for r in forensic_records if r["status"] == "Escalated")
 
-    return render(request, "demo/tabulator_demo.html", {
-        "forensic_records_json": json.dumps(forensic_records),
-        "total_records": len(forensic_records),
-        "total_inflow": total_inflow,
-        "total_outflow": abs(total_outflow),
-        "high_risk_count": high_risk_count,
-        "escalated_count": escalated_count,
-    })
+    return render(
+        request,
+        "demo/tabulator_demo.html",
+        {
+            "forensic_records_json": json.dumps(forensic_records),
+            "total_records": len(forensic_records),
+            "total_inflow": total_inflow,
+            "total_outflow": abs(total_outflow),
+            "high_risk_count": high_risk_count,
+            "escalated_count": escalated_count,
+        },
+    )

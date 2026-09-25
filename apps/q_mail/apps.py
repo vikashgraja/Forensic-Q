@@ -2,9 +2,9 @@ from django.apps import AppConfig
 
 
 class QMailConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'q_mail'
-    verbose_name = 'Q-Mail'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "q_mail"
+    verbose_name = "Q-Mail"
 
     # Forensic Module Metadata
     module_num = "03"

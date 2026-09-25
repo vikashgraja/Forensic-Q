@@ -2,9 +2,9 @@ from django.apps import AppConfig
 
 
 class QLedgerConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'q_ledger'
-    verbose_name = 'Q-Ledger'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "q_ledger"
+    verbose_name = "Q-Ledger"
 
     # Forensic Module Metadata (Under Construction)
     module_num = ""
