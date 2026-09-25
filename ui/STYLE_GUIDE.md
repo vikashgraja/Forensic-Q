@@ -162,6 +162,23 @@ ForensiQ implements a **modern dark design system** tailored for high-density fo
     pagination_size="10" />
 ```
 
+### 4.10 Forensic Module Engine Card — `<c-module_card>`
+Used on landing pages and workstation engine selectors:
+```html
+<c-module_card 
+    num="01" 
+    category="MONEY" 
+    name="Bank" 
+    tag="LIVE" 
+    accent="orange" 
+    href="/demo/tabulator/" 
+    tagline="Reads statements. Flags keywords.">
+    <p><span class="text-[#e87a4d] dark:text-[#f08a5d] font-bold">→</span> Flagged transactions, vendor &amp; party summary,</p>
+    <p><span class="text-[#e87a4d] dark:text-[#f08a5d] font-bold">→</span> Tuneable watchlist per investigation.</p>
+</c-module_card>
+```
+*Accents available:* `orange`, `gold`, `purple`, `teal`, `rose`, `amber`.
+
 ---
 
 ## 5. Tabulator.js Dark Mode Configuration

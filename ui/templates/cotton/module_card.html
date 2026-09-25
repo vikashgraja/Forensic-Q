@@ -1,0 +1,129 @@
+{% comment %}
+ForensiQ Module Card Component
+Props: num, category, name, tagline, tag, accent, href
+{% endcomment %}
+{% with a=accent|default:"orange" h=href|default:"#" t=tag|default:"LIVE" %}
+<a href="{{ h }}" 
+   class="group relative w-full h-full flex flex-col justify-between p-6 sm:p-7 rounded-2xl bg-white dark:bg-[#141519] border border-slate-200 dark:border-zinc-800/90 shadow-sm hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-black/60 transition-all duration-300 hover:-translate-y-1 overflow-hidden
+   {% if a == 'orange' %}
+       border-l-4 border-l-[#e87a4d] dark:border-l-[#e87a4d] hover:border-r-[#e87a4d]/30
+   {% elif a == 'gold' %}
+       border-l-4 border-l-[#d6c487] dark:border-l-[#d6c487] hover:border-r-[#d6c487]/30
+   {% elif a == 'purple' %}
+       border-l-4 border-l-[#a994cb] dark:border-l-[#a994cb] hover:border-r-[#a994cb]/30
+   {% elif a == 'teal' %}
+       border-l-4 border-l-[#68b5a8] dark:border-l-[#68b5a8] hover:border-r-[#68b5a8]/30
+   {% elif a == 'rose' %}
+       border-l-4 border-l-[#cf727b] dark:border-l-[#cf727b] hover:border-r-[#cf727b]/30
+   {% elif a == 'amber' %}
+       border-l-4 border-l-[#dfab57] dark:border-l-[#dfab57] hover:border-r-[#dfab57]/30
+   {% elif a == 'steel' or a == 'blue' %}
+       border-l-4 border-l-[#6ba3c7] dark:border-l-[#7eaecf] hover:border-r-[#7eaecf]/30
+   {% elif a == 'copper' or a == 'terracotta' %}
+       border-l-4 border-l-[#c56a48] dark:border-l-[#d67b59] hover:border-r-[#d67b59]/30
+   {% else %}
+       border-l-4 border-l-amber-500 hover:border-r-amber-500/30
+   {% endif %}">
+
+    <!-- Subtle Ambient Hover Glow -->
+    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none
+        {% if a == 'orange' %} bg-gradient-to-br from-[#e87a4d]/5 to-transparent
+        {% elif a == 'gold' %} bg-gradient-to-br from-[#d6c487]/5 to-transparent
+        {% elif a == 'purple' %} bg-gradient-to-br from-[#a994cb]/5 to-transparent
+        {% elif a == 'teal' %} bg-gradient-to-br from-[#68b5a8]/5 to-transparent
+        {% elif a == 'rose' %} bg-gradient-to-br from-[#cf727b]/5 to-transparent
+        {% elif a == 'amber' %} bg-gradient-to-br from-[#dfab57]/5 to-transparent
+        {% elif a == 'steel' or a == 'blue' %} bg-gradient-to-br from-[#7eaecf]/5 to-transparent
+        {% elif a == 'copper' or a == 'terracotta' %} bg-gradient-to-br from-[#d67b59]/5 to-transparent
+        {% else %} bg-gradient-to-br from-amber-500/5 to-transparent {% endif %}">
+    </div>
+
+    <!-- Top & Main Content Body -->
+    <div class="flex-1 flex flex-col relative z-10">
+        <!-- Top Row: Number · Category & Status Pill -->
+        <div class="flex items-center justify-between mb-4">
+            <span class="font-mono text-xs font-bold tracking-[0.2em] uppercase
+                {% if a == 'orange' %} text-[#e87a4d] dark:text-[#f08a5d]
+                {% elif a == 'gold' %} text-[#b8a462] dark:text-[#d6c487]
+                {% elif a == 'purple' %} text-[#8e75b7] dark:text-[#bca7e0]
+                {% elif a == 'teal' %} text-[#4a9d90] dark:text-[#7ec7bb]
+                {% elif a == 'rose' %} text-[#b85761] dark:text-[#df7e88]
+                {% elif a == 'amber' %} text-[#c99238] dark:text-[#e8b765]
+                {% elif a == 'steel' or a == 'blue' %} text-[#5a92b8] dark:text-[#7eaecf]
+                {% elif a == 'copper' or a == 'terracotta' %} text-[#b85a38] dark:text-[#d67b59]
+                {% else %} text-amber-500 {% endif %}">
+                {% if num %}{{ num }} · {% endif %}{{ category }}
+            </span>
+
+            {% if t == 'BUILDING' %}
+            <span class="text-[10px] font-bold tracking-widest px-2 py-0.5 rounded font-mono uppercase bg-transparent border
+                {% if a == 'orange' %} border-[#e87a4d]/60 text-[#e87a4d] dark:text-[#f08a5d]
+                {% elif a == 'gold' %} border-[#d6c487]/60 text-[#b8a462] dark:text-[#d6c487]
+                {% elif a == 'purple' %} border-[#a994cb]/60 text-[#8e75b7] dark:text-[#bca7e0]
+                {% elif a == 'teal' %} border-[#68b5a8]/60 text-[#4a9d90] dark:text-[#7ec7bb]
+                {% elif a == 'rose' %} border-[#cf727b]/60 text-[#b85761] dark:text-[#df7e88]
+                {% elif a == 'amber' %} border-[#dfab57]/60 text-[#c99238] dark:text-[#e8b765]
+                {% elif a == 'steel' or a == 'blue' %} border-[#7eaecf]/60 text-[#5a92b8] dark:text-[#7eaecf]
+                {% elif a == 'copper' or a == 'terracotta' %} border-[#d67b59]/60 text-[#b85a38] dark:text-[#d67b59]
+                {% else %} border-amber-500/60 text-amber-500 {% endif %}">
+                BUILDING
+            </span>
+            {% elif t %}
+            <span class="text-[10px] font-extrabold tracking-widest px-2.5 py-0.5 rounded font-mono uppercase shadow-sm
+                {% if a == 'orange' %} bg-[#e87a4d] text-zinc-950
+                {% elif a == 'gold' %} bg-[#d6c487] text-zinc-950
+                {% elif a == 'purple' %} bg-[#a994cb] text-zinc-950
+                {% elif a == 'teal' %} bg-[#68b5a8] text-zinc-950
+                {% elif a == 'rose' %} bg-[#cf727b] text-zinc-950
+                {% elif a == 'amber' %} bg-[#dfab57] text-zinc-950
+                {% elif a == 'steel' or a == 'blue' %} bg-[#7eaecf] text-zinc-950
+                {% elif a == 'copper' or a == 'terracotta' %} bg-[#d67b59] text-zinc-950
+                {% else %} bg-amber-500 text-zinc-950 {% endif %}">
+                {{ t }}
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Module Title: Q-Name -->
+        <h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
+            <span class="{% if a == 'orange' %} text-[#e87a4d] dark:text-[#f08a5d]
+                         {% elif a == 'gold' %} text-[#b8a462] dark:text-[#d6c487]
+                         {% elif a == 'purple' %} text-[#8e75b7] dark:text-[#bca7e0]
+                         {% elif a == 'teal' %} text-[#4a9d90] dark:text-[#7ec7bb]
+                         {% elif a == 'rose' %} text-[#b85761] dark:text-[#df7e88]
+                         {% elif a == 'amber' %} text-[#c99238] dark:text-[#e8b765]
+                         {% elif a == 'steel' or a == 'blue' %} text-[#5a92b8] dark:text-[#7eaecf]
+                         {% elif a == 'copper' or a == 'terracotta' %} text-[#b85a38] dark:text-[#d67b59]
+                         {% else %} text-amber-500 {% endif %}">Q</span>-{{ name }}
+        </h2>
+
+        <!-- Catchphrase / Tagline -->
+        {% if tagline %}
+        <p class="text-sm font-medium text-slate-600 dark:text-zinc-300 mb-5 leading-relaxed">
+            {{ tagline }}
+        </p>
+        {% endif %}
+
+        <!-- Feature Bullets Slot / Content -->
+        {% if slot %}
+        <div class="space-y-1.5 text-xs text-slate-500 dark:text-zinc-400 mt-auto">
+            {{ slot }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Interactive Launch Link Indicator (Pinned to bottom) -->
+    <div class="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-xs font-semibold text-slate-400 dark:text-zinc-500 group-hover:text-slate-900 dark:group-hover:text-white transition-colors relative z-10">
+        {% if t == 'BUILDING' %}
+        <span class="flex items-center gap-1.5 text-slate-400 dark:text-zinc-500">
+            <i class="fa-solid fa-code text-[10px]"></i> In Development
+        </span>
+        <i class="fa-solid fa-arrow-right text-[10px] transform group-hover:translate-x-1 transition-transform opacity-60"></i>
+        {% else %}
+        <span>Open Engine</span>
+        <i class="fa-solid fa-arrow-right text-[10px] transform group-hover:translate-x-1 transition-transform"></i>
+        {% endif %}
+    </div>
+
+</a>
+{% endwith %}

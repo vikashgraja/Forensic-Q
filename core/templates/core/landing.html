@@ -1,0 +1,66 @@
+<c-base title="ForensiQ | Forensic Intelligence Workstation">
+
+    <!-- Page Header Section -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="flex items-center space-x-2 text-xs font-mono font-semibold uppercase tracking-wider text-amber-500 mb-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>System Online &bull; {{ total_modules }} Analytical Engine{{ total_modules|pluralize }} Loaded</span>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+                    Forensic Workstation
+                </h1>
+                <p class="text-sm text-slate-500 dark:text-zinc-400 mt-1 max-w-2xl">
+                    Select a specialized investigation module to initiate audit trails, analyze financial ledgers, or correlate evidence across cases.
+                </p>
+            </div>
+
+            <!-- Quick Action Links -->
+            <div class="flex items-center space-x-3">
+                <a href="/demo/tabulator/" 
+                   class="inline-flex items-center px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-table-list mr-2"></i>
+                    <span>Launch Q-Bank Ledger</span>
+                    <i class="fa-solid fa-arrow-right ml-2 text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Modules Flex Grid (Centered last row if not multiple of 3) -->
+    <div class="flex flex-wrap justify-center gap-6">
+        {% for module in modules %}
+        <div class="w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333333%-16px)] flex">
+            <c-module_card 
+                :num="module.num" 
+                :category="module.category" 
+                :name="module.name" 
+                :tag="module.tag" 
+                :accent="module.accent" 
+                :href="module.href" 
+                :tagline="module.tagline">
+                {% for feature in module.features %}
+                <p>
+                    <span class="font-bold
+                        {% if module.accent == 'orange' %} text-[#e87a4d] dark:text-[#f08a5d]
+                        {% elif module.accent == 'gold' %} text-[#b8a462] dark:text-[#d6c487]
+                        {% elif module.accent == 'purple' %} text-[#8e75b7] dark:text-[#bca7e0]
+                        {% elif module.accent == 'teal' %} text-[#4a9d90] dark:text-[#7ec7bb]
+                        {% elif module.accent == 'rose' %} text-[#b85761] dark:text-[#df7e88]
+                        {% elif module.accent == 'amber' %} text-[#c99238] dark:text-[#e8b765]
+                        {% else %} text-amber-500 {% endif %}">→</span> {{ feature }}
+                </p>
+                {% endfor %}
+            </c-module_card>
+        </div>
+        {% empty %}
+        <div class="w-full p-12 text-center text-slate-500 dark:text-zinc-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+            <i class="fa-solid fa-folder-open text-4xl text-amber-500 mb-3 block"></i>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">No Analytical Engines Found</h3>
+            <p class="text-xs">Add an analytical module inside the <code>apps/</code> directory to register a new workstation engine.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</c-base>

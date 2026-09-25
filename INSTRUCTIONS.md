@@ -46,7 +46,8 @@ Forensic-Q/
 │       ├── badge.html         # Status & risk badges
 │       ├── modal.html         # Forensic detail dossiers
 │       ├── data_grid.html     # Tabulator.js data tables
-│       └── chart.html         # Plotly visualization containers
+│       ├── chart.html         # Plotly visualization containers
+│       └── module_card.html   # 6-engine forensic module card component
 ├── manage.py
 ├── pyproject.toml             # uv package dependencies
 └── INSTRUCTIONS.md            # Developer instructions (this file)
@@ -125,3 +126,36 @@ Building a new dashboard page is simple and clean:
 2. **Dynamic Props Binding:** Always use `:prop="variable"` for dynamic Django variables (e.g. `:figure_html="chart_html"` or `:data="table_data"`).
 3. **Named Slots Syntax:** Always use `<c-slot name="...">` (e.g. `<c-slot name="actions">`).
 4. **No `<c-` tags in HTML Comments:** Use `{% comment %}...{% endcomment %}` to avoid unclosed tag parse errors.
+
+---
+
+## 7. Dynamic Forensic Engine Registry (`apps/`)
+
+All analytical modules placed in `apps/` are automatically discovered and rendered as interactive cards on the workstation landing page.
+
+To configure an app's display card, define metadata attributes in its `AppConfig` (`apps/<app_name>/apps.py`):
+
+```python
+from django.apps import AppConfig
+
+class QBankConfig(AppConfig):
+    name = 'q_bank'
+    verbose_name = 'Q-Bank'
+
+    # Forensic Landing Page Card Metadata
+    module_num = "01"
+    module_category = "MONEY"
+    module_name = "Bank"
+    module_tag = "LIVE"
+    module_accent = "orange" # orange, gold, purple, teal, rose, amber
+    module_tagline = "Reads statements. Flags keywords."
+    module_features = [
+        "Flagged transactions, vendor & party summary",
+        "Tuneable watchlist per investigation",
+    ]
+    module_url = "/demo/tabulator/"
+    module_order = 1
+```
+
+*Grid Layout Rule:* If the total number of apps is not a multiple of 3, the final row automatically centers cards across the workstation grid.
+
