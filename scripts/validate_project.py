@@ -168,6 +168,32 @@ def check_django_system() -> bool:
         return False
 
 
+def check_django_migrations() -> bool:
+    print_step("Checking Missing Django Model Migrations (makemigrations --check)")
+    try:
+        subprocess.run(  # nosec B603, B607
+            [
+                "uv",
+                "run",
+                "python",
+                str(BASE_DIR / "manage.py"),
+                "makemigrations",
+                "--check",
+                "--dry-run",
+            ],
+            cwd=str(BASE_DIR),
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        print("   [OK] Django model migrations are fully up to date (0 pending migrations).")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"\n[FAIL] Pending Django migrations detected:\n{e.stderr or e.stdout}")
+        print("   [TIP] Run 'uv run python manage.py makemigrations' to create migration files.")
+        return False
+
+
 def main():
     print("=" * 60)
     print("  ForensiQ Pre-Commit Quality & Architecture Validator")
@@ -179,6 +205,7 @@ def main():
         check_ruff,
         check_bandit,
         check_django_system,
+        check_django_migrations,
     ]
 
     all_passed = True

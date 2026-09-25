@@ -18,6 +18,8 @@ dependencies = [
 dev = [
     "bandit>=1.9.4",
     "django-debug-toolbar>=8.0.0",
+    "django-upgrade>=1.32.0",
+    "djlint>=1.46.2",
     "ruff>=0.16.9",
 ]
 prod = [
@@ -43,6 +45,7 @@ select = [
     "UP",  # pyupgrade
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
+    "DJ",  # flake8-django rules
 ]
 ignore = [
     "E501",  # line length handled by ruff format

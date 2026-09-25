@@ -2,10 +2,16 @@
 # See https://pre-commit.com for more information
 
 repos:
+  - repo: https://github.com/adamchainz/django-upgrade
+    rev: 1.22.2
+    hooks:
+      - id: django-upgrade
+        args: [--target-version, "5.0"]
+
   - repo: local
     hooks:
       - id: forensiq-validator
-        name: ForensiQ Architecture & Doc Validator
+        name: ForensiQ Quality, Django & Doc Validator
         entry: uv run python scripts/validate_project.py
         language: system
         pass_filenames: false
