@@ -1,13 +1,13 @@
-<c-base title="ForensiQ | Tabulator.js Forensic Showcase">
+<c-base title="ForensiQ | Forensic Transaction Audit">
 
     <!-- Page Header Component -->
     <c-page_header 
         title="Forensic Transaction Ledger" 
-        subtitle="High-performance interactive data grid powered by Tabulator.js with multi-column filtering, custom cell formatters, and export capabilities."
+        subtitle="Multi-entity fund flow ledger, high-value transaction scrutiny, and risk-weighted audit trails."
         icon="fa-solid fa-money-bill-transfer"
         icon_color="text-amber-500"
         category="Q-Bank Analytics"
-        section="Forensic Engine">
+        section="Banking Intelligence">
 
         <button id="btn-export-csv" class="px-3.5 py-2 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-zinc-800 transition shadow-sm flex items-center gap-2">
             <i class="fa-solid fa-file-csv text-emerald-600 dark:text-emerald-400"></i> Export CSV
@@ -16,7 +16,7 @@
             <i class="fa-solid fa-file-code text-amber-600 dark:text-amber-400"></i> Export JSON
         </button>
         <button id="btn-print" class="px-3.5 py-2 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-zinc-800 transition shadow-sm flex items-center gap-2">
-            <i class="fa-solid fa-print text-sky-600 dark:text-sky-400"></i> Print View
+            <i class="fa-solid fa-print text-sky-600 dark:text-sky-400"></i> Print Dossier
         </button>
         <button id="btn-reset-filters" class="px-3.5 py-2 rounded-lg bg-zinc-900 dark:bg-amber-500 text-white dark:text-zinc-950 text-xs font-bold hover:bg-zinc-800 dark:hover:bg-amber-400 transition shadow-sm flex items-center gap-2">
             <i class="fa-solid fa-rotate-left"></i> Reset Filters
@@ -35,7 +35,7 @@
         <c-stat_card 
             title="Total Inflow (Credits)" 
             value="₹{{ total_inflow|floatformat:0 }}" 
-            subtitle="Legitimate & inward wires" 
+            subtitle="Verified inward wires" 
             icon="fa-solid fa-arrow-down-left" 
             variant="emerald" />
 
@@ -50,7 +50,7 @@
             title="High Risk Alerts" 
             value="{{ high_risk_count }}" 
             extra="({{ escalated_count }} Escalated)"
-            subtitle="Requires SAR filing review" 
+            subtitle="Requires regulatory review" 
             icon="fa-solid fa-triangle-exclamation" 
             variant="rose" />
     </div>
@@ -113,9 +113,9 @@
     </c-filter_bar>
 
     <!-- Tabulator Grid Card -->
-    <c-card title="Forensic Audit Ledger" subtitle="Click any row to inspect transaction forensic details" icon="fa-solid fa-table-list" icon_color="text-sky-600 dark:text-sky-400">
+    <c-card title="Transaction Audit Ledger" subtitle="Select any transaction to inspect audit details and flag reasoning" icon="fa-solid fa-table-list" icon_color="text-sky-600 dark:text-sky-400">
         <c-slot name="actions">
-            <span class="text-xs bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-2.5 py-1 rounded-full font-mono">Live Grid Engine</span>
+            <span class="text-xs bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-2.5 py-1 rounded-full font-mono">Real-Time Ledger</span>
         </c-slot>
 
         <!-- Tabulator Table Target -->
