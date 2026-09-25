@@ -1,0 +1,36 @@
+{% comment %}
+ForensiQ Metric / Stat Card Component (Dark & Light Mode)
+Variants: sky, emerald, amber, rose, slate
+{% endcomment %}
+{% with v=variant|default:"slate" %}
+<div class="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-slate-200 dark:border-zinc-800 shadow-sm flex items-center justify-between transition hover:border-slate-300 dark:hover:border-zinc-700">
+    <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 truncate">{{ title }}</p>
+        
+        <h3 class="text-2xl font-black mt-1 truncate
+            {% if v == 'emerald' %}text-emerald-600 dark:text-emerald-400
+            {% elif v == 'rose' %}text-rose-600 dark:text-rose-400
+            {% elif v == 'amber' %}text-amber-600 dark:text-amber-400
+            {% elif v == 'sky' %}text-sky-600 dark:text-sky-400
+            {% else %}text-slate-800 dark:text-white{% endif %}">
+            {{ value }}
+            {% if extra %}<span class="text-xs font-normal text-slate-400 dark:text-zinc-500 ml-1">{{ extra }}</span>{% endif %}
+        </h3>
+
+        {% if subtitle %}
+        <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1 truncate">{{ subtitle|safe }}</p>
+        {% endif %}
+    </div>
+
+    {% if icon %}
+    <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center text-xl ml-4
+        {% if v == 'emerald' %}bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-800/50 text-emerald-600 dark:text-emerald-400
+        {% elif v == 'rose' %}bg-rose-50 dark:bg-rose-950/50 border border-rose-100 dark:border-rose-800/50 text-rose-600 dark:text-rose-400
+        {% elif v == 'amber' %}bg-amber-50 dark:bg-amber-950/50 border border-amber-100 dark:border-amber-800/50 text-amber-600 dark:text-amber-400
+        {% elif v == 'sky' %}bg-sky-50 dark:bg-sky-950/50 border border-sky-100 dark:border-sky-800/50 text-sky-600 dark:text-sky-400
+        {% else %}bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 text-slate-600 dark:text-zinc-300{% endif %}">
+        <i class="{{ icon }}"></i>
+    </div>
+    {% endif %}
+</div>
+{% endwith %}

@@ -1,0 +1,1 @@
+# ui app is dedicated to the design system, assets, and reusable Cotton components in ui/templates/cotton/

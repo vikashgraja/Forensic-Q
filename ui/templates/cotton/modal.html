@@ -1,0 +1,32 @@
+<div id="{{ id }}" class="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-xs hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200 dark:border-zinc-800 transform transition-all text-slate-900 dark:text-zinc-100">
+        <div class="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-4 mb-4">
+            <div class="flex items-center space-x-3">
+                {% if icon %}
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg border border-amber-500/20">
+                    <i class="{{ icon }}"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white" id="{{ id }}-title">{{ title|default:"Details" }}</h3>
+                    {% if subtitle %}
+                    <p class="text-xs text-slate-500 dark:text-zinc-400" id="{{ id }}-subtitle">{{ subtitle }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <button type="button" data-modal-close="{{ id }}" class="text-slate-400 hover:text-slate-600 dark:text-zinc-400 dark:hover:text-zinc-200 text-lg p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="space-y-3" id="{{ id }}-body">
+            {{ slot }}
+        </div>
+
+        {% if footer %}
+        <div class="mt-6 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-end space-x-3" id="{{ id }}-footer">
+            {{ footer }}
+        </div>
+        {% endif %}
+    </div>
+</div>

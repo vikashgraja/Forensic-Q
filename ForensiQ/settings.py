@@ -45,6 +45,10 @@ INSTALLED_APPS = [
     "django_cotton",
     "ui",
 
+    # Core & Demo
+    "core",
+    "demo",
+
     # Forensic Analysis Modules
     # "q_link",
     # "q_chat",

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default:"ForensiQ Workstation" }}</title>
+
+    <!-- Theme Initialization Script (Prevents FOUC) -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'light' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind CSS (with Dark Mode support) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+                    },
+                    colors: {
+                        zinc: {
+                            850: '#1e1e24',
+                            900: '#18181b',
+                            950: '#09090b',
+                        },
+                        amber: {
+                            450: '#f59e0b',
+                            500: '#f59e0b',
+                            550: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Tabulator.js (Standard CSS + Custom Franken/shadcn Dark & Light Theme) -->
+    <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        input[type="checkbox"] {
+            accent-color: #f59e0b;
+            cursor: pointer;
+        }
+
+        /* ============================================================
+           Franken UI / shadcn UI styled Tabulator Themes (Light & Dark)
+           ============================================================ */
+        
+        /* Light Mode Tabulator */
+        .tabulator {
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            font-size: 0.8125rem;
+            overflow: hidden;
+        }
+
+        .tabulator .tabulator-header {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.6875rem;
+            letter-spacing: 0.05em;
+        }
+
+        .tabulator .tabulator-header .tabulator-col {
+            background-color: #f8fafc;
+            border-right: 1px solid #f1f5f9;
+            padding: 8px 12px;
+        }
+
+        .tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+            padding: 2px 0;
+        }
+
+        .tabulator .tabulator-row {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background-color 0.15s ease;
+            background-color: #ffffff;
+            color: #0f172a;
+            cursor: pointer;
+        }
+
+        .tabulator .tabulator-row:hover {
+            background-color: #f8fafc !important;
+        }
+
+        .tabulator .tabulator-row.tabulator-selected {
+            background-color: #eff6ff !important;
+            color: #1d4ed8;
+        }
+
+        .tabulator .tabulator-cell {
+            padding: 9px 12px;
+            border-right: 1px solid #f8fafc;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tabulator .tabulator-footer {
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            color: #64748b;
+        }
+
+        .tabulator-page {
+            border-radius: 0.375rem !important;
+            border: 1px solid #cbd5e1 !important;
+            padding: 3px 9px !important;
+            margin: 0 2px !important;
+            background: #ffffff !important;
+            color: #334155 !important;
+            font-size: 0.75rem !important;
+            font-weight: 500 !important;
+        }
+
+        .tabulator-page.active {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            border-color: #0284c7 !important;
+            font-weight: 700 !important;
+        }
+
+        /* Calculation Rows (General / Light Mode) */
+        .tabulator .tabulator-calcs-holder {
+            background-color: #f8fafc !important;
+            border-top: 2px solid #e2e8f0 !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        .tabulator .tabulator-calcs-holder .tabulator-row {
+            background-color: #f8fafc !important;
+            color: #1e293b !important;
+            font-weight: 600 !important;
+        }
+
+        .tabulator .tabulator-calcs-holder .tabulator-cell {
+            background-color: transparent !important;
+            color: inherit !important;
+        }
+
+        /* Dark Mode Tabulator (Franken/shadcn dark aesthetic) */
+        .dark .tabulator {
+            border: 1px solid #27272a;
+            background-color: #09090b;
+            border-radius: 0.75rem;
+            color: #f4f4f5;
+        }
+
+        .dark .tabulator .tabulator-tableholder,
+        .dark .tabulator .tabulator-table {
+            background-color: #09090b !important;
+        }
+
+        .dark .tabulator .tabulator-header {
+            background-color: #18181b;
+            border-bottom: 1px solid #27272a;
+            color: #a1a1aa;
+        }
+
+        .dark .tabulator .tabulator-header .tabulator-col {
+            background-color: #18181b;
+            border-right: 1px solid #27272a;
+        }
+
+        .dark .tabulator .tabulator-header .tabulator-col:hover {
+            background-color: #27272a;
+        }
+
+        .dark .tabulator .tabulator-row {
+            background-color: #09090b;
+            border-bottom: 1px solid #18181b;
+            color: #f4f4f5;
+            cursor: pointer;
+        }
+
+        .dark .tabulator .tabulator-row.tabulator-row-even {
+            background-color: #0d0d10;
+        }
+
+        .dark .tabulator .tabulator-row:hover {
+            background-color: #18181b !important;
+        }
+
+        .dark .tabulator .tabulator-row.tabulator-selected {
+            background-color: #1e293b !important;
+            color: #38bdf8 !important;
+        }
+
+        .dark .tabulator .tabulator-cell {
+            border-right: 1px solid #18181b;
+        }
+
+        /* Dark Mode Calculation / Summary Row */
+        .dark .tabulator .tabulator-calcs-holder,
+        .dark .tabulator .tabulator-calcs-holder .tabulator-row,
+        .dark .tabulator .tabulator-calcs-holder .tabulator-row.tabulator-calcs,
+        .dark .tabulator-calcs,
+        .dark .tabulator-calcs-top,
+        .dark .tabulator-calcs-bottom,
+        .dark .tabulator-row.tabulator-calcs {
+            background-color: #18181b !important;
+            border-top: 1px solid #27272a !important;
+            border-bottom: 1px solid #27272a !important;
+            color: #f4f4f5 !important;
+        }
+
+        .dark .tabulator .tabulator-calcs-holder .tabulator-cell,
+        .dark .tabulator-calcs .tabulator-cell,
+        .dark .tabulator-row.tabulator-calcs .tabulator-cell {
+            background-color: transparent !important;
+            color: inherit !important;
+            border-right: 1px solid #27272a !important;
+        }
+
+        .dark .tabulator .tabulator-footer {
+            background-color: #18181b;
+            border-top: 1px solid #27272a;
+            color: #a1a1aa;
+        }
+
+        .dark .tabulator-page {
+            background-color: #27272a !important;
+            border-color: #3f3f46 !important;
+            color: #f4f4f5 !important;
+        }
+
+        .dark .tabulator-page.active {
+            background-color: #f59e0b !important;
+            color: #09090b !important;
+            border-color: #f59e0b !important;
+        }
+
+        .dark .tabulator-page:hover:not(.active):not([disabled]) {
+            background-color: #3f3f46 !important;
+        }
+
+        .dark .tabulator-paginator button {
+            background-color: #27272a !important;
+            color: #d4d4d8 !important;
+            border: 1px solid #3f3f46 !important;
+            border-radius: 0.375rem !important;
+            padding: 2px 8px !important;
+            font-size: 0.75rem !important;
+            font-weight: 500 !important;
+            margin: 0 1px !important;
+        }
+
+        .dark .tabulator-paginator button:hover:not(:disabled) {
+            background-color: #3f3f46 !important;
+            color: #ffffff !important;
+        }
+
+        .dark .tabulator-paginator button:disabled {
+            opacity: 0.4 !important;
+            cursor: not-allowed !important;
+        }
+
+        .dark .tabulator-page-size {
+            background-color: #18181b;
+            color: #f4f4f5;
+            border: 1px solid #27272a;
+            border-radius: 0.375rem;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Top Navigation Command Bar -->
+    <header class="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800/80 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center text-zinc-950 font-black text-xl shadow-lg shadow-amber-500/20 group-hover:scale-105 transition transform">
+                        Q
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Forensi<span class="text-amber-500">Q</span></span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Right Controls: Theme Switcher -->
+            <div class="flex items-center space-x-3">
+                <!-- Dark / Light Mode Toggle Button -->
+                <button id="theme-toggle" type="button" aria-label="Toggle Dark Mode"
+                    class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 transition">
+                    <i id="theme-toggle-dark-icon" class="hidden fa-solid fa-moon text-sm text-sky-400"></i>
+                    <i id="theme-toggle-light-icon" class="hidden fa-solid fa-sun text-sm text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        {{ slot }}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800 py-4 text-center text-xs text-slate-500 dark:text-zinc-500">
+        ForensiQ &bull; Forensic Investigation & Data Analytics Workstation
+    </footer>
+
+    <!-- Theme Toggle JavaScript -->
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+        function updateIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+            } else {
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+            }
+        }
+
+        updateIcons();
+
+        themeToggleBtn.addEventListener('click', function () {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+            updateIcons();
+            
+            // Dispatch event for Plotly charts to update theme dynamically
+            window.dispatchEvent(new CustomEvent('themeChanged', {
+                detail: { isDark: isDark }
+            }));
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,52 @@
+<div class="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-zinc-800 shadow-sm w-full overflow-hidden {{ class }}">
+    {% if title or actions %}
+    <div class="flex items-center justify-between mb-3.5 flex-wrap gap-2">
+        <div class="flex items-center space-x-2.5">
+            {% if icon %}
+            <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm border border-sky-500/20">
+                <i class="{{ icon }}"></i>
+            </div>
+            {% endif %}
+            <div>
+                {% if title %}
+                <h3 class="font-bold text-base text-slate-900 dark:text-white tracking-tight">{{ title }}</h3>
+                {% endif %}
+                {% if subtitle %}
+                <p class="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">{{ subtitle }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            {% if badge %}
+            <span class="text-xs bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-2.5 py-1 rounded-full font-mono">{{ badge }}</span>
+            {% endif %}
+            {{ actions }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Container where Tabulator will mount the table -->
+    <div id="{{ id }}" class="w-full"></div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (!document.getElementById("{{ id }}")) return;
+        
+        const rawData = {{ data|safe }};
+        const rawCols = {{ columns|safe }};
+
+        window["tabulator_{{ id|slugify }}"] = new Tabulator("#{{ id }}", {
+            data: rawData,
+            columns: rawCols,
+            layout: "{{ layout|default:'fitColumns' }}",
+            pagination: "{{ pagination|default:'local' }}",
+            paginationSize: {{ pagination_size|default:10 }},
+            paginationSizeSelector: [5, 10, 25, 50],
+            movableColumns: {{ movable_columns|default:'true' }},
+            responsiveLayout: "collapse",
+            placeholder: "No records found.",
+        });
+    });
+</script>
