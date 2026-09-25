@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-muceey)c0_!*@nya-mm&!u3@m#d$)4%uvs%pj736tt4fl=z0dm
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -64,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.PortalAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'ForensiQ.urls'
@@ -142,3 +143,7 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# ForensiQ Portal Security
+PORTAL_ACCESS_PASSWORD = 'forensiq2026'
+

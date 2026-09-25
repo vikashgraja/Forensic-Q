@@ -79,9 +79,10 @@ uv run python manage.py check
 uv run python manage.py runserver 127.0.0.1:8000
 ```
 
-### Endpoints
-* **Q-Bank Forensic Ledger:** [http://127.0.0.1:8000/tabulator-demo/](http://127.0.0.1:8000/tabulator-demo/)
-* **Component Sandbox:** [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+### Endpoints & Access
+* **Portal Login:** [http://127.0.0.1:8000/login/](http://127.0.0.1:8000/login/) *(Master Password: `forensiq2026`)*
+* **Demo Forensic Ledger:** [http://127.0.0.1:8000/demo/tabulator/](http://127.0.0.1:8000/demo/tabulator/)
+* **Demo Component Sandbox:** [http://127.0.0.1:8000/demo/sandbox/](http://127.0.0.1:8000/demo/sandbox/)
 * **Django Admin:** [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)
 
 ---

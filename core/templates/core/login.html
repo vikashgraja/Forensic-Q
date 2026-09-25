@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForensiQ | Portal Access</title>
+
+    <!-- Theme Initialization Script (Prevents FOUC) -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'light' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind CSS with Dark Mode support -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+                    },
+                    colors: {
+                        zinc: {
+                            850: '#1e1e24',
+                            900: '#18181b',
+                            950: '#09090b',
+                        },
+                        amber: {
+                            450: '#f59e0b',
+                            500: '#f59e0b',
+                            550: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 min-h-screen flex flex-col justify-between transition-colors duration-200 selection:bg-amber-500 selection:text-zinc-950 relative overflow-x-hidden">
+
+    <!-- Ambient Glowing Background Grid Effect -->
+    <div class="fixed inset-0 pointer-events-none opacity-40 dark:opacity-20 z-0 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+    <!-- Top Bar with Logo & Theme Toggle -->
+    <header class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center text-zinc-950 font-black text-xl shadow-lg shadow-amber-500/20">
+                Q
+            </div>
+            <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Forensi<span class="text-amber-500">Q</span></span>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" type="button" aria-label="Toggle Dark Mode"
+            class="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-zinc-400 hover:bg-slate-200/60 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 transition backdrop-blur-sm">
+            <i id="theme-toggle-dark-icon" class="hidden fa-solid fa-moon text-sm text-sky-400"></i>
+            <i id="theme-toggle-light-icon" class="hidden fa-solid fa-sun text-sm text-amber-400"></i>
+        </button>
+    </header>
+
+    <!-- Main Login Card Container -->
+    <main class="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+        <div class="w-full max-w-md">
+
+            <!-- Card Container -->
+            <div class="bg-white dark:bg-zinc-900/90 border border-slate-200 dark:border-zinc-800/80 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/60 p-7 sm:p-9 backdrop-blur-xl relative">
+                
+                <!-- Glowing Border Accent (Dark mode) -->
+                <div class="absolute -top-px left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
+
+                <!-- Header Content -->
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 mb-4 shadow-inner">
+                        <i class="fa-solid fa-shield-halved text-2xl"></i>
+                    </div>
+                    <div class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 mb-2">
+                        Investigative Workstation
+                    </div>
+                    <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Portal Authentication</h1>
+                    <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1.5 max-w-xs mx-auto">
+                        Enter master access key to decrypt and unlock forensic analytics modules.
+                    </p>
+                </div>
+
+                <!-- Error Alert -->
+                {% if error %}
+                <div class="mb-6 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-start space-x-3 text-rose-800 dark:text-rose-300 text-xs animate-shake">
+                    <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm mt-0.5 flex-shrink-0"></i>
+                    <div class="flex-1 font-medium leading-relaxed">{{ error }}</div>
+                </div>
+                {% endif %}
+
+                <!-- Login Form -->
+                <form method="POST" action="{% url 'portal_login' %}" class="space-y-5">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="portal-password" class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
+                            Master Access Key
+                        </label>
+                        <div class="relative rounded-xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-zinc-500">
+                                <i class="fa-solid fa-key text-xs"></i>
+                            </div>
+                            
+                            <input type="password" name="password" id="portal-password" required autofocus
+                                placeholder="Enter portal password..."
+                                class="w-full pl-10 pr-11 py-2.5 text-sm rounded-xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-500/60 focus:border-amber-500 font-mono transition">
+                            
+                            <!-- Show / Hide Password Button -->
+                            <button type="button" id="btn-toggle-password" tabindex="-1"
+                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition">
+                                <i id="eye-icon" class="fa-solid fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="btn-submit"
+                        class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-450 hover:from-amber-450 hover:to-amber-500 text-zinc-950 font-bold text-xs shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition transform active:scale-[0.99] flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-unlock-keyhole text-xs"></i>
+                        <span>Unlock Workstation</span>
+                        <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+                    </button>
+                </form>
+
+                <!-- Quick Dev Helper Fill Button -->
+                <div class="mt-6 pt-5 border-t border-slate-100 dark:border-zinc-800/80 text-center">
+                    <button type="button" id="btn-autofill"
+                        class="inline-flex items-center space-x-1.5 text-[11px] font-mono text-slate-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 bg-slate-100 dark:bg-zinc-800/70 hover:bg-slate-200 dark:hover:bg-zinc-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700/60 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles text-[10px] text-amber-500"></i>
+                        <span>Default Key:</span>
+                        <span class="font-bold text-amber-600 dark:text-amber-400 underline decoration-dotted">forensiq2026</span>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Security Footer Note -->
+            <div class="mt-6 flex items-center justify-center space-x-4 text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
+                <span class="flex items-center"><i class="fa-solid fa-lock text-[10px] mr-1 text-emerald-500"></i> Encrypted Session</span>
+                <span>&bull;</span>
+                <span class="flex items-center"><i class="fa-solid fa-microchip text-[10px] mr-1 text-sky-500"></i> Local Engine</span>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 w-full py-4 text-center text-xs text-slate-400 dark:text-zinc-600">
+        ForensiQ &bull; Forensic Investigation & Data Analytics Workstation
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Password Visibility Toggle
+        const passwordInput = document.getElementById('portal-password');
+        const toggleBtn = document.getElementById('btn-toggle-password');
+        const eyeIcon = document.getElementById('eye-icon');
+
+        toggleBtn.addEventListener('click', function () {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        });
+
+        // Dev Autofill Helper
+        const autofillBtn = document.getElementById('btn-autofill');
+        if (autofillBtn) {
+            autofillBtn.addEventListener('click', function () {
+                passwordInput.value = 'forensiq2026';
+                passwordInput.focus();
+            });
+        }
+
+        // Theme Toggle
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+        function updateIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+            } else {
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+            }
+        }
+
+        updateIcons();
+
+        themeToggleBtn.addEventListener('click', function () {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+            updateIcons();
+        });
+    </script>
+</body>
+
+</html>
