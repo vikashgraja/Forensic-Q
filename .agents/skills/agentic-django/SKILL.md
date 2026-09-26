@@ -166,7 +166,64 @@ def transactions_dashboard_view(request):
 
 ---
 
-## 3. Anti-Patterns & Prohibitions
+---
+
+## 3. Universal Logging Standards (Loguru)
+
+All forensic modules, background threads, and parser engines must use Loguru:
+
+```python
+from loguru import logger
+
+# Contextual structured logging
+logger.info("Starting forensic ingestion for Case {} (Size: {} bytes)", audit_ref, file_size)
+logger.warning("Unreadable block at offset {}: skipping gracefully", offset)
+logger.error("Failed to parse evidence file: {}", err)
+```
+
+- **Interceptor Architecture:** `core.logging.setup_logging()` intercepts standard Python/Django logs and formats them via Loguru.
+- **Log Sinks:** Colorized console output + rotating file logs (`logs/forensiq_{time:YYYY-MM-DD}.log` with 50MB rotation, 30 days retention, zip compression, and thread-safe queueing).
+- **App Startup Hook:** Initialized in `core/apps.py` `ready()` method.
+
+---
+
+## 4. Large Evidence File Ingestion & Chunked Uploader (50+ GB)
+
+For handling massive forensic datasets (PST archives, PCAPs, disk images, transaction logs) without timeouts or memory spikes:
+
+1. **Browser Chunking:** Web UI splits files into 10–50 MB chunks using JavaScript `Blob.slice()` and uploads sequentially.
+2. **Universal Uploader (`core.file_uploader.FileUploader`):**
+   - Appends incoming binary chunks directly to physical disk (`media/uploads/...`).
+   - Tracks sequence, resumes uploads, and stream-computes SHA-256 evidence chain-of-custody hashes on the fly.
+3. **Background Asynchronous Worker:**
+   - On completion of the last chunk, automatically spawns a daemon worker thread (`threading.Thread` or Celery task).
+   - Updates progress percentage and current folder in the database for real-time frontend polling (`/api/progress/`).
+
+---
+
+## 5. Streaming Batch Ingestion & N+1 Prevention
+
+When parsing large evidence sets into the database:
+
+1. **Iterators & Streaming Parsers:** In `backend/`, stream records using Python generators (`yield`) instead of collecting everything in memory.
+2. **Atomic Batch Inserts:** In `services.py`, accumulate messages in batches of 250 items and flush using `bulk_create()` wrapped in `@transaction.atomic`:
+
+```python
+@transaction.atomic
+def _flush_message_batch(investigation, message_batch, attachment_map):
+    created_messages = EmailMessage.objects.bulk_create(message_batch)
+    attachment_objects = []
+    for batch_idx, attachments in attachment_map:
+        msg_instance = created_messages[batch_idx]
+        for att in attachments:
+            attachment_objects.append(EmailAttachment(email=msg_instance, ...))
+    if attachment_objects:
+        EmailAttachment.objects.bulk_create(attachment_objects)
+```
+
+---
+
+## 6. Anti-Patterns & Prohibitions
 
 1. **NO Business Logic in `post_save` Signals:**
    - Avoid `post_save` signals for triggering business workflows. Use explicit function calls in `services.py`.
@@ -178,3 +235,7 @@ def transactions_dashboard_view(request):
    - Always use `<c-slot name="name">` to guarantee Windows filesystem compatibility.
 5. **NO Uncommitted Model Changes:**
    - Always run `uv run python manage.py makemigrations` after changing `models.py`.
+6. **NO Bare Exception Pass or Continue (Bandit B110/B112):**
+   - Never write `except Exception: pass` or `except Exception: continue`. Always catch `except Exception as e:` and log explicitly with `logger.debug(...)` or `logger.warning(...)`.
+7. **NO Monolithic File Uploads for Files > 100MB:**
+   - Always route large forensic evidence through `core.file_uploader.FileUploader`.
