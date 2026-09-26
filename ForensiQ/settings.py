@@ -49,11 +49,16 @@ INSTALLED_APPS = [
     # Core & Demo
     "core",
     "demo",
-    # Forensic Analysis Modules
-    # "q_link",
-    # "q_chat",
-    # "q_bank",
-    # "q_trail",
+    # Forensic Analytical Modules
+    "q_mail",
+    "q_bank",
+    "q_trail",
+    "q_scan",
+    "q_verify",
+    "q_link",
+    "q_voice",
+    "q_ledger",
+    "q_chat",
 ]
 
 MIDDLEWARE = [
@@ -133,6 +138,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = "static/"
+
+# Media Files (PST Evidence & Extracted Attachments)
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 # Email

@@ -1,0 +1,391 @@
+<c-base title="{{ investigation.audit_ref }} | Q-Mail Workstation">
+
+    <!-- Page Header with Custodian Details -->
+    <c-page_header 
+        title="{{ investigation.auditee_name }}" 
+        subtitle="{{ investigation.audit_ref }} &bull; {{ investigation.audit_name }}" 
+        icon="fa-solid fa-user-shield"
+        icon_color="text-purple-400"
+        category="Q-Mail" 
+        section="Investigation">
+        
+        <a href="{% url 'q_mail:list' %}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition">
+            <i class="fa-solid fa-arrow-left text-[10px]"></i>
+            <span>All Audits</span>
+        </a>
+    </c-page_header>
+
+    <!-- Custodian & Chain of Custody Evidence Banner -->
+    <div class="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-100 dark:border-purple-800/50 flex items-center justify-center text-purple-600 dark:text-purple-400 text-xl font-bold flex-shrink-0">
+                <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h2 class="text-base font-bold text-slate-900 dark:text-white">{{ investigation.auditee_email }}</h2>
+                    {% if investigation.auditee_department %}
+                    <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">
+                        {{ investigation.auditee_department }}
+                    </span>
+                    {% endif %}
+                    {% if investigation.auditee_designation %}
+                    <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/50">
+                        {{ investigation.auditee_designation }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-3 text-xs font-mono text-slate-400 dark:text-zinc-500 mt-1">
+                    <span><i class="fa-solid fa-file-zipper mr-1"></i>{{ investigation.pst_file_name }} ({{ investigation.formatted_size }})</span>
+                    {% if investigation.file_sha256 %}
+                    <span class="truncate max-w-[280px]" title="{{ investigation.file_sha256 }}">
+                        <i class="fa-solid fa-fingerprint mr-1"></i>SHA256: {{ investigation.file_sha256 }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div id="status-pill-container" class="flex items-center gap-2">
+            {% if investigation.status == 'COMPLETED' %}
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50">
+                <i class="fa-solid fa-circle-check text-[10px]"></i> Extraction Ready
+            </span>
+            {% elif investigation.status == 'PROCESSING' %}
+            <button onclick="triggerProcessing()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
+                <i class="fa-solid fa-spinner fa-spin text-[10px]"></i> Processing...
+            </button>
+            {% else %}
+            <button onclick="triggerProcessing()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/20 transition cursor-pointer">
+                <i class="fa-solid fa-play text-[10px]"></i> Start PST Ingestion
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Live Ingestion Progress Tracker (Visible when processing) -->
+    <div id="live-progress-card" class="{% if investigation.status != 'PROCESSING' %}hidden{% endif %} mb-6 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 shadow-sm">
+        <div class="flex items-center justify-between text-xs font-mono text-amber-500 font-bold mb-2">
+            <span id="live-folder-text"><i class="fa-solid fa-folder-open mr-1.5"></i>Processing Folder: {{ investigation.current_folder|default:"Inbox" }}</span>
+            <span id="live-percent-text">{{ investigation.progress_percent|floatformat:0 }}%</span>
+        </div>
+        <div class="w-full h-2 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-2">
+            <div id="live-progress-bar" class="h-full bg-amber-500 rounded-full transition-all duration-300" style="width: {{ investigation.progress_percent }}%;"></div>
+        </div>
+        <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 dark:text-zinc-500">
+            <span id="live-count-text">{{ investigation.processed_messages_count }} Messages Ingested</span>
+            <span>Background Streaming Active</span>
+        </div>
+    </div>
+
+    <!-- Top KPI Metrics -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <c-stat_card 
+            title="Messages Extracted" 
+            value="{{ summary.total_emails }}" 
+            subtitle="Indexed in Database" 
+            icon="fa-solid fa-envelopes-bulk" 
+            variant="purple" />
+            
+        <c-stat_card 
+            title="Physical Attachments" 
+            value="{{ summary.total_attachments }}" 
+            subtitle="With SHA-256 Hashes" 
+            icon="fa-solid fa-paperclip" 
+            variant="sky" />
+            
+        <c-stat_card 
+            title="Date Span" 
+            value="{% if summary.earliest_sent %}{{ summary.earliest_sent|date:'M Y' }} - {{ summary.latest_sent|date:'M Y' }}{% else %}N/A{% endif %}" 
+            subtitle="Timeline Coverage" 
+            icon="fa-solid fa-calendar-days" 
+            variant="slate" />
+            
+        <c-stat_card 
+            title="Attachments Ratio" 
+            value="{{ summary.with_attachments }} / {{ summary.total_emails }}" 
+            subtitle="Emails with Files" 
+            icon="fa-solid fa-file-lines" 
+            variant="emerald" />
+    </div>
+
+    <!-- Analytics & Communication Graph Section -->
+    {% if chart_html %}
+    <div class="mb-6">
+        <c-chart title="Top Communication Counterparties" subtitle="Direct message frequency matrix for auditee network identification." icon="fa-solid fa-chart-bar" figure_html="{{ chart_html|safe }}" />
+    </div>
+    {% endif %}
+
+    <!-- Filter Toolbar -->
+    <div class="mb-4 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+        <form method="GET" class="flex flex-wrap items-center gap-3 flex-1">
+            <div class="relative flex-1 min-w-[200px]">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" name="search" value="{{ current_search }}" placeholder="Search subjects, senders, body text..." 
+                       class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500">
+            </div>
+
+            {% if summary.folders %}
+            <select name="folder" onchange="this.form.submit()" 
+                    class="px-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500">
+                <option value="">All Mail Folders ({{ summary.folders|length }})</option>
+                {% for f in summary.folders %}
+                <option value="{{ f }}" {% if f == current_folder %}selected{% endif %}>{{ f }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+
+            <button type="submit" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-600 hover:bg-purple-500 text-white transition">
+                Filter
+            </button>
+            {% if current_search or current_folder %}
+            <a href="{% url 'q_mail:detail' investigation.id %}" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200">
+                Reset
+            </a>
+            {% endif %}
+        </form>
+
+        <div class="text-xs font-mono text-slate-400 dark:text-zinc-500">
+            Click any email row to open the reader
+        </div>
+    </div>
+
+    <!-- Tabulator.js Evidence Data Grid -->
+    <div class="mb-8">
+        <div id="emails-table" class="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-sm"></div>
+    </div>
+
+    <!-- Slide-Over Email Reader Drawer -->
+    <div id="email-reader-drawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-white dark:bg-[#141519] border-l border-slate-200 dark:border-zinc-800 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+        
+        <!-- Drawer Header -->
+        <div class="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-mono uppercase tracking-widest text-purple-400 font-bold">Email Forensic Inspector</span>
+                <h3 id="drawer-subject" class="text-base font-bold text-slate-900 dark:text-white mt-0.5 line-clamp-1">Subject</h3>
+            </div>
+            <button onclick="closeEmailDrawer()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Drawer Content Body -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+            <!-- Headers Info Box -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 space-y-2 font-mono">
+                <div class="flex justify-between"><span class="text-slate-400 dark:text-zinc-500">From:</span><span id="drawer-from" class="text-slate-800 dark:text-zinc-200 font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-slate-400 dark:text-zinc-500">To:</span><span id="drawer-to" class="text-slate-700 dark:text-zinc-300"></span></div>
+                <div id="drawer-cc-row" class="flex justify-between hidden"><span class="text-slate-400 dark:text-zinc-500">Cc:</span><span id="drawer-cc" class="text-slate-700 dark:text-zinc-300"></span></div>
+                <div class="flex justify-between"><span class="text-slate-400 dark:text-zinc-500">Sent Date:</span><span id="drawer-date" class="text-slate-700 dark:text-zinc-300"></span></div>
+                <div class="flex justify-between"><span class="text-slate-400 dark:text-zinc-500">Folder:</span><span id="drawer-folder" class="text-purple-400 font-bold"></span></div>
+            </div>
+
+            <!-- Attachments List -->
+            <div id="drawer-attachments-section" class="hidden space-y-2">
+                <h4 class="font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-paperclip text-purple-400"></i>
+                    <span>Attachments (<span id="drawer-att-count">0</span>)</span>
+                </h4>
+                <div id="drawer-attachments-list" class="space-y-2"></div>
+            </div>
+
+            <!-- Email Body -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-slate-800 dark:text-zinc-200">Message Body</h4>
+                </div>
+                <div id="drawer-body" class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 whitespace-pre-wrap font-sans leading-relaxed text-xs max-h-[400px] overflow-y-auto">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Drawer Backdrop -->
+    <div id="drawer-backdrop" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden transition-opacity" onclick="closeEmailDrawer()"></div>
+
+    <!-- Tabulator Table Initialization & Progress Polling Script -->
+    <script>
+        const tableData = {{ grid_data_json|safe }};
+        let table = null;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            table = new Tabulator("#emails-table", {
+                data: tableData,
+                layout: "fitColumns",
+                responsiveLayout: "collapse",
+                pagination: "local",
+                paginationSize: 25,
+                paginationSizeSelector: [25, 50, 100, 200],
+                placeholder: "No emails match the current filters.",
+                columns: [
+                    { title: "Sent Date (UTC)", field: "sent_date", width: 150, headerSort: true },
+                    { 
+                        title: "Sender", 
+                        field: "sender", 
+                        minWidth: 180,
+                        formatter: function(cell) {
+                            return `<span class="font-semibold text-slate-900 dark:text-white">${cell.getValue()}</span>`;
+                        }
+                    },
+                    { 
+                        title: "Subject", 
+                        field: "subject", 
+                        minWidth: 260,
+                        formatter: function(cell) {
+                            const val = cell.getValue() || "(No Subject)";
+                            return `<span class="text-slate-800 dark:text-zinc-200 hover:text-purple-400 cursor-pointer font-medium">${val}</span>`;
+                        }
+                    },
+                    { 
+                        title: "Folder", 
+                        field: "folder", 
+                        width: 130,
+                        formatter: function(cell) {
+                            return `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">${cell.getValue()}</span>`;
+                        }
+                    },
+                    { 
+                        title: "Files", 
+                        field: "attachment_count", 
+                        width: 80, 
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            const count = cell.getValue();
+                            if (count > 0) {
+                                return `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/50"><i class="fa-solid fa-paperclip mr-0.5"></i>${count}</span>`;
+                            }
+                            return `<span class="text-slate-300 dark:text-zinc-700">-</span>`;
+                        }
+                    },
+                    { 
+                        title: "Action", 
+                        width: 90, 
+                        hozAlign: "center",
+                        formatter: function(cell) {
+                            return `<button class="px-2.5 py-1 rounded bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-600 hover:text-white text-purple-600 dark:text-purple-400 text-[10px] font-bold transition cursor-pointer">Inspect</button>`;
+                        }
+                    }
+                ]
+            });
+
+            table.on("rowClick", function(e, row) {
+                const rowData = row.getData();
+                openEmailDrawer(rowData.id);
+            });
+
+            // Start live status polling if investigation is active
+            {% if investigation.status == 'PROCESSING' or investigation.status == 'UPLOADING' %}
+            startProgressPolling();
+            {% endif %}
+        });
+
+        async function openEmailDrawer(emailId) {
+            const drawer = document.getElementById('email-reader-drawer');
+            const backdrop = document.getElementById('drawer-backdrop');
+
+            const res = await fetch(`/mail/email/${emailId}/`);
+            if (!res.ok) {
+                alert("Failed to load email details.");
+                return;
+            }
+
+            const data = await res.json();
+
+            document.getElementById('drawer-subject').innerText = data.subject || "(No Subject)";
+            document.getElementById('drawer-from').innerText = `${data.sender_name || ''} <${data.sender_email}>`;
+            document.getElementById('drawer-to').innerText = (data.recipients_to || []).join(", ") || "N/A";
+            
+            const ccRow = document.getElementById('drawer-cc-row');
+            if (data.recipients_cc && data.recipients_cc.length > 0) {
+                ccRow.classList.remove('hidden');
+                document.getElementById('drawer-cc').innerText = data.recipients_cc.join(", ");
+            } else {
+                ccRow.classList.add('hidden');
+            }
+
+            document.getElementById('drawer-date').innerText = data.sent_date || "N/A";
+            document.getElementById('drawer-folder').innerText = data.folder_path || "Inbox";
+            document.getElementById('drawer-body').innerText = data.body_plain || "(No plain text content)";
+
+            // Attachments
+            const attSection = document.getElementById('drawer-attachments-section');
+            const attList = document.getElementById('drawer-attachments-list');
+            attList.innerHTML = "";
+
+            if (data.attachments && data.attachments.length > 0) {
+                attSection.classList.remove('hidden');
+                document.getElementById('drawer-att-count').innerText = data.attachments.length;
+
+                data.attachments.forEach(att => {
+                    const item = document.createElement('div');
+                    item.className = "p-3 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 flex items-center justify-between gap-3";
+                    item.innerHTML = `
+                        <div class="min-w-0 flex-1">
+                            <div class="font-bold text-slate-800 dark:text-zinc-200 truncate">${att.filename}</div>
+                            <div class="text-[10px] font-mono text-slate-400 dark:text-zinc-500 mt-0.5">
+                                <span>${att.formatted_size}</span> &bull; 
+                                <span class="truncate" title="${att.sha256_hash}">SHA256: ${att.sha256_hash.substring(0, 16)}...</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            ${att.has_file ? `
+                                <a href="/mail/attachment/${att.id}/download/" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-bold transition flex items-center gap-1">
+                                    <i class="fa-solid fa-download"></i> Download
+                                </a>
+                            ` : `<span class="text-[10px] text-slate-400">Metadata Only</span>`}
+                        </div>
+                    `;
+                    attList.appendChild(item);
+                });
+            } else {
+                attSection.classList.add('hidden');
+            }
+
+            backdrop.classList.remove('hidden');
+            drawer.classList.remove('translate-x-full');
+        }
+
+        function closeEmailDrawer() {
+            document.getElementById('email-reader-drawer').classList.add('translate-x-full');
+            document.getElementById('drawer-backdrop').classList.add('hidden');
+        }
+
+        function triggerProcessing() {
+            fetch("{% url 'q_mail:trigger_process' investigation.id %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                }
+            }).then(() => {
+                startProgressPolling();
+            });
+        }
+
+        function startProgressPolling() {
+            const interval = setInterval(async () => {
+                try {
+                    const res = await fetch("{% url 'q_mail:progress_api' investigation.id %}");
+                    if (res.ok) {
+                        const data = await res.json();
+                        
+                        document.getElementById('live-progress-card').classList.remove('hidden');
+                        document.getElementById('live-percent-text').innerText = `${data.progress_percent}%`;
+                        document.getElementById('live-progress-bar').style.width = `${data.progress_percent}%`;
+                        document.getElementById('live-count-text').innerText = `${data.processed_messages_count} Messages Ingested`;
+                        if (data.current_folder) {
+                            document.getElementById('live-folder-text').innerHTML = `<i class="fa-solid fa-folder-open mr-1.5"></i>Processing Folder: ${data.current_folder}`;
+                        }
+
+                        if (!data.is_active) {
+                            clearInterval(interval);
+                            window.location.reload();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Progress poll error", e);
+                }
+            }, 1500);
+        }
+    </script>
+
+</c-base>

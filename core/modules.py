@@ -38,14 +38,14 @@ DEFAULT_MODULE_SPECS = {
         "num": "03",
         "category": "COMMUNICATIONS",
         "name": "Mail",
-        "tag": "BUILDING",
+        "tag": "LIVE",
         "accent": "purple",
         "tagline": "PST at the speed of audit.",
         "features": [
             "Emails, attachments, communication links",
             "Keyword hits across threads",
         ],
-        "href": "/demo/sandbox/",
+        "href": "/mail/",
         "order": 3,
     },
     "q_scan": {

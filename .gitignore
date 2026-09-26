@@ -9,3 +9,7 @@ wheels/
 # Virtual environments
 .venv
 *.sqlite3
+
+# Logs & Evidence Media
+logs/
+media/
