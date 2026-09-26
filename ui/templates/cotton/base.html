@@ -374,6 +374,47 @@
                 detail: { isDark: isDark }
             }));
         });
+
+        // Global Modal Management
+        window.openModal = function(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
+        window.closeModal = function(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        };
+
+        // CSRF Token Helper
+        window.getCookie = function(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        };
+
+        document.addEventListener('click', function(e) {
+            const closeBtn = e.target.closest('[data-modal-close]');
+            if (closeBtn) {
+                const modalId = closeBtn.getAttribute('data-modal-close');
+                window.closeModal(modalId);
+            }
+        });
     </script>
 </body>
 

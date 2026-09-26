@@ -232,7 +232,11 @@
         const CHUNK_SIZE = 20 * 1024 * 1024; // 20 MB per chunk
 
         function openUploadModal() {
-            openModal('upload-modal');
+            if (typeof window.openModal === 'function') {
+                window.openModal('upload-modal');
+            } else {
+                document.getElementById('upload-modal')?.classList.remove('hidden');
+            }
         }
 
         function handleFileSelected(e) {
@@ -242,13 +246,40 @@
                 document.getElementById('file-name-display').innerText = selectedPstFile.name;
                 const sizeGB = (selectedPstFile.size / (1024 * 1024 * 1024)).toFixed(2);
                 document.getElementById('file-size-display').innerText = `${sizeGB} GB (${selectedPstFile.size.toLocaleString()} bytes)`;
+                document.getElementById('drop-zone')?.classList.add('border-purple-500', 'bg-purple-50/10');
             }
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const dropZone = document.getElementById('drop-zone');
+            if (dropZone) {
+                dropZone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('border-purple-500', 'bg-purple-50/20');
+                });
+
+                dropZone.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('border-purple-500', 'bg-purple-50/20');
+                });
+
+                dropZone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('border-purple-500', 'bg-purple-50/20');
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        handleFileSelected({ target: { files: e.dataTransfer.files } });
+                    }
+                });
+            }
+        });
 
         async function handleFormSubmit(e) {
             e.preventDefault();
             if (!selectedPstFile) {
-                alert("Please select a .pst evidence file to proceed.");
+                alert("Please select or drop a .pst evidence file to proceed.");
                 return;
             }
 
@@ -259,81 +290,100 @@
             const progressContainer = document.getElementById('upload-progress-container');
             progressContainer.classList.remove('hidden');
 
+            const auditRef = document.getElementById('modal-audit-ref').value.trim();
+            const auditName = document.getElementById('modal-audit-name').value.trim();
+            const auditeeName = document.getElementById('modal-auditee-name').value.trim();
+            const auditeeEmail = document.getElementById('modal-auditee-email').value.trim();
+            const auditeeDept = document.getElementById('modal-auditee-dept').value.trim();
+            const auditeeDesig = document.getElementById('modal-auditee-desig').value.trim();
+
             const payload = {
-                audit_ref: document.getElementById('modal-audit-ref').value,
-                audit_name: document.getElementById('modal-audit-name').value,
-                auditee_name: document.getElementById('modal-auditee-name').value,
-                auditee_email: document.getElementById('modal-auditee-email').value,
-                auditee_department: document.getElementById('modal-auditee-dept').value,
-                auditee_designation: document.getElementById('modal-auditee-desig').value,
+                audit_ref: auditRef || `AUD-${auditeeName.substring(0, 4).toUpperCase()}-2026`,
+                audit_name: auditName || `Forensic Mailbox Audit - ${auditeeName}`,
+                auditee_name: auditeeName,
+                auditee_email: auditeeEmail,
+                auditee_department: auditeeDept,
+                auditee_designation: auditeeDesig,
                 pst_file_name: selectedPstFile.name,
                 file_size_bytes: selectedPstFile.size,
             };
 
-            // 1. Initiate case registration
-            const initRes = await fetch("{% url 'q_mail:upload_initiate' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: JSON.stringify(payload),
-            });
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || (typeof window.getCookie === 'function' ? window.getCookie('csrftoken') : '');
 
-            if (!initRes.ok) {
-                const err = await initRes.json();
-                alert("Failed to initiate audit: " + (err.error || "Unknown error"));
-                uploadBtn.disabled = false;
-                uploadBtn.classList.remove('opacity-50');
-                return;
-            }
-
-            const { mailbox_id } = await initRes.json();
-
-            // 2. Upload file in sequential chunks
-            const totalChunks = Math.ceil(selectedPstFile.size / CHUNK_SIZE);
-            let uploadedBytes = 0;
-            const startTime = Date.now();
-
-            for (let chunkIdx = 0; chunkIdx < totalChunks; chunkIdx++) {
-                const start = chunkIdx * CHUNK_SIZE;
-                const end = Math.min(start + CHUNK_SIZE, selectedPstFile.size);
-                const chunkBlob = selectedPstFile.slice(start, end);
-
-                const formData = new FormData();
-                formData.append("mailbox_id", mailbox_id);
-                formData.append("chunk_index", chunkIdx);
-                formData.append("total_chunks", totalChunks);
-                formData.append("chunk", chunkBlob, selectedPstFile.name);
-
-                const chunkRes = await fetch("{% url 'q_mail:upload_chunk' %}", {
+            try {
+                // 1. Initiate case registration
+                const initRes = await fetch("{% url 'q_mail:upload_initiate' %}", {
                     method: "POST",
-                    body: formData,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken,
+                    },
+                    body: JSON.stringify(payload),
                 });
 
-                if (!chunkRes.ok) {
-                    alert(`Error uploading chunk ${chunkIdx + 1}/${totalChunks}.`);
+                if (!initRes.ok) {
+                    const err = await initRes.json().catch(() => ({}));
+                    alert("Failed to initiate audit case: " + (err.error || "Server validation error"));
                     uploadBtn.disabled = false;
+                    uploadBtn.classList.remove('opacity-50');
                     return;
                 }
 
-                uploadedBytes += (end - start);
-                const percent = ((uploadedBytes / selectedPstFile.size) * 100).toFixed(1);
-                const elapsedSec = (Date.now() - startTime) / 1000;
-                const speedMBs = (uploadedBytes / (1024 * 1024 * elapsedSec)).toFixed(1);
+                const { mailbox_id } = await initRes.json();
 
-                document.getElementById('upload-progress-bar').style.width = `${percent}%`;
-                document.getElementById('upload-percent-text').innerText = `${percent}%`;
-                document.getElementById('upload-status-text').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading chunk ${chunkIdx + 1} of ${totalChunks}...`;
-                document.getElementById('upload-speed-text').innerText = `${speedMBs} MB/s`;
-                document.getElementById('upload-bytes-text').innerText = `${(uploadedBytes / (1024 * 1024)).toFixed(0)} MB / ${(selectedPstFile.size / (1024 * 1024)).toFixed(0)} MB`;
+                // 2. Upload file in sequential chunks
+                const totalChunks = Math.ceil(selectedPstFile.size / CHUNK_SIZE);
+                let uploadedBytes = 0;
+                const startTime = Date.now();
+
+                for (let chunkIdx = 0; chunkIdx < totalChunks; chunkIdx++) {
+                    const start = chunkIdx * CHUNK_SIZE;
+                    const end = Math.min(start + CHUNK_SIZE, selectedPstFile.size);
+                    const chunkBlob = selectedPstFile.slice(start, end);
+
+                    const formData = new FormData();
+                    formData.append("mailbox_id", mailbox_id);
+                    formData.append("chunk_index", chunkIdx);
+                    formData.append("total_chunks", totalChunks);
+                    formData.append("chunk", chunkBlob, selectedPstFile.name);
+                    formData.append("csrfmiddlewaretoken", csrfToken);
+
+                    const chunkRes = await fetch("{% url 'q_mail:upload_chunk' %}", {
+                        method: "POST",
+                        body: formData,
+                    });
+
+                    if (!chunkRes.ok) {
+                        alert(`Error uploading chunk ${chunkIdx + 1}/${totalChunks}. Please retry.`);
+                        uploadBtn.disabled = false;
+                        uploadBtn.classList.remove('opacity-50');
+                        return;
+                    }
+
+                    uploadedBytes += (end - start);
+                    const percent = ((uploadedBytes / selectedPstFile.size) * 100).toFixed(1);
+                    const elapsedSec = Math.max(0.1, (Date.now() - startTime) / 1000);
+                    const speedMBs = (uploadedBytes / (1024 * 1024 * elapsedSec)).toFixed(1);
+
+                    document.getElementById('upload-progress-bar').style.width = `${percent}%`;
+                    document.getElementById('upload-percent-text').innerText = `${percent}%`;
+                    document.getElementById('upload-status-text').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading chunk ${chunkIdx + 1} of ${totalChunks}...`;
+                    document.getElementById('upload-speed-text').innerText = `${speedMBs} MB/s`;
+                    document.getElementById('upload-bytes-text').innerText = `${(uploadedBytes / (1024 * 1024)).toFixed(0)} MB / ${(selectedPstFile.size / (1024 * 1024)).toFixed(0)} MB`;
+                }
+
+                // 3. Upload complete - redirect to investigation workstation
+                document.getElementById('upload-status-text').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> Upload complete! Starting background extraction...`;
+                setTimeout(() => {
+                    window.location.href = `/mail/investigation/${mailbox_id}/`;
+                }, 800);
+
+            } catch (err) {
+                console.error("Upload failed:", err);
+                alert("Upload failed due to a network error. Check browser console.");
+                uploadBtn.disabled = false;
+                uploadBtn.classList.remove('opacity-50');
             }
-
-            // Upload complete - redirect to investigation workstation
-            document.getElementById('upload-status-text').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> Upload complete! Starting background extraction...`;
-            setTimeout(() => {
-                window.location.href = `/mail/investigation/${mailbox_id}/`;
-            }, 1000);
         }
     </script>
 
