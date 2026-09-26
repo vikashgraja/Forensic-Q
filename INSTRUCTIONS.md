@@ -81,7 +81,8 @@ uv run python manage.py runserver 127.0.0.1:8000
 ```
 
 ### Endpoints & Access
-* **Portal Login:** [http://127.0.0.1:8000/login/](http://127.0.0.1:8000/login/) *(Master Password: `forensiq2026`)*
+* **Portal Login:** [http://127.0.0.1:8000/login/](http://127.0.0.1:8000/login/) *(Configured via `PORTAL_ACCESS_PASSWORD` in `.env`)*
+* **Q-Mail Investigation Hub:** [http://127.0.0.1:8000/mail/](http://127.0.0.1:8000/mail/)
 * **Demo Forensic Ledger:** [http://127.0.0.1:8000/demo/tabulator/](http://127.0.0.1:8000/demo/tabulator/)
 * **Demo Component Sandbox:** [http://127.0.0.1:8000/demo/sandbox/](http://127.0.0.1:8000/demo/sandbox/)
 * **Django Admin:** [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/)

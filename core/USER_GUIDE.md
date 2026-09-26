@@ -5,7 +5,7 @@
 ### Master Portal Authorization
 1. Navigate to the workstation root: `http://127.0.0.1:8000/`
 2. If unauthenticated, the workstation automatically redirects to the authorization portal: `http://127.0.0.1:8000/login/`
-3. Enter the session authorization key (Default: `forensiq2026`).
+3. Enter the session authorization key defined in your `.env` file (`PORTAL_ACCESS_PASSWORD`).
 4. Click **Authorize Session** (or press Enter).
 5. Upon successful validation, you are redirected to the **Investigation Platform** landing dashboard.
 

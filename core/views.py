@@ -25,9 +25,9 @@ def portal_login_view(request):
 
     if request.method == "POST":
         password = request.POST.get("password", "").strip()
-        expected_password = getattr(settings, "PORTAL_ACCESS_PASSWORD", "forensiq2026")
+        expected_password = getattr(settings, "PORTAL_ACCESS_PASSWORD", "")
 
-        if password == expected_password:
+        if password and expected_password and password == expected_password:
             request.session["portal_authenticated"] = True
             request.session.modified = True
             return redirect(next_url)

@@ -14,22 +14,35 @@ import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment configuration from .env file
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY", "django-insecure-muceey)c0_!*@nya-mm&!u3@m#d$)4%uvs%pj736tt4fl=z0dm"
-)  # nosec B105
+# SECURITY: Secret key must be defined in environment / .env (no hardcoded fallbacks)
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "CRITICAL CONFIGURATION ERROR: SECRET_KEY environment variable is missing. "
+        "Create a .env file from .env.example with a valid SECRET_KEY."
+    )
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# SECURITY: DEBUG mode controlled via environment variable
+DEBUG = os.environ.get("DEBUG", "False").strip().lower() in ("true", "1", "yes", "t")
 
-ALLOWED_HOSTS = ["*"]
+# Allowed hosts parsed from comma-separated string
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+    if host.strip()
+]
 
 
 # Application definition
@@ -153,5 +166,10 @@ MAILERS = {
     },
 }
 
-# ForensiQ Portal Security
-PORTAL_ACCESS_PASSWORD = os.environ.get("PORTAL_ACCESS_PASSWORD", "forensiq2026")  # nosec B105
+# ForensiQ Portal Security (Master Key required in environment / .env)
+PORTAL_ACCESS_PASSWORD = os.environ.get("PORTAL_ACCESS_PASSWORD")
+if not PORTAL_ACCESS_PASSWORD:
+    raise RuntimeError(
+        "CRITICAL CONFIGURATION ERROR: PORTAL_ACCESS_PASSWORD environment variable is missing. "
+        "Define PORTAL_ACCESS_PASSWORD in your .env file."
+    )

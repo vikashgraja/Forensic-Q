@@ -142,16 +142,6 @@
                     </button>
                 </form>
 
-                <!-- Dev Helper Fill Button -->
-                <div class="mt-6 pt-5 border-t border-slate-100 dark:border-zinc-800/80 text-center">
-                    <button type="button" id="btn-autofill"
-                        class="inline-flex items-center space-x-1.5 text-[11px] font-mono text-slate-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 bg-slate-100 dark:bg-zinc-800/70 hover:bg-slate-200 dark:hover:bg-zinc-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700/60 transition">
-                        <i class="fa-solid fa-key text-[10px] text-amber-500"></i>
-                        <span>Session Key:</span>
-                        <span class="font-bold text-amber-600 dark:text-amber-400">forensiq2026</span>
-                    </button>
-                </div>
-
             </div>
 
             <!-- Security Footer Note -->
@@ -187,15 +177,6 @@
                 eyeIcon.classList.add('fa-eye');
             }
         });
-
-        // Autofill Helper
-        const autofillBtn = document.getElementById('btn-autofill');
-        if (autofillBtn) {
-            autofillBtn.addEventListener('click', function () {
-                passwordInput.value = 'forensiq2026';
-                passwordInput.focus();
-            });
-        }
 
         // Theme Toggle
         const themeToggleBtn = document.getElementById('theme-toggle');
