@@ -118,35 +118,30 @@
 
     <!-- Filter Toolbar -->
     <div class="mb-4 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
-        <form method="GET" class="flex flex-wrap items-center gap-3 flex-1">
-            <div class="relative flex-1 min-w-[200px]">
+        <div class="flex flex-wrap items-center gap-3 flex-1">
+            <div class="relative flex-1 min-w-[220px]">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="text" name="search" value="{{ current_search }}" placeholder="Search subjects, senders, body text..." 
-                       class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500">
+                <input type="text" id="search-input" placeholder="Search subjects, senders, message body..." 
+                       class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 transition">
             </div>
 
             {% if summary.folders %}
-            <select name="folder" onchange="this.form.submit()" 
-                    class="px-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500">
+            <select id="folder-select"
+                    class="px-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 transition">
                 <option value="">All Mail Folders ({{ summary.folders|length }})</option>
                 {% for f in summary.folders %}
-                <option value="{{ f }}" {% if f == current_folder %}selected{% endif %}>{{ f }}</option>
+                <option value="{{ f }}">{{ f }}</option>
                 {% endfor %}
             </select>
             {% endif %}
 
-            <button type="submit" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-purple-600 hover:bg-purple-500 text-white transition">
-                Filter
-            </button>
-            {% if current_search or current_folder %}
-            <a href="{% url 'q_mail:detail' investigation.id %}" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200">
+            <button type="button" onclick="resetFilters()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition">
                 Reset
-            </a>
-            {% endif %}
-        </form>
+            </button>
+        </div>
 
         <div class="text-xs font-mono text-slate-400 dark:text-zinc-500">
-            Click any email row to open the reader
+            Click any row to open the forensic reader
         </div>
     </div>
 
@@ -205,24 +200,61 @@
 
     <!-- Tabulator Table Initialization & Progress Polling Script -->
     <script>
-        const tableData = {{ grid_data_json|safe }};
         let table = null;
+        let debounceTimer = null;
+
+        function applyFilters() {
+            if (table) {
+                table.setData();
+            }
+        }
+
+        function resetFilters() {
+            const search = document.getElementById('search-input');
+            const folder = document.getElementById('folder-select');
+            if (search) search.value = '';
+            if (folder) folder.value = '';
+            applyFilters();
+        }
 
         document.addEventListener("DOMContentLoaded", function() {
+            // Live Search with 300ms Debounce
+            document.getElementById('search-input')?.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(applyFilters, 300);
+            });
+
+            // Instant Folder Filter
+            document.getElementById('folder-select')?.addEventListener('change', function() {
+                applyFilters();
+            });
+
+            // Remote Paginated Tabulator Grid
             table = new Tabulator("#emails-table", {
-                data: tableData,
+                ajaxURL: "{% url 'q_mail:messages_api' investigation.id %}",
+                ajaxConfig: "GET",
+                ajaxParams: function() {
+                    return {
+                        search: document.getElementById('search-input')?.value || '',
+                        folder: document.getElementById('folder-select')?.value || '',
+                    };
+                },
+                pagination: true,
+                paginationMode: "remote",
+                paginationSize: 25,
+                paginationSizeSelector: [25, 50, 100, 250],
+                sortMode: "remote",
+                filterMode: "remote",
                 layout: "fitColumns",
                 responsiveLayout: "collapse",
-                pagination: "local",
-                paginationSize: 25,
-                paginationSizeSelector: [25, 50, 100, 200],
-                placeholder: "No emails match the current filters.",
+                placeholder: "No emails found matching your filters.",
                 columns: [
                     { title: "Sent Date (UTC)", field: "sent_date", width: 150, headerSort: true },
                     { 
                         title: "Sender", 
                         field: "sender", 
                         minWidth: 180,
+                        headerSort: true,
                         formatter: function(cell) {
                             return `<span class="font-semibold text-slate-900 dark:text-white">${cell.getValue()}</span>`;
                         }
@@ -231,6 +263,7 @@
                         title: "Subject", 
                         field: "subject", 
                         minWidth: 260,
+                        headerSort: true,
                         formatter: function(cell) {
                             const val = cell.getValue() || "(No Subject)";
                             return `<span class="text-slate-800 dark:text-zinc-200 hover:text-purple-400 cursor-pointer font-medium">${val}</span>`;
@@ -239,7 +272,8 @@
                     { 
                         title: "Folder", 
                         field: "folder", 
-                        width: 130,
+                        width: 140,
+                        headerSort: true,
                         formatter: function(cell) {
                             return `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">${cell.getValue()}</span>`;
                         }
@@ -249,6 +283,7 @@
                         field: "attachment_count", 
                         width: 80, 
                         hozAlign: "center",
+                        headerSort: true,
                         formatter: function(cell) {
                             const count = cell.getValue();
                             if (count > 0) {
@@ -261,6 +296,7 @@
                         title: "Action", 
                         width: 90, 
                         hozAlign: "center",
+                        headerSort: false,
                         formatter: function(cell) {
                             return `<button class="px-2.5 py-1 rounded bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-600 hover:text-white text-purple-600 dark:text-purple-400 text-[10px] font-bold transition cursor-pointer">Inspect</button>`;
                         }

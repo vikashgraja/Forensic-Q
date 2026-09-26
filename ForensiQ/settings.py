@@ -105,15 +105,35 @@ TEMPLATES = [
 WSGI_APPLICATION = "ForensiQ.wsgi.application"
 
 
-# Database
+# Database Configuration (SQLite for Dev, MSSQL for Production)
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
+DB_ENGINE = os.environ.get("DB_ENGINE", "sqlite3").strip().lower()
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if DB_ENGINE in ("mssql", "mssql-django", "sqlserver"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "mssql",
+            "NAME": os.environ.get("DB_NAME", "ForensiQ_Audit"),
+            "USER": os.environ.get("DB_USER", "sa"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+            "HOST": os.environ.get("DB_HOST", "localhost"),
+            "PORT": os.environ.get("DB_PORT", "1433"),
+            "OPTIONS": {
+                "driver": os.environ.get("DB_DRIVER", "ODBC Driver 18 for SQL Server"),
+                "extra_params": os.environ.get("DB_EXTRA_PARAMS", "TrustServerCertificate=yes"),
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+            "OPTIONS": {
+                "timeout": 60,
+            },
+        }
+    }
 
 
 # Password validation

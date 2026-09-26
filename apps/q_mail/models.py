@@ -111,7 +111,10 @@ class EmailMessage(ForensicBaseModel):
         ordering = ["-sent_date", "-created_at"]
         indexes = [
             models.Index(fields=["mailbox", "-sent_date"]),
-            models.Index(fields=["mailbox", "risk_score"]),
+            models.Index(fields=["mailbox", "folder_path", "-sent_date"]),
+            models.Index(fields=["mailbox", "sender_email", "-sent_date"]),
+            models.Index(fields=["mailbox", "has_attachments", "-sent_date"]),
+            models.Index(fields=["mailbox", "risk_score", "-sent_date"]),
         ]
         verbose_name = "Email Message"
         verbose_name_plural = "Email Messages"

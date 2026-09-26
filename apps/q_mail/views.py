@@ -16,9 +16,9 @@ from loguru import logger
 from .models import EmailAttachment, MailboxInvestigation
 from .selectors import (
     get_email_detail,
-    get_investigation_emails,
     get_investigation_summary_metrics,
     get_mailbox_progress_state,
+    get_paginated_investigation_emails,
     get_top_counterparties,
     list_mailbox_investigations,
 )
@@ -155,43 +155,55 @@ def progress_api_view(request: HttpRequest, mailbox_id: str) -> JsonResponse:
 
 
 @require_GET
+def messages_api_view(request: HttpRequest, mailbox_id: str) -> JsonResponse:
+    """
+    High-performance paginated API endpoint for Tabulator.js data grid.
+    Supports server-side pagination, remote sorting, and multi-field search.
+    """
+    page = int(request.GET.get("page", 1))
+    page_size = int(request.GET.get("size", 25))
+    search = request.GET.get("search", "").strip()
+    folder = request.GET.get("folder", "").strip()
+    sender = request.GET.get("sender", "").strip()
+
+    has_attachments_val = request.GET.get("has_attachments")
+    has_attachments = (
+        True
+        if has_attachments_val in ("true", "1")
+        else (False if has_attachments_val in ("false", "0") else None)
+    )
+
+    # Handle Tabulator sort params (e.g. sort[0][field]=sent_date&sort[0][dir]=desc or sort=sent_date)
+    sort_field = (
+        request.GET.get("sort[0][field]")
+        or request.GET.get("sort_by")
+        or request.GET.get("sort")
+        or "sent_date"
+    )
+    sort_dir = request.GET.get("sort[0][dir]") or request.GET.get("dir") or "desc"
+
+    result = get_paginated_investigation_emails(
+        mailbox_id,
+        page=page,
+        page_size=page_size,
+        search=search,
+        folder=folder,
+        sender=sender,
+        has_attachments=has_attachments,
+        sort_field=sort_field,
+        sort_dir=sort_dir,
+    )
+
+    return JsonResponse(result)
+
+
+@require_GET
 def investigation_detail_view(request: HttpRequest, mailbox_id: str) -> HttpResponse:
     """
     Investigation Workstation: Tabulator.js email grid, Plotly counterparty charts, and evidence filters.
     """
     summary = get_investigation_summary_metrics(mailbox_id)
     inv = summary["investigation"]
-
-    # Fetch emails
-    search = request.GET.get("search", "")
-    folder = request.GET.get("folder", "")
-    sender = request.GET.get("sender", "")
-
-    emails = get_investigation_emails(
-        mailbox_id,
-        search=search,
-        folder=folder,
-        sender=sender,
-        limit=2000,
-    )
-
-    # Format data for Tabulator.js
-    grid_rows = []
-    for m in emails:
-        grid_rows.append(
-            {
-                "id": str(m.id),
-                "sent_date": m.sent_date.strftime("%Y-%m-%d %H:%M") if m.sent_date else "N/A",
-                "sender": m.sender_name or m.sender_email,
-                "sender_email": m.sender_email,
-                "subject": m.subject,
-                "folder": m.folder_path.split("/")[-1] if m.folder_path else "Inbox",
-                "has_attachments": m.has_attachments,
-                "attachment_count": m.attachment_count,
-                "risk_score": m.risk_score,
-                "risk_level": m.risk_level,
-            }
-        )
 
     # Plotly Top Counterparties Bar Chart
     top_participants = get_top_counterparties(mailbox_id, limit=8)
@@ -222,10 +234,7 @@ def investigation_detail_view(request: HttpRequest, mailbox_id: str) -> HttpResp
         {
             "investigation": inv,
             "summary": summary,
-            "grid_data_json": json.dumps(grid_rows),
             "chart_html": chart_html,
-            "current_search": search,
-            "current_folder": folder,
         },
     )
 
