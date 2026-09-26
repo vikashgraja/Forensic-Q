@@ -1,9 +1,10 @@
 # Django Architecture & Code Style Rules
 
-## 1. Domain Separation (Services & Selectors)
+## 1. Domain Separation (4-Tier Architecture)
+- **`backend/`**: Dedicated forensic analysis scripts, parsers, classifiers, and algorithmic calculations. Kept independent from Django web request lifecycles.
 - **`models.py`**: Clean declarative models inheriting from `core.models.ForensicBaseModel`. Implement `__str__()` on all models. No complex business logic in `save()`.
 - **`selectors.py`**: All read-only database queries. Always eliminate N+1 queries with `select_related()` and `prefetch_related()`. No database writes in selectors.
-- **`services.py`**: All business logic, scoring, file ingestion, and mutations. Decorate multi-model writes with `@transaction.atomic`.
+- **`services.py`**: All business workflows, file ingestion orchestration, and mutations calling `backend/`. Decorate multi-model writes with `@transaction.atomic`.
 - **`views.py`**: Thin controllers. Only parse HTTP requests, invoke selectors/services, and render Cotton templates or JSON.
 
 ## 2. Django Cotton Template Guidelines

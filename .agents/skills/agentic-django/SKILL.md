@@ -18,6 +18,8 @@ Every forensic analytical app (`apps/q_*`) must separate reads, writes, and pres
 
 ```
 apps/q_example/
+├── backend/         # Dedicated forensic analysis scripts, parsers, algorithms
+│   └── __init__.py
 ├── models.py        # Declarative schema (Matches SCHEMA.md & dbdiagram.io)
 ├── selectors.py     # Read-only queries (Proactive select_related / prefetch_related)
 ├── services.py      # Business logic & mutations (Pure functions, @transaction.atomic)
