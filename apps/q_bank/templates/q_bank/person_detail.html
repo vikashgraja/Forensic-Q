@@ -100,42 +100,8 @@
         </div>
     </div>
 
-    <!-- Section 1: Data Overview (Main Forensic Ledger Table) -->
-    <div class="mb-8 bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-table-list text-emerald-400"></i>
-                    <span>Data Overview ({{ view_metrics.total_transactions }} Transactions)</span>
-                </h3>
-                <p class="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-                    {% if selected_account %}
-                        Displaying records for <strong>{{ selected_account.bank_name }}</strong> (Acc: {{ selected_account.account_number|default:"N/A" }}).
-                    {% else %}
-                        Displaying aggregate records across all <strong>{{ accounts|length }}</strong> bank statement files.
-                    {% endif %}
-                </p>
-            </div>
-
-            <!-- Global Search & Controls for Tabulator -->
-            <div class="flex items-center gap-2 w-full md:w-auto">
-                <div class="relative flex-1 md:w-72">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                    <input type="text" id="overview-search" placeholder="Search transactions, entities, UTR..." 
-                           class="w-full pl-8 pr-4 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-emerald-500">
-                </div>
-                <button id="overview-reset" class="px-3 py-1.5 text-xs rounded-xl bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
-                    Reset
-                </button>
-            </div>
-        </div>
-
-        <!-- Tabulator Main Table -->
-        <div id="overview-grid" class="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 text-xs"></div>
-    </div>
-
-    <!-- Section 2: Streamlit-Style Forensic Analysis Tabs (st.tab Component) -->
-    <div x-data="bankAnalysisTabs()" class="bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden mb-10">
+    <!-- Forensic Analysis Tabs (st.tab Component) -->
+    <div x-data="bankAnalysisTabs()" class="bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden mb-8">
         
         <!-- Streamlit Tab Header Navigation Bar -->
         <div class="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/50 px-5 pt-3">
@@ -674,6 +640,69 @@
         </div>
     </div>
 
+    <!-- Collapsible Section: Data Overview (Main Forensic Ledger Table) -->
+    <div x-data="{ 
+            isExpanded: false,
+            toggle() {
+                this.isExpanded = !this.isExpanded;
+                if (this.isExpanded) {
+                    this.$nextTick(() => {
+                        loadOverviewTable();
+                        setTimeout(() => { if (window.overviewTable) window.overviewTable.redraw(true); }, 80);
+                    });
+                }
+            }
+         }" 
+         class="mb-10 bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden transition-all">
+        
+        <!-- Header Bar: Click to Expand / Collapse -->
+        <button type="button" 
+                @click="toggle()" 
+                class="w-full flex items-center justify-between p-5 text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition select-none">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-table-list"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>Data Overview ({{ view_metrics.total_transactions }} Transactions)</span>
+                </h3>
+            </div>
+
+            <!-- Dropdown / Caret Icon -->
+            <div class="flex items-center gap-2 text-slate-400">
+                <i class="fa-solid fa-chevron-down text-sm transition-transform duration-200" :class="{ 'rotate-180': isExpanded }"></i>
+            </div>
+        </button>
+
+        <!-- Collapsible Content Body -->
+        <div x-show="isExpanded" x-cloak class="p-5 pt-0 border-t border-slate-200 dark:border-zinc-800 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-4 pt-4">
+                <p class="text-xs text-slate-500 dark:text-zinc-400">
+                    {% if selected_account %}
+                        Displaying records for <strong>{{ selected_account.bank_name }}</strong> (Acc: {{ selected_account.account_number|default:"N/A" }}).
+                    {% else %}
+                        Displaying aggregate records across all <strong>{{ accounts|length }}</strong> bank statement files.
+                    {% endif %}
+                </p>
+
+                <!-- Global Search & Controls for Tabulator -->
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <div class="relative flex-1 md:w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" id="overview-search" placeholder="Search transactions, entities, UTR..." 
+                               class="w-full pl-8 pr-4 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <button id="overview-reset" class="px-3 py-1.5 text-xs rounded-xl bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabulator Main Table -->
+            <div id="overview-grid" class="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 text-xs"></div>
+        </div>
+    </div>
+
     <!-- Upload Additional Statement Modal for this Person -->
     <div id="upload-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
         <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 relative">
@@ -827,9 +856,18 @@
         };
     }
 
-    // Initialize Main Tabulator Data Grid for Data Overview
-    document.addEventListener('DOMContentLoaded', function() {
-        const table = new Tabulator("#overview-grid", {
+    // Tabulator Data Grid for Data Overview (Initialized on first expand)
+    let overviewTable = null;
+
+    function loadOverviewTable() {
+        if (overviewTable) {
+            overviewTable.redraw(true);
+            return;
+        }
+        const gridEl = document.getElementById("overview-grid");
+        if (!gridEl) return;
+
+        overviewTable = new Tabulator("#overview-grid", {
             ajaxURL: "{% url 'q_bank:transactions_api' %}",
             ajaxParams: { 
                 person_id: "{{ person.id }}"{% if selected_account_id %},
@@ -875,6 +913,8 @@
             ]
         });
 
+        window.overviewTable = overviewTable;
+
         // Search Filter
         let searchTimeout;
         const searchInput = document.getElementById('overview-search');
@@ -882,7 +922,7 @@
             searchInput.addEventListener('input', function(e) {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
-                    table.setData("{% url 'q_bank:transactions_api' %}", {
+                    overviewTable.setData("{% url 'q_bank:transactions_api' %}", {
                         person_id: "{{ person.id }}"{% if selected_account_id %},
                         account_id: "{{ selected_account_id }}"{% endif %},
                         search: e.target.value
@@ -896,12 +936,12 @@
         if (resetBtn) {
             resetBtn.addEventListener('click', function() {
                 if (searchInput) searchInput.value = '';
-                table.setData("{% url 'q_bank:transactions_api' %}", {
+                overviewTable.setData("{% url 'q_bank:transactions_api' %}", {
                     person_id: "{{ person.id }}"{% if selected_account_id %},
                     account_id: "{{ selected_account_id }}"{% endif %}
                 });
             });
         }
-    });
+    }
     </script>
 </c-base>
