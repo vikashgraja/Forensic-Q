@@ -4,34 +4,96 @@
     <span>{{ table_data.error }}</span>
 </div>
 {% elif table_data.rows %}
-<div class="overflow-x-auto max-h-[500px] rounded-xl border border-theme-border scrollbar-thin">
-    <table class="w-full text-left text-xs border-collapse">
-        <thead class="sticky top-0 bg-theme-app border-b border-theme-border z-10">
-            <tr>
-                {% for col in table_data.columns %}
-                <th class="py-2.5 px-3 font-bold uppercase tracking-wider text-[11px] text-theme-muted whitespace-nowrap">
-                    {{ col.title }}
-                </th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-theme-border/60 bg-theme-surface">
-            {% for row in table_data.rows %}
-            <tr class="hover:bg-theme-subtle/50 transition">
-                {% for col in table_data.columns %}
-                <td class="py-2 px-3 text-theme-text whitespace-nowrap text-xs font-mono">
-                    {% for key, val in row.items %}
-                        {% if key == col.field %}
-                            {{ val }}
-                        {% endif %}
+<div x-data="tableSort({{ table_data.rows|safe }})" class="space-y-0">
+    <div class="overflow-x-auto max-h-[500px] rounded-xl border border-theme-border scrollbar-thin">
+        <table class="w-full text-left text-xs border-collapse">
+            <thead class="sticky top-0 bg-theme-app border-b border-theme-border z-10">
+                <tr>
+                    {% for col in table_data.columns %}
+                    <th @click="sort('{{ col.field }}')"
+                        class="py-2.5 px-3 font-bold uppercase tracking-wider text-[11px] text-theme-muted whitespace-nowrap cursor-pointer select-none hover:text-amber-400 transition group">
+                        <span class="inline-flex items-center gap-1">
+                            {{ col.title }}
+                            <span x-text="sortIcon('{{ col.field }}')" class="text-amber-500 text-[10px] opacity-0 group-hover:opacity-60 transition-opacity" :class="sortCol === '{{ col.field }}' && sortDir !== 0 ? '!opacity-100' : ''"></span>
+                        </span>
+                    </th>
                     {% endfor %}
-                </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-theme-border/60 bg-theme-surface">
+                <template x-for="(row, idx) in sortedRows" :key="idx">
+                    <tr class="hover:bg-theme-subtle/50 transition">
+                        {% for col in table_data.columns %}
+                        <td class="py-2 px-3 text-theme-text whitespace-nowrap text-xs font-mono"
+                            x-text="row['{{ col.field }}']"></td>
+                        {% endfor %}
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<script>
+if (typeof window._tableSortDefined === 'undefined') {
+    window._tableSortDefined = true;
+
+    function tableSort(rows) {
+        return {
+            originalRows: JSON.parse(JSON.stringify(rows)),
+            sortedRows: JSON.parse(JSON.stringify(rows)),
+            sortCol: null,
+            sortDir: 0,  // 0 = unsorted, 1 = ascending, 2 = descending
+
+            sort(field) {
+                if (this.sortCol === field) {
+                    this.sortDir = (this.sortDir + 1) % 3;
+                } else {
+                    this.sortCol = field;
+                    this.sortDir = 1;
+                }
+
+                if (this.sortDir === 0) {
+                    this.sortedRows = JSON.parse(JSON.stringify(this.originalRows));
+                    return;
+                }
+
+                const dir = this.sortDir === 1 ? 1 : -1;
+                const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+                this.sortedRows = JSON.parse(JSON.stringify(this.originalRows)).sort((a, b) => {
+                    let va = a[field];
+                    let vb = b[field];
+
+                    // Handle dash/null values — push to end
+                    if (va === '—' || va === null || va === undefined) return 1;
+                    if (vb === '—' || vb === null || vb === undefined) return -1;
+
+                    // Try numeric comparison
+                    const na = parseFloat(String(va).replace(/,/g, ''));
+                    const nb = parseFloat(String(vb).replace(/,/g, ''));
+                    if (!isNaN(na) && !isNaN(nb)) {
+                        return (na - nb) * dir;
+                    }
+
+                    // Try date comparison (YYYY-MM-DD)
+                    if (dateRegex.test(String(va)) && dateRegex.test(String(vb))) {
+                        return (new Date(va) - new Date(vb)) * dir;
+                    }
+
+                    // Fallback: lexicographic text comparison
+                    return String(va).localeCompare(String(vb)) * dir;
+                });
+            },
+
+            sortIcon(field) {
+                if (this.sortCol !== field || this.sortDir === 0) return '⇅';
+                return this.sortDir === 1 ? '▲' : '▼';
+            }
+        };
+    }
+}
+</script>
 {% else %}
 <div class="p-8 text-center bg-theme-app/30 rounded-xl border border-dashed border-theme-border">
     <i class="fa-solid fa-check-circle text-2xl text-emerald-500 mb-2 block"></i>
