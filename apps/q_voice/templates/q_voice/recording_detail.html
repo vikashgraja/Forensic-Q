@@ -153,7 +153,7 @@
                 </a>
 
                 <!-- Standard ForensiQ Primary Action Button -->
-                <button type="button" @click="$dispatch('open-voice-modal')"
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-voice-modal'))"
                     class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5 cursor-pointer">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
                     <span>Import Audio Recording</span>
