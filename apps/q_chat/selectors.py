@@ -9,6 +9,7 @@ from typing import Any
 from django.core.paginator import Paginator
 from django.db.models import Count, Max, Min, Q, QuerySet
 
+from .backend.chat_parser import is_whatsapp_system_message
 from .models import ChatChannel, ChatMessage
 
 
@@ -30,6 +31,7 @@ def get_chat_dashboard_metrics() -> dict[str, Any]:
 
     top_flagged_senders = list(
         ChatMessage.objects.filter(risk_score__gte=50)
+        .exclude(sender_name__in=["System", "system", "WhatsApp", "whatsapp"])
         .values("sender_name")
         .annotate(flagged_count=Count("id"))
         .order_by("-flagged_count")[:6]
@@ -74,9 +76,11 @@ def get_paginated_chat_messages(
     media_only: bool = False,
     deleted_only: bool = False,
     sort_dir: str = "asc",  # 'asc' for chronological chat stream, 'desc' for latest first
+    right_sender: str = "",
 ) -> dict[str, Any]:
     """
     Retrieves paginated messages for a specific channel with flexible filters.
+    Consistently assigns left vs right side per participant, and isolates system disclaimers.
     """
     qs = ChatMessage.objects.filter(channel_id=channel_id)
 
@@ -99,15 +103,63 @@ def get_paginated_chat_messages(
     order_prefix = "-" if sort_dir.lower() == "desc" else ""
     qs = qs.order_by(f"{order_prefix}sent_at", f"{order_prefix}created_at")
 
+    # Determine which participant should appear on the right side
+    if not right_sender:
+        try:
+            channel = ChatChannel.objects.get(id=channel_id)
+            # 1. Check if channel custodian matches a participant
+            if channel.custodian_name:
+                cust_clean = channel.custodian_name.strip().lower()
+                for p in channel.participants:
+                    if p.strip().lower() == cust_clean or cust_clean in p.strip().lower():
+                        right_sender = p
+                        break
+
+            # 2. If no custodian match, pick 2nd participant in chronological appearance
+            if not right_sender:
+                first_senders = list(
+                    ChatMessage.objects.filter(channel_id=channel_id)
+                    .exclude(sender_name__in=["System", "system", "WhatsApp", "whatsapp"])
+                    .order_by("sent_at", "created_at")
+                    .values_list("sender_name", flat=True)
+                )
+                ordered_participants: list[str] = []
+                for s_name in first_senders:
+                    if (
+                        s_name
+                        and s_name not in ordered_participants
+                        and not is_whatsapp_system_message(s_name)
+                    ):
+                        ordered_participants.append(s_name)
+
+                if len(ordered_participants) >= 2:
+                    # In standard chat view: Person 1 is on the left (initiator/contact),
+                    # Person 2 is on the right (responder/account holder)
+                    right_sender = ordered_participants[1]
+        except Exception:
+            right_sender = ""
+
     paginator = Paginator(qs, page_size)
     page_obj = paginator.get_page(page)
 
     rows = []
     for msg in page_obj:
+        is_sys = (
+            msg.sender_name.lower() in ("system", "whatsapp")
+            or (isinstance(msg.raw_payload, dict) and msg.raw_payload.get("is_system", False))
+            or is_whatsapp_system_message(msg.message_text)
+            or is_whatsapp_system_message(msg.sender_name)
+        )
+        is_right = (
+            (not is_sys)
+            and bool(right_sender)
+            and (msg.sender_name.strip().lower() == right_sender.strip().lower())
+        )
+
         rows.append(
             {
                 "id": str(msg.id),
-                "sender_name": msg.sender_name,
+                "sender_name": "System" if is_sys else msg.sender_name,
                 "sender_handle": msg.sender_handle,
                 "sent_at": msg.sent_at.strftime("%d %b %Y, %H:%M:%S") if msg.sent_at else "-",
                 "sent_time": msg.sent_at.strftime("%H:%M") if msg.sent_at else "-",
@@ -118,8 +170,10 @@ def get_paginated_chat_messages(
                 "media_filename": msg.media_filename,
                 "is_deleted": msg.is_deleted,
                 "is_edited": msg.is_edited,
-                "risk_score": msg.risk_score,
-                "flagged_terms": msg.flagged_terms,
+                "risk_score": 0 if is_sys else msg.risk_score,
+                "flagged_terms": [] if is_sys else msg.flagged_terms,
+                "is_system": is_sys,
+                "is_right_side": is_right,
             }
         )
 
@@ -130,15 +184,18 @@ def get_paginated_chat_messages(
         "current_page": page_obj.number,
         "has_next": page_obj.has_next(),
         "has_previous": page_obj.has_previous(),
+        "right_sender": right_sender,
     }
 
 
 def get_chat_participants_summary(channel_id: str | uuid.UUID) -> list[dict[str, Any]]:
     """
     Summarizes participants in a channel with message counts and flagged message counts.
+    Excludes automated system and disclaimer messages.
     """
     raw_participants = (
         ChatMessage.objects.filter(channel_id=channel_id)
+        .exclude(sender_name__in=["System", "system", "WhatsApp", "whatsapp"])
         .values("sender_name")
         .annotate(
             total_msgs=Count("id"),
@@ -152,6 +209,10 @@ def get_chat_participants_summary(channel_id: str | uuid.UUID) -> list[dict[str,
 
     results = []
     for p in raw_participants:
+        # Ignore if sender name itself looks like a system notice
+        if is_whatsapp_system_message(p["sender_name"]):
+            continue
+
         results.append(
             {
                 "sender_name": p["sender_name"],

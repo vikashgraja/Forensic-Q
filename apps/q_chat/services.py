@@ -42,7 +42,14 @@ def ingest_chat_export_file(
         raise ValueError("No valid chat messages could be extracted from the uploaded file.")
 
     auto_channel_name = channel_name.strip() or f"Chat Export - {filename}"
-    unique_senders = list({m["sender_name"] for m in parsed_messages if m["sender_name"]})
+
+    # Collect human participants preserving chronological first-seen appearance
+    seen_senders: dict[str, bool] = {}
+    for m in parsed_messages:
+        s = m["sender_name"].strip()
+        if s and s.lower() not in ("system", "whatsapp") and not m.get("is_system", False):
+            seen_senders[s] = True
+    unique_senders = list(seen_senders.keys())
     is_dm = len(unique_senders) <= 2
 
     with transaction.atomic():
@@ -61,15 +68,20 @@ def ingest_chat_export_file(
         max_risk = 0
 
         for m in parsed_messages:
-            if m["risk_score"] >= 50:
-                flagged_count += 1
-            if m["risk_score"] > max_risk:
-                max_risk = m["risk_score"]
+            is_sys = m.get("is_system", False) or m["sender_name"].lower() in (
+                "system",
+                "whatsapp",
+            )
+            if not is_sys:
+                if m["risk_score"] >= 50:
+                    flagged_count += 1
+                if m["risk_score"] > max_risk:
+                    max_risk = m["risk_score"]
 
             message_objs.append(
                 ChatMessage(
                     channel=channel,
-                    sender_name=m["sender_name"],
+                    sender_name="System" if is_sys else m["sender_name"],
                     sender_handle=m.get("sender_handle", ""),
                     sent_at=m["sent_at"],
                     message_text=m["message_text"],
@@ -78,8 +90,9 @@ def ingest_chat_export_file(
                     media_filename=m.get("media_filename", ""),
                     is_deleted=m.get("is_deleted", False),
                     is_edited=m.get("is_edited", False),
-                    risk_score=m.get("risk_score", 0),
-                    flagged_terms=m.get("flagged_terms", []),
+                    risk_score=0 if is_sys else m.get("risk_score", 0),
+                    flagged_terms=[] if is_sys else m.get("flagged_terms", []),
+                    raw_payload={"is_system": is_sys},
                 )
             )
 

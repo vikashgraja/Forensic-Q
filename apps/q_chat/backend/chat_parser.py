@@ -65,7 +65,44 @@ def screen_message_text(
     return risk_score, flagged
 
 
-# WhatsApp Timestamp Patterns
+SYSTEM_MESSAGE_INDICATORS = [
+    "end-to-end encrypted",
+    "end-to-end encryption",
+    "secured with end-to-end encryption",
+    "is a contact.",
+    "is a contact",
+    "is not in your contacts",
+    "added to your contacts",
+    "tap to view contact details",
+    "security code changed",
+    "your security code with",
+    "this chat is with an official business account",
+    "this chat is with a business account",
+    "created group",
+    "added you to",
+    "changed the group description",
+    "changed this group's icon",
+    "changed the subject to",
+    "left the group",
+    "removed from the group",
+    "you're now an admin",
+    "disappearing messages were turned",
+    "waiting for this message. this may take a while",
+]
+
+
+def is_whatsapp_system_message(text: str) -> bool:
+    """
+    Detects automated WhatsApp disclaimer, security, encryption, and contact notification banners.
+    """
+    if not text:
+        return False
+    # Strip invisible unicode formatting marks
+    clean = text.replace("\u200e", "").replace("\u200f", "").strip().lower()
+    return any(indicator in clean for indicator in SYSTEM_MESSAGE_INDICATORS)
+
+
+# WhatsApp Timestamp Patterns with Sender (colon separated)
 WHATSAPP_PATTERNS = [
     # 24/04/2024, 14:32 - Sender: Message
     re.compile(
@@ -78,6 +115,22 @@ WHATSAPP_PATTERNS = [
     # 24.04.2024, 14:32 - Sender: Message
     re.compile(
         r"^(\d{1,2}\.\d{1,2}\.\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\s*[-–]\s*(.*?):\s*(.*)$"
+    ),
+]
+
+# WhatsApp Timestamp Patterns WITHOUT Sender (System disclaimers)
+WHATSAPP_SYSTEM_PATTERNS = [
+    # 24/04/2024, 14:32 - System message
+    re.compile(
+        r"^(\d{1,2}/\d{1,2}/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\s*[-–]\s*(.*)$"
+    ),
+    # [24/04/24, 14:32:10] System message
+    re.compile(
+        r"^\[(\d{1,2}/\d{1,2}/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\]\s*(.*)$"
+    ),
+    # 24.04.2024, 14:32 - System message
+    re.compile(
+        r"^(\d{1,2}\.\d{1,2}\.\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\s*[-–]\s*(.*)$"
     ),
 ]
 
@@ -109,17 +162,19 @@ def parse_whatsapp_export(content: str) -> list[dict[str, Any]]:
     """
     Parses a raw WhatsApp exported text file into structured messages.
     Supports multi-line messages, media attachment tags, and deleted flags.
+    Recognizes system disclaimers and separates them from user chat bubbles.
     """
     lines = content.splitlines()
     messages: list[dict[str, Any]] = []
     current_msg: dict[str, Any] | None = None
 
     for line in lines:
-        line_clean = line.strip()
+        line_clean = line.strip().replace("\u200e", "").replace("\u200f", "")
         if not line_clean:
             continue
 
         matched = False
+        # 1. Try standard pattern (with sender and colon)
         for pat in WHATSAPP_PATTERNS:
             m = pat.match(line_clean)
             if m:
@@ -131,6 +186,11 @@ def parse_whatsapp_export(content: str) -> list[dict[str, Any]]:
                 dt = parse_whatsapp_datetime(date_part, time_part)
                 sender = sender_part.strip()
                 text = text_part.strip()
+
+                # Check if this message is actually a system/disclaimer message
+                is_system = is_whatsapp_system_message(text) or is_whatsapp_system_message(sender)
+                if is_system:
+                    sender = "System"
 
                 # Detect media attachments
                 has_media = False
@@ -160,7 +220,7 @@ def parse_whatsapp_export(content: str) -> list[dict[str, Any]]:
                 ):
                     is_deleted = True
 
-                score, flagged = screen_message_text(text)
+                score, flagged = (0, []) if is_system else screen_message_text(text)
 
                 current_msg = {
                     "sender_name": sender,
@@ -172,17 +232,68 @@ def parse_whatsapp_export(content: str) -> list[dict[str, Any]]:
                     "media_filename": media_fn,
                     "is_deleted": is_deleted,
                     "is_edited": False,
+                    "is_system": is_system,
                     "risk_score": score,
                     "flagged_terms": flagged,
                 }
                 break
 
+        # 2. Try system pattern (timestamped system lines without sender colon)
+        if not matched:
+            for pat in WHATSAPP_SYSTEM_PATTERNS:
+                m = pat.match(line_clean)
+                if m:
+                    date_part, time_part, text_part = m.groups()
+                    text = text_part.strip()
+                    if is_whatsapp_system_message(text):
+                        matched = True
+                        if current_msg:
+                            messages.append(current_msg)
+
+                        dt = parse_whatsapp_datetime(date_part, time_part)
+                        current_msg = {
+                            "sender_name": "System",
+                            "sender_handle": "",
+                            "sent_at": dt,
+                            "message_text": text,
+                            "has_media": False,
+                            "media_type": "NONE",
+                            "media_filename": "",
+                            "is_deleted": False,
+                            "is_edited": False,
+                            "is_system": True,
+                            "risk_score": 0,
+                            "flagged_terms": [],
+                        }
+                        break
+
+        # 3. Check for standalone un-timestamped system banner at the top of file
+        if not matched and not current_msg and is_whatsapp_system_message(line_clean):
+            current_msg = {
+                "sender_name": "System",
+                "sender_handle": "",
+                "sent_at": datetime.now(UTC),
+                "message_text": line_clean,
+                "has_media": False,
+                "media_type": "NONE",
+                "media_filename": "",
+                "is_deleted": False,
+                "is_edited": False,
+                "is_system": True,
+                "risk_score": 0,
+                "flagged_terms": [],
+            }
+            messages.append(current_msg)
+            current_msg = None
+            continue
+
+        # 4. Continuation of previous message (multi-line message)
         if not matched and current_msg:
-            # Continuation of previous message (multi-line message)
             current_msg["message_text"] += "\n" + line_clean
-            score, flagged = screen_message_text(current_msg["message_text"])
-            current_msg["risk_score"] = score
-            current_msg["flagged_terms"] = flagged
+            if not current_msg.get("is_system"):
+                score, flagged = screen_message_text(current_msg["message_text"])
+                current_msg["risk_score"] = score
+                current_msg["flagged_terms"] = flagged
 
     if current_msg:
         messages.append(current_msg)
@@ -234,7 +345,13 @@ def parse_json_export(content: str) -> list[dict[str, Any]]:
         else:
             dt = datetime.now(UTC)
 
-        score, flagged = screen_message_text(text)
+        is_system = is_whatsapp_system_message(text) or sender.lower() in ("system", "whatsapp")
+        if is_system:
+            sender = "System"
+            score, flagged = 0, []
+        else:
+            score, flagged = screen_message_text(text)
+
         has_media = bool(
             item.get("has_media")
             or item.get("file")
@@ -254,6 +371,7 @@ def parse_json_export(content: str) -> list[dict[str, Any]]:
                 "media_filename": item.get("file_name") or "",
                 "is_deleted": bool(item.get("is_deleted")),
                 "is_edited": bool(item.get("is_edited") or item.get("edited")),
+                "is_system": is_system,
                 "risk_score": score,
                 "flagged_terms": flagged,
             }
@@ -301,7 +419,13 @@ def parse_csv_export(content: str) -> list[dict[str, Any]]:
         except (ValueError, TypeError):
             dt = datetime.now(UTC)
 
-        score, flagged = screen_message_text(text)
+        is_system = is_whatsapp_system_message(text) or sender.lower() in ("system", "whatsapp")
+        if is_system:
+            sender = "System"
+            score, flagged = 0, []
+        else:
+            score, flagged = screen_message_text(text)
+
         messages.append(
             {
                 "sender_name": sender,
@@ -322,6 +446,7 @@ def parse_csv_export(content: str) -> list[dict[str, Any]]:
                     row_norm.get("is_edited")
                     and row_norm.get("is_edited").lower() in ("true", "1", "yes")
                 ),
+                "is_system": is_system,
                 "risk_score": score,
                 "flagged_terms": flagged,
             }

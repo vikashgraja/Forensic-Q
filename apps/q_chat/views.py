@@ -51,6 +51,7 @@ def channel_detail_view(request: HttpRequest, channel_id: str) -> HttpResponse:
     flagged_only = request.GET.get("flagged") == "1"
     media_only = request.GET.get("media") == "1"
     deleted_only = request.GET.get("deleted") == "1"
+    right_sender = request.GET.get("right", "").strip() or request.GET.get("me", "").strip()
     page = int(request.GET.get("page", 1))
 
     msg_data = get_paginated_chat_messages(
@@ -63,6 +64,7 @@ def channel_detail_view(request: HttpRequest, channel_id: str) -> HttpResponse:
         media_only=media_only,
         deleted_only=deleted_only,
         sort_dir="asc",
+        right_sender=right_sender,
     )
 
     context = {
@@ -74,6 +76,7 @@ def channel_detail_view(request: HttpRequest, channel_id: str) -> HttpResponse:
         "flagged_only": flagged_only,
         "media_only": media_only,
         "deleted_only": deleted_only,
+        "right_sender": msg_data.get("right_sender", ""),
     }
     return render(request, "q_chat/channel_detail.html", context)
 
@@ -141,6 +144,7 @@ def messages_api_view(request: HttpRequest, channel_id: str) -> JsonResponse:
     media_only = request.GET.get("media") in ("1", "true")
     deleted_only = request.GET.get("deleted") in ("1", "true")
     sort_dir = request.GET.get("dir", "asc")
+    right_sender = request.GET.get("right", "").strip() or request.GET.get("me", "").strip()
 
     result = get_paginated_chat_messages(
         channel_id,
@@ -152,5 +156,6 @@ def messages_api_view(request: HttpRequest, channel_id: str) -> JsonResponse:
         media_only=media_only,
         deleted_only=deleted_only,
         sort_dir=sort_dir,
+        right_sender=right_sender,
     )
     return JsonResponse(result)

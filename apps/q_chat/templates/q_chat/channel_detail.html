@@ -92,10 +92,22 @@
             <div class="bg-slate-50 dark:bg-zinc-950/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6 min-h-[500px] max-h-[700px] overflow-y-auto space-y-4 shadow-inner">
                 {% if messages_data.data %}
                     {% for msg in messages_data.data %}
-                    <div class="flex flex-col {% if forloop.counter|divisibleby:2 %}items-end{% else %}items-start{% endif %}">
+                    {% if msg.is_system %}
+                    <!-- Centered System Disclaimer / Notification Notice -->
+                    <div class="flex justify-center my-3 w-full">
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-200/80 dark:bg-zinc-800/80 border border-slate-300 dark:border-zinc-700/60 text-[11px] font-medium text-slate-600 dark:text-zinc-400 shadow-xs max-w-lg text-center">
+                            <i class="fa-solid fa-lock text-amber-500 text-[10px]"></i>
+                            <span class="select-text">{{ msg.message_text }}</span>
+                            {% if msg.sent_time and msg.sent_time != '-' %}
+                            <span class="text-[9px] font-mono text-slate-400 ml-1">({{ msg.sent_time }})</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="flex flex-col {% if msg.is_right_side %}items-end{% else %}items-start{% endif %}">
                         
                         <!-- Sender & Timestamp Sub-header -->
-                        <div class="flex items-center gap-2 mb-1 px-1">
+                        <div class="flex items-center gap-2 mb-1 px-1 {% if msg.is_right_side %}flex-row-reverse{% endif %}">
                             <span class="text-xs font-bold text-slate-700 dark:text-zinc-300">{{ msg.sender_name }}</span>
                             <span class="text-[10px] font-mono text-slate-400">{{ msg.sent_at }}</span>
                             {% if msg.is_deleted %}
@@ -113,10 +125,10 @@
                         <!-- Chat Message Bubble -->
                         <div class="max-w-xl rounded-2xl p-4 shadow-sm border text-xs leading-relaxed transition-all
                                     {% if msg.risk_score >= 50 %}
-                                        bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/50 text-slate-900 dark:text-zinc-100
+                                        bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/50 text-slate-900 dark:text-zinc-100 {% if msg.is_right_side %}rounded-tr-none{% else %}rounded-tl-none{% endif %}
                                     {% elif msg.is_deleted %}
-                                        bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/50 text-slate-600 dark:text-zinc-300 italic
-                                    {% elif forloop.counter|divisibleby:2 %}
+                                        bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/50 text-slate-600 dark:text-zinc-300 italic {% if msg.is_right_side %}rounded-tr-none{% else %}rounded-tl-none{% endif %}
+                                    {% elif msg.is_right_side %}
                                         bg-sky-600 text-white border-sky-500 rounded-tr-none
                                     {% else %}
                                         bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 rounded-tl-none
@@ -127,7 +139,7 @@
 
                             <!-- Media Attachment Preview Chip -->
                             {% if msg.has_media %}
-                            <div class="mt-2.5 pt-2 border-t {% if forloop.counter|divisibleby:2 and msg.risk_score < 50 %}border-sky-500/50{% else %}border-slate-200 dark:border-zinc-800{% endif %} flex items-center gap-2">
+                            <div class="mt-2.5 pt-2 border-t {% if msg.is_right_side and msg.risk_score < 50 %}border-sky-500/50{% else %}border-slate-200 dark:border-zinc-800{% endif %} flex items-center gap-2">
                                 <i class="fa-solid fa-paperclip text-xs"></i>
                                 <span class="font-mono text-[11px] font-semibold truncate">{{ msg.media_type }}: {{ msg.media_filename|default:"Attachment" }}</span>
                             </div>
@@ -147,6 +159,7 @@
                         </div>
 
                     </div>
+                    {% endif %}
                     {% endfor %}
                 {% else %}
                     <div class="py-16 text-center text-slate-400 text-xs font-mono">
@@ -171,11 +184,18 @@
 
                 <div class="space-y-3">
                     {% for p in participants %}
-                    <a href="?sender={{ p.sender_name|urlencode }}" 
+                    <a href="?sender={{ p.sender_name|urlencode }}{% if right_sender %}&right={{ right_sender|urlencode }}{% endif %}" 
                        class="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-800 hover:border-sky-500/50 transition block {% if selected_sender == p.sender_name %}ring-2 ring-sky-500{% endif %}">
                         <div class="flex items-center justify-between mb-1">
-                            <span class="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[140px]">{{ p.sender_name }}</span>
-                            <span class="text-[10px] font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">{{ p.total_msgs }} msgs</span>
+                            <span class="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[130px]">{{ p.sender_name }}</span>
+                            <div class="flex items-center gap-1.5">
+                                {% if right_sender == p.sender_name %}
+                                <span class="text-[9px] font-mono font-bold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">Right</span>
+                                {% else %}
+                                <span class="text-[9px] font-mono font-bold text-slate-400 bg-slate-500/10 px-1.5 py-0.5 rounded border border-slate-500/20">Left</span>
+                                {% endif %}
+                                <span class="text-[10px] font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">{{ p.total_msgs }} msgs</span>
+                            </div>
                         </div>
                         <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
                             <span>Flagged: <strong class="{% if p.flagged_msgs > 0 %}text-rose-400{% else %}text-emerald-400{% endif %}">{{ p.flagged_msgs }}</strong></span>
