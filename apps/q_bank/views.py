@@ -18,6 +18,7 @@ from .selectors import (
     fuzzy_search_transactions,
     get_all_audited_persons,
     get_all_bank_accounts,
+    get_all_statement_transactions,
     get_audited_person_by_id,
     get_bank_account_by_id,
     get_bank_dashboard_metrics,
@@ -87,6 +88,9 @@ def person_detail_view(request: HttpRequest, person_id: str) -> HttpResponse:
     yearwise = get_yearwise_breakdown(account_id=query_account_id, person_id=query_person_id)
     hyundai_details = get_hyundai_details(account_id=query_account_id, person_id=query_person_id)
     cdm_rows = get_cdm_transactions(account_id=query_account_id, person_id=query_person_id)
+    all_transactions = get_all_statement_transactions(
+        account_id=query_account_id, person_id=query_person_id
+    )
 
     # Calculate summary metrics for active view
     if selected_account:
@@ -127,6 +131,7 @@ def person_detail_view(request: HttpRequest, person_id: str) -> HttpResponse:
         },
         "frequent_entities": frequent_entities,
         "frequent_breakdown": frequent_breakdown,
+        "all_transactions": all_transactions,
         "yearwise": yearwise,
         "hyundai": hyundai_details,
         "cdm_rows": cdm_rows,

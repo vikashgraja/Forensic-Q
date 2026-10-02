@@ -426,6 +426,43 @@ def get_cdm_transactions(
     return rows
 
 
+def get_all_statement_transactions(
+    account_id: str | uuid.UUID | None = None,
+    person_id: str | uuid.UUID | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Retrieves all transactions for an account or person, normalized with formatted
+    amounts and dates, for analytical filtering in Tabulator or Alpine.js tables.
+    """
+    qs = BankTransaction.objects.all().order_by("-txn_date", "-created_at")
+    if account_id:
+        qs = qs.filter(account_id=account_id)
+    elif person_id:
+        qs = qs.filter(account__person_id=person_id)
+
+    rows = []
+    for t in qs:
+        rows.append(
+            {
+                "id": str(t.id),
+                "date": t.txn_date.strftime("%d %b %Y") if t.txn_date else "-",
+                "value_date": t.value_date.strftime("%d %b %Y") if t.value_date else "-",
+                "narration": t.narration,
+                "name": t.party_name,
+                "upi_name": t.party_name,
+                "party_name": t.party_name,
+                "direction": t.direction,
+                "debit_amount": float(t.debit_amount),
+                "debit_formatted": format_inr(t.debit_amount) if t.debit_amount > 0 else "0.00",
+                "credit_amount": float(t.credit_amount),
+                "credit_formatted": format_inr(t.credit_amount) if t.credit_amount > 0 else "0.00",
+                "closing_balance": float(t.closing_balance),
+                "closing_balance_formatted": format_inr(t.closing_balance),
+            }
+        )
+    return rows
+
+
 def get_frequent_transactions_breakdown(
     account_id: str | uuid.UUID | None = None,
     person_id: str | uuid.UUID | None = None,
