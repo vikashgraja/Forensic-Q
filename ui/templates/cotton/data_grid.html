@@ -38,9 +38,8 @@
     document.addEventListener("DOMContentLoaded", function () {
         if (!document.getElementById("{{ id }}")) return;
 
-        const rawData = {{ data| safe |default: "[]"
-    }};
-    const rawCols = {{ columns| safe |default: "[]" }};
+        const rawData = {{ data|default:"[]"|safe }};
+        const rawCols = {{ columns|default:"[]"|safe }};
 
     window["tabulator_{{ id|slugify }}"] = new Tabulator("#{{ id }}", {
         data: rawData,

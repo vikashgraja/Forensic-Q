@@ -500,7 +500,6 @@ def row2_c1(top_gl_df: pd.DataFrame, filtered_df: pd.DataFrame):
     )
 
     # Melt pivot to long-form so customdata works cleanly with px.bar
-    year_cols = [c for c in top10.columns if c != "Vendor"]
     melted = top10.melt(id_vars="Vendor", var_name="Year", value_name="Spend")
     melted["Year"] = melted["Year"].astype(str)
     melted["Formatted"] = melted["Spend"].apply(indian_rupee_format)
@@ -584,7 +583,7 @@ def row2_c3(filtered_df: pd.DataFrame):
         barmode="group",
         height=380,
         custom_data=["Formatted"],
-        color_discrete_sequence=["#f59e0b", "#8b5cf6", "#3b82f6", "#10b981", "#06b6d4"],
+        color_discrete_sequence=["#f59e0b", "#8b5cf6", "#3b82f6", "#10b981", "#06b6d4", "#ec4899", "#f43f5e", "#84cc16"],
         labels={"Amount": "Amount (₹ Lakhs)", "Cost Ctr": "Cost Center"},
     )
     fig.update_traces(
