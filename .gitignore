@@ -23,4 +23,5 @@ media/
 .coverage
 .coverage.*
 htmlcov/
-apps/q_ledger/cache/
+apps/q_ledger/cache/
+

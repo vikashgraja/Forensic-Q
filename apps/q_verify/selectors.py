@@ -200,18 +200,18 @@ def get_case_risk_chart_html(risk_dist: dict[str, int]) -> str:
     )
     fig.update_layout(
         template="plotly_dark",
-        margin={"l": 10, "r": 10, "t": 10, "b": 10},
+        margin={"l": 10, "r": 10, "t": 10, "b": 80},
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font={"family": "Inter, sans-serif", "color": "#a1a1aa"},
         showlegend=True,
         legend={
-            "orientation": "h",
-            "yanchor": "bottom",
-            "y": -0.2,
+            "orientation": "v",
+            "yanchor": "top",
+            "y": -0.05,
             "xanchor": "center",
             "x": 0.5,
         },
-        height=260,
+        height=320,
     )
     return fig.to_html(full_html=False, include_plotlyjs=False)

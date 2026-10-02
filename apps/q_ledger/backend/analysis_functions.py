@@ -499,20 +499,30 @@ def row2_c1(top_gl_df: pd.DataFrame, filtered_df: pd.DataFrame):
         pivot.sort_values("Total", ascending=False).head(10).drop(columns=["Total"]).reset_index()
     )
 
-    year_cols = [c for c in top10.columns if c != "Vendor"]
+    # Melt pivot to long-form so customdata works cleanly with px.bar
+    melted = top10.melt(id_vars="Vendor", var_name="Year", value_name="Spend")
+    melted["Year"] = melted["Year"].astype(str)
+    melted["Formatted"] = melted["Spend"].apply(indian_rupee_format)
+
     fig = px.bar(
-        top10,
+        melted,
         x="Vendor",
-        y=year_cols,
+        y="Spend",
+        color="Year",
         barmode="group",
         height=380,
-        color_discrete_sequence=["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899"],
+        custom_data=["Formatted"],
+        color_discrete_sequence=["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#06b6d4"],
+    )
+    fig.update_traces(
+        hovertemplate="Vendor: %{x}<br>Spend: %{customdata[0]}<extra>%{data.name}</extra>",
     )
     fig.update_layout(
         **PLOTLY_THEME_LAYOUT,
         yaxis_title="Spend in INR",
         legend_title="Year",
-        hovermode="x unified",
+        hovermode="closest",
+        hoverlabel=dict(bgcolor="rgba(30,30,30,0.9)", font_size=11, font_family="Inter, sans-serif"),
     )
     return fig
 
@@ -521,6 +531,8 @@ def row2_c2(filtered_df: pd.DataFrame):
     """Spend breakdown across Cost Centers (in Lakhs)."""
     df = filtered_df.copy()
     grouped = df.groupby("Cost Ctr")["Amount LC"].sum().reset_index()
+    # Keep original amount for formatting, then convert to Lakhs for the axis
+    grouped["Formatted"] = grouped["Amount LC"].apply(indian_rupee_format)
     grouped["Amount LC"] = (grouped["Amount LC"] / 100000).round(2)
     grouped = grouped.sort_values(by="Amount LC", ascending=False).head(12)
 
@@ -531,12 +543,17 @@ def row2_c2(filtered_df: pd.DataFrame):
         color="Amount LC",
         color_continuous_scale="Viridis",
         height=380,
+        custom_data=["Formatted"],
         labels={"Amount LC": "Amount (₹ Lakhs)", "Cost Ctr": "Cost Center"},
+    )
+    fig.update_traces(
+        hovertemplate="Cost Center: %{x}<br>Amount: %{customdata[0]}<extra></extra>",
     )
     fig.update_layout(
         **PLOTLY_THEME_LAYOUT,
         showlegend=False,
         coloraxis_showscale=False,
+        hoverlabel=dict(bgcolor="rgba(30,30,30,0.9)", font_size=11, font_family="Inter, sans-serif"),
     )
     return fig
 
@@ -548,24 +565,34 @@ def row2_c3(filtered_df: pd.DataFrame):
         df.groupby(["Cost Ctr", "G/L acct"])["Amount LC"].sum().unstack(fill_value=0).reset_index()
     )
 
-    for col in grouped.columns[1:]:
-        grouped[col] = (pd.to_numeric(grouped[col], errors="coerce") / 100000).round(2)
-
     top_cost_centers = grouped.head(8)
     gl_cols = list(top_cost_centers.columns[1:])
 
+    # Melt to long-form so customdata works cleanly with px.bar
+    melted = top_cost_centers.melt(id_vars="Cost Ctr", var_name="G/L Account", value_name="Amount")
+    melted["G/L Account"] = melted["G/L Account"].astype(str)
+    # Format original INR amount, then convert to Lakhs for axis
+    melted["Formatted"] = melted["Amount"].apply(indian_rupee_format)
+    melted["Amount"] = (melted["Amount"] / 100000).round(2)
+
     fig = px.bar(
-        top_cost_centers,
+        melted,
         x="Cost Ctr",
-        y=gl_cols,
+        y="Amount",
+        color="G/L Account",
         barmode="group",
         height=380,
-        color_discrete_sequence=["#f59e0b", "#8b5cf6", "#3b82f6", "#10b981", "#06b6d4"],
-        labels={"value": "Amount (₹ Lakhs)", "Cost Ctr": "Cost Center"},
+        custom_data=["Formatted"],
+        color_discrete_sequence=["#f59e0b", "#8b5cf6", "#3b82f6", "#10b981", "#06b6d4", "#ec4899", "#f43f5e", "#84cc16"],
+        labels={"Amount": "Amount (₹ Lakhs)", "Cost Ctr": "Cost Center"},
+    )
+    fig.update_traces(
+        hovertemplate="Cost Center: %{x}<br>G/L Account: %{data.name}<br>Amount: %{customdata[0]}<extra></extra>",
     )
     fig.update_layout(
         **PLOTLY_THEME_LAYOUT,
         showlegend=False,
         coloraxis_showscale=False,
+        hoverlabel=dict(bgcolor="rgba(30,30,30,0.9)", font_size=11, font_family="Inter, sans-serif"),
     )
     return grouped, fig
