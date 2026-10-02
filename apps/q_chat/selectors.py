@@ -184,6 +184,9 @@ def get_paginated_chat_messages(
         "current_page": page_obj.number,
         "has_next": page_obj.has_next(),
         "has_previous": page_obj.has_previous(),
+        "next_page": page_obj.next_page_number() if page_obj.has_next() else None,
+        "previous_page": page_obj.previous_page_number() if page_obj.has_previous() else None,
+        "page_range": list(paginator.get_elided_page_range(page_obj.number, on_each_side=2, on_ends=1)) if paginator.num_pages > 1 else [1],
         "right_sender": right_sender,
     }
 

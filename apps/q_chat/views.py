@@ -52,7 +52,12 @@ def channel_detail_view(request: HttpRequest, channel_id: str) -> HttpResponse:
     media_only = request.GET.get("media") == "1"
     deleted_only = request.GET.get("deleted") == "1"
     right_sender = request.GET.get("right", "").strip() or request.GET.get("me", "").strip()
-    page = int(request.GET.get("page", 1))
+    try:
+        page = int(request.GET.get("page", 1))
+    except (ValueError, TypeError):
+        page = 1
+    if page < 1:
+        page = 1
 
     msg_data = get_paginated_chat_messages(
         channel.id,
