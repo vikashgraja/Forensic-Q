@@ -41,11 +41,11 @@
             variant="emerald" />
 
         <c-stat_card 
-            title="CDM Cash Deposits" 
-            value="{{ account.cash_deposit_count }}" 
-            subtitle="{% if account.hyundai_count > 0 %}{{ account.hyundai_count }} Hyundai Related{% else %}0 Hyundai matches{% endif %}" 
-            icon="fa-solid fa-money-bill-transfer" 
-            variant="amber" />
+            title="Balance" 
+            value="₹{{ closing_balance_formatted|default:'0.00' }}" 
+            subtitle="Closing balance of last transaction" 
+            icon="fa-solid fa-wallet" 
+            variant="sky" />
     </div>
 
     <!-- Section 1: Data Overview (Main Forensic Ledger Table) -->

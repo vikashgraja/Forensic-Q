@@ -4,6 +4,7 @@ Thin controllers routing requests, coordinating selectors & services, and render
 """
 
 import io
+from decimal import Decimal
 from pathlib import Path
 
 import openpyxl
@@ -94,12 +95,19 @@ def person_detail_view(request: HttpRequest, person_id: str) -> HttpResponse:
         view_credit = selected_account.total_credit
         view_cdm_count = selected_account.cash_deposit_count
         view_hyundai_count = selected_account.hyundai_count
+        last_txn = selected_account.transactions.order_by("-txn_date", "-created_at").first()
+        closing_balance = last_txn.closing_balance if last_txn else Decimal("0.00")
     else:
         view_txns = sum(a.total_transactions for a in accounts)
         view_debit = sum(a.total_debit for a in accounts)
         view_credit = sum(a.total_credit for a in accounts)
         view_cdm_count = sum(a.cash_deposit_count for a in accounts)
         view_hyundai_count = sum(a.hyundai_count for a in accounts)
+        closing_balance = Decimal("0.00")
+        for a in accounts:
+            last_txn = a.transactions.order_by("-txn_date", "-created_at").first()
+            if last_txn:
+                closing_balance += last_txn.closing_balance
 
     context = {
         "person": person,
@@ -114,6 +122,8 @@ def person_detail_view(request: HttpRequest, person_id: str) -> HttpResponse:
             "total_credit_formatted": format_inr(view_credit),
             "cash_deposit_count": view_cdm_count,
             "hyundai_count": view_hyundai_count,
+            "closing_balance": closing_balance,
+            "closing_balance_formatted": format_inr(closing_balance),
         },
         "frequent_entities": frequent_entities,
         "frequent_breakdown": frequent_breakdown,

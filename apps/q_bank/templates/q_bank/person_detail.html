@@ -47,11 +47,11 @@
             variant="emerald" />
 
         <c-stat_card 
-            title="CDM Cash Deposits" 
-            value="{{ view_metrics.cash_deposit_count }}" 
-            subtitle="{% if view_metrics.hyundai_count > 0 %}{{ view_metrics.hyundai_count }} Hyundai Matches{% else %}0 Hyundai matches{% endif %}" 
-            icon="fa-solid fa-money-bill-transfer" 
-            variant="amber" />
+            title="Balance" 
+            value="₹{{ view_metrics.closing_balance_formatted }}" 
+            subtitle="Closing balance of last transaction" 
+            icon="fa-solid fa-wallet" 
+            variant="sky" />
     </div>
 
     <!-- Multi-Bank & Multi-Statement Selection Bar -->
