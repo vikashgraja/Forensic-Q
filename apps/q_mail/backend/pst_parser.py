@@ -275,7 +275,7 @@ class PSTStreamParser:
                     read_offset = 0
                     while read_offset < file_size:
                         chunk_size = min(65536, file_size - read_offset)
-                        data = att.read_buffer(chunk_size, read_offset)
+                        data = att.read_buffer(chunk_size)
                         if not data:
                             break
                         f.write(data)

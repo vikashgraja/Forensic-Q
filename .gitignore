@@ -17,10 +17,4 @@ wheels/
 
 # Logs & Evidence Media
 logs/
-media/
-
-# Test Coverage Artifacts
-.coverage
-.coverage.*
-htmlcov/
-apps/q_ledger/cache/
+media/apps/q_ledger/backend/*

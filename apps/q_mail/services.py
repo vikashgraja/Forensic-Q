@@ -346,11 +346,16 @@ def _build_participants(investigation: MailboxInvestigation, counterparty_counts
     Persists top communication participants for analytics and network graph generation.
     """
     participant_objects = []
+    auditee_email_lower = investigation.auditee_email.lower() if investigation.auditee_email else ""
     auditee_domain = (
-        investigation.auditee_email.split("@")[-1].lower()
-        if "@" in investigation.auditee_email
+        auditee_email_lower.split("@")[-1]
+        if "@" in auditee_email_lower
         else ""
     )
+
+    # Filter out the auditee themselves from the counterparty list
+    if auditee_email_lower in counterparty_counts:
+        del counterparty_counts[auditee_email_lower]
 
     for email_addr, count in counterparty_counts.most_common(100):
         domain = email_addr.split("@")[-1].lower() if "@" in email_addr else ""
