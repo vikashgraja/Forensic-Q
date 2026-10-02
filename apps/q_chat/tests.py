@@ -155,3 +155,43 @@ class QChatForensicTests(TestCase):
                 m["is_right_side"],
                 f"Expected Vikash's message '{m['message_text']}' to be on the right",
             )
+
+    def test_human_messages_with_system_phrases_not_hijacked(self):
+        """
+        Tests that human messages containing words like 'is a contact' or 'left the group'
+        are retained as human messages and NOT converted into system messages.
+        """
+        chat_content = (
+            "[03/02/2026, 10:10:00] Alice: Mr. Sharma is a contact person for the vendor.\n"
+            "[03/02/2026, 10:11:00] Bob: Why have they left the group?\n"
+            "[03/02/2026, 10:12:00] Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them.\n"
+            "[03/02/2026, 10:13:00] Arshita Intern HMIL is a contact.\n"
+        )
+        ch = ingest_chat_export_file(
+            file_obj_or_content=chat_content,
+            filename="false_positives_test.txt",
+            platform="WHATSAPP",
+            channel_name="Contact Discussion",
+        )
+
+        paginated = get_paginated_chat_messages(ch.id, page=1, page_size=10)
+        msgs = paginated["data"]
+        self.assertEqual(len(msgs), 4)
+
+        # Message 1 from Alice
+        self.assertEqual(msgs[0]["sender_name"], "Alice")
+        self.assertFalse(msgs[0]["is_system"])
+        self.assertEqual(msgs[0]["message_text"], "Mr. Sharma is a contact person for the vendor.")
+
+        # Message 2 from Bob
+        self.assertEqual(msgs[1]["sender_name"], "Bob")
+        self.assertFalse(msgs[1]["is_system"])
+        self.assertEqual(msgs[1]["message_text"], "Why have they left the group?")
+
+        # Message 3: real encryption notice
+        self.assertEqual(msgs[2]["sender_name"], "System")
+        self.assertTrue(msgs[2]["is_system"])
+
+        # Message 4: real contact notice
+        self.assertEqual(msgs[3]["sender_name"], "System")
+        self.assertTrue(msgs[3]["is_system"])

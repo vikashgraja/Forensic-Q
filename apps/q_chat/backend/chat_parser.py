@@ -65,41 +65,48 @@ def screen_message_text(
     return risk_score, flagged
 
 
-SYSTEM_MESSAGE_INDICATORS = [
-    "end-to-end encrypted",
-    "end-to-end encryption",
-    "secured with end-to-end encryption",
-    "is a contact.",
-    "is a contact",
-    "is not in your contacts",
-    "added to your contacts",
-    "tap to view contact details",
-    "security code changed",
-    "your security code with",
-    "this chat is with an official business account",
-    "this chat is with a business account",
-    "created group",
-    "added you to",
-    "changed the group description",
-    "changed this group's icon",
-    "changed the subject to",
-    "left the group",
-    "removed from the group",
-    "you're now an admin",
-    "disappearing messages were turned",
-    "waiting for this message. this may take a while",
+WHATSAPP_SYSTEM_REGEXES = [
+    # Encryption & official notices
+    re.compile(r"^(?:messages and calls are )?end-to-end encrypted\b", re.IGNORECASE),
+    re.compile(r"\bsecured with end-to-end encryption\b", re.IGNORECASE),
+    re.compile(r"^this chat is with (?:an official )?business account\b", re.IGNORECASE),
+    # Contact notices: strictly ends with "is a contact." or "is not in your contacts."
+    re.compile(
+        r"^.+?\b(?:is a contact|is not in your contacts|was added to your contacts)\.?$",
+        re.IGNORECASE,
+    ),
+    # Security code changes
+    re.compile(
+        r"^(?:your security code with .+? changed|.+?'s security code changed)",
+        re.IGNORECASE,
+    ),
+    # Group administrative events
+    re.compile(r'^.+? created group ".*?"$', re.IGNORECASE),
+    re.compile(
+        r"^.+? changed the (?:subject to \".*?\"|group description|group's icon)$",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"^.+? (?:added you(?:\s+to\s+(?:the|this)\s+group)?|removed you|added (?:members?|participants?)|added ~?[\w\+\-]{2,25}|removed ~?[\w\+\-]{2,25})\.?$",
+        re.IGNORECASE,
+    ),
+    re.compile(r"^.+? left(?: the group)?\.?$", re.IGNORECASE),
+    re.compile(r"^you're now an admin\.?$", re.IGNORECASE),
+    re.compile(r"^disappearing messages were turned (?:on|off)\.?$", re.IGNORECASE),
+    re.compile(r"^waiting for this message\. this may take a while\.?$", re.IGNORECASE),
 ]
 
 
 def is_whatsapp_system_message(text: str) -> bool:
     """
     Detects automated WhatsApp disclaimer, security, encryption, and contact notification banners.
+    Uses precise regexes to prevent false positives on human messages containing contact/group terms.
     """
     if not text:
         return False
     # Strip invisible unicode formatting marks
-    clean = text.replace("\u200e", "").replace("\u200f", "").strip().lower()
-    return any(indicator in clean for indicator in SYSTEM_MESSAGE_INDICATORS)
+    clean = text.replace("\u200e", "").replace("\u200f", "").strip()
+    return any(pattern.search(clean) for pattern in WHATSAPP_SYSTEM_REGEXES)
 
 
 # WhatsApp Timestamp Patterns with Sender (colon separated)
@@ -188,7 +195,20 @@ def parse_whatsapp_export(content: str) -> list[dict[str, Any]]:
                 text = text_part.strip()
 
                 # Check if this message is actually a system/disclaimer message
-                is_system = is_whatsapp_system_message(text) or is_whatsapp_system_message(sender)
+                # Messages matching WHATSAPP_PATTERNS have an explicit sender before the colon.
+                # They are only system messages if the sender is "System"/"WhatsApp", or the sender
+                # itself is a system banner, or the text is an encryption disclaimer banner.
+                is_system = (
+                    sender.lower() in ("system", "whatsapp")
+                    or is_whatsapp_system_message(sender)
+                    or bool(
+                        re.search(
+                            r"^(?:messages and calls are )?end-to-end encrypted\b",
+                            text,
+                            re.IGNORECASE,
+                        )
+                    )
+                )
                 if is_system:
                     sender = "System"
 
