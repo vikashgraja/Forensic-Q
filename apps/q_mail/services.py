@@ -211,16 +211,19 @@ def _execute_pst_ingestion(mailbox_id: str) -> None:
         total_attachments = 0
         counterparty_counts: Counter = Counter()
 
+        auditee_email = investigation.auditee_email.lower().strip()
+        
         for parsed_email in parser.parse_messages():
             # Track counterparties
             sender = parsed_email.sender_email.lower()
-            if sender:
+            if sender and sender != auditee_email:
                 counterparty_counts[sender] += 1
 
             for r in parsed_email.recipients_to + parsed_email.recipients_cc:
                 if "@" in r:
                     cleaned_r = r.split("<")[-1].replace(">", "").strip().lower()
-                    counterparty_counts[cleaned_r] += 1
+                    if cleaned_r and cleaned_r != auditee_email:
+                        counterparty_counts[cleaned_r] += 1
 
             msg_obj = EmailMessage(
                 mailbox=investigation,

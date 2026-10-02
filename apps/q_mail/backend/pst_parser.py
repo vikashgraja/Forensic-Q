@@ -257,7 +257,12 @@ class PSTStreamParser:
         Saves physical attachment file to evidence directory and computes SHA-256 hash.
         """
         try:
-            filename = att.get_name() or f"attachment_{email_hash}"
+            try:
+                filename = att.get_long_filename()
+            except AttributeError:
+                filename = getattr(att, "name", None) or getattr(att, "long_filename", None)
+            
+            filename = filename or f"attachment_{email_hash}"
             file_size = att.get_size() or 0
             file_extension = Path(filename).suffix.lower()
 
@@ -296,7 +301,7 @@ class PSTStreamParser:
                 storage_path=storage_path,
             )
         except Exception as e:
-            logger.warning("Failed saving attachment for email %s: %s", email_hash, e)
+            logger.warning("Failed saving attachment for email {}: {}", email_hash, e)
             return None
 
     @staticmethod
