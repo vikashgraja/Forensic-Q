@@ -4,15 +4,8 @@
     <span>{{ table_data.error }}</span>
 </div>
 {% elif table_data.rows %}
-<c-data-grid 
-    id="{{ table_id|default:'table-grid' }}"
-    :data="table_data.rows"
-    :columns="table_data.columns"
-    layout="fitColumns"
-    pagination="local"
-    pagination_size="10"
-    movable_columns="true"
-/>
+<c-data-grid id="{{ table_id|default:'table-grid' }}" :data="table_data.rows" :columns="table_data.columns"
+    layout="fitData" pagination="local" pagination_size="10" movable_columns="true" responsive="false" />
 {% else %}
 <div class="p-8 text-center bg-theme-app/30 rounded-xl border border-dashed border-theme-border">
     <i class="fa-solid fa-check-circle text-2xl text-emerald-500 mb-2 block"></i>
