@@ -499,11 +499,13 @@ def row2_c1(top_gl_df: pd.DataFrame, filtered_df: pd.DataFrame):
         pivot.sort_values("Total", ascending=False).head(10).drop(columns=["Total"]).reset_index()
     )
 
-    year_cols = [c for c in top10.columns if c != "Vendor"]
+    melted = top10.melt(id_vars="Vendor", var_name="Year", value_name="Spend")
+
     fig = px.bar(
-        top10,
+        melted,
         x="Vendor",
-        y=year_cols,
+        y="Spend",
+        color="Year",
         barmode="group",
         height=380,
         color_discrete_sequence=["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899"],
