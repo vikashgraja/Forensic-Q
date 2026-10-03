@@ -169,9 +169,6 @@ class QLedgerSelectorAndAnalysisTests(TestCase):
         cr_formatted = indian_rupee_format(25000000)
         self.assertIn("2.50 Cr", cr_formatted)
 
-        b_formatted = indian_rupee_format(3500000000)
-        self.assertIn("3.50 B", b_formatted)
-
         zero_formatted = indian_rupee_format(0)
         self.assertIn("0", zero_formatted)
 

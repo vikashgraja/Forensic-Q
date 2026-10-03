@@ -151,9 +151,7 @@ def indian_rupee_format(amount) -> str:
     """Converts numeric amount into readable Indian Crore/Lakh currency representation."""
     try:
         val = float(amount)
-        if abs(val) >= 1000000000:
-            return f"₹ {val / 1000000000:.2f} B"
-        elif abs(val) >= 10000000:
+        if abs(val) >= 10000000:
             return f"₹ {val / 10000000:.2f} Cr"
         elif abs(val) >= 100000:
             return f"₹ {val / 100000:.2f} L"
@@ -500,6 +498,7 @@ def row2_c1(top_gl_df: pd.DataFrame, filtered_df: pd.DataFrame):
     )
 
     melted = top10.melt(id_vars="Vendor", var_name="Year", value_name="Spend")
+    melted["Formatted"] = melted["Spend"].apply(indian_rupee_format)
 
     fig = px.bar(
         melted,
@@ -508,10 +507,11 @@ def row2_c1(top_gl_df: pd.DataFrame, filtered_df: pd.DataFrame):
         color="Year",
         barmode="group",
         height=380,
+        custom_data=["Formatted"],
         color_discrete_sequence=["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899"],
     )
     fig.update_traces(
-        hovertemplate="Vendor: %{x}<br>Spend: %{y:,.0f}<extra>%{data.name}</extra>",
+        hovertemplate="Vendor: %{x}<br>Spend: %{customdata[0]}<extra>%{data.name}</extra>",
     )
     fig.update_layout(
         **PLOTLY_THEME_LAYOUT,
@@ -526,6 +526,7 @@ def row2_c2(filtered_df: pd.DataFrame):
     """Spend breakdown across Cost Centers (in Lakhs)."""
     df = filtered_df.copy()
     grouped = df.groupby("Cost Ctr")["Amount LC"].sum().reset_index()
+    grouped["Formatted"] = grouped["Amount LC"].apply(indian_rupee_format)
     grouped["Amount LC"] = (grouped["Amount LC"] / 100000).round(2)
     grouped = grouped.sort_values(by="Amount LC", ascending=False).head(12)
 
@@ -536,7 +537,11 @@ def row2_c2(filtered_df: pd.DataFrame):
         color="Amount LC",
         color_continuous_scale="Viridis",
         height=380,
+        custom_data=["Formatted"],
         labels={"Amount LC": "Amount (₹ Lakhs)", "Cost Ctr": "Cost Center"},
+    )
+    fig.update_traces(
+        hovertemplate="Cost Center: %{x}<br>Amount: %{customdata[0]}<extra></extra>",
     )
     fig.update_layout(
         **PLOTLY_THEME_LAYOUT,
@@ -559,14 +564,24 @@ def row2_c3(filtered_df: pd.DataFrame):
     top_cost_centers = grouped.head(8)
     gl_cols = list(top_cost_centers.columns[1:])
 
+    melted = top_cost_centers.melt(
+        id_vars="Cost Ctr", value_vars=gl_cols, var_name="G/L Account", value_name="Amount"
+    )
+    melted["Formatted"] = (melted["Amount"] * 100000).apply(indian_rupee_format)
+
     fig = px.bar(
-        top_cost_centers,
+        melted,
         x="Cost Ctr",
-        y=gl_cols,
+        y="Amount",
+        color="G/L Account",
         barmode="group",
         height=380,
+        custom_data=["Formatted"],
         color_discrete_sequence=["#f59e0b", "#8b5cf6", "#3b82f6", "#10b981", "#06b6d4"],
-        labels={"value": "Amount (₹ Lakhs)", "Cost Ctr": "Cost Center"},
+        labels={"Amount": "Amount (₹ Lakhs)", "Cost Ctr": "Cost Center"},
+    )
+    fig.update_traces(
+        hovertemplate="Cost Center: %{x}<br>Amount: %{customdata[0]}<extra>%{data.name}</extra>",
     )
     fig.update_layout(
         **PLOTLY_THEME_LAYOUT,
