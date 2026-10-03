@@ -110,7 +110,9 @@
                     this.selected = v;
                     $refs.vendorInput.value = v;
                     this.open = false;
-                    $refs.form.submit();
+                    this.$nextTick(() => {
+                        this.$el.closest('form').submit();
+                    });
                 }
             }" class="relative flex-1 max-w-xl" @click.outside="open = false">
                 <input type="hidden" name="vendor_filter" x-ref="vendorInput" :value="selected">

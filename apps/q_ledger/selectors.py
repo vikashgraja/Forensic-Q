@@ -77,8 +77,15 @@ def get_filtered_dataset(df: pd.DataFrame | None, selected_vendor: str = "") -> 
         return None
 
     filtered_df = df.copy()
-    if selected_vendor and "Vendor Code & Name" in filtered_df.columns:
-        filtered_df = filtered_df[filtered_df["Vendor Code & Name"] == selected_vendor]
+    if selected_vendor:
+        mask = pd.Series(False, index=filtered_df.index)
+        if "Vendor Code & Name" in filtered_df.columns:
+            mask = mask | (filtered_df["Vendor Code & Name"] == selected_vendor)
+        if "Vendor" in filtered_df.columns:
+            mask = mask | (filtered_df["Vendor"].astype(str) == selected_vendor)
+        if "Name 1" in filtered_df.columns:
+            mask = mask | (filtered_df["Name 1"].astype(str) == selected_vendor)
+        filtered_df = filtered_df[mask]
 
     try:
         filtered_df.to_json(
