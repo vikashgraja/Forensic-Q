@@ -9,6 +9,8 @@ from typing import Any
 from django.core.paginator import Paginator
 from django.db.models import Count, Max, Min, Q, QuerySet
 
+from core.fuzzy import extract_keywords_from_string, score_text_against_keywords
+
 from .backend.chat_parser import is_whatsapp_system_message
 from .models import ChatChannel, ChatMessage
 
@@ -71,6 +73,7 @@ def get_paginated_chat_messages(
     page: int = 1,
     page_size: int = 50,
     search: str = "",
+    threshold: int = 75,
     sender: str = "",
     flagged_only: bool = False,
     media_only: bool = False,
@@ -85,8 +88,19 @@ def get_paginated_chat_messages(
     qs = ChatMessage.objects.filter(channel_id=channel_id)
 
     if search:
-        s = search.strip()
-        qs = qs.filter(Q(message_text__icontains=s) | Q(sender_name__icontains=s))
+        keywords = extract_keywords_from_string(search)
+        if keywords:
+            matched_ids = []
+            for msg in qs.only("id", "message_text", "sender_name").iterator():
+                text_to_check = f"{msg.message_text or ''} {msg.sender_name or ''}"
+                is_matched, _, _ = score_text_against_keywords(
+                    text_to_check, keywords, threshold=threshold
+                )
+                if is_matched:
+                    matched_ids.append(msg.id)
+            qs = qs.filter(id__in=matched_ids)
+        else:
+            qs = qs.none()
 
     if sender:
         qs = qs.filter(sender_name__iexact=sender.strip())

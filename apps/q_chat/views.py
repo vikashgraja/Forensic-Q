@@ -53,6 +53,10 @@ def channel_detail_view(request: HttpRequest, channel_id: str) -> HttpResponse:
     deleted_only = request.GET.get("deleted") == "1"
     right_sender = request.GET.get("right", "").strip() or request.GET.get("me", "").strip()
     try:
+        threshold = int(request.GET.get("threshold", 75))
+    except (ValueError, TypeError):
+        threshold = 75
+    try:
         page = int(request.GET.get("page", 1))
     except (ValueError, TypeError):
         page = 1
@@ -64,6 +68,7 @@ def channel_detail_view(request: HttpRequest, channel_id: str) -> HttpResponse:
         page=page,
         page_size=100,
         search=search,
+        threshold=threshold,
         sender=sender,
         flagged_only=flagged_only,
         media_only=media_only,
@@ -77,6 +82,7 @@ def channel_detail_view(request: HttpRequest, channel_id: str) -> HttpResponse:
         "participants": participants,
         "messages_data": msg_data,
         "search_query": search,
+        "threshold": threshold,
         "selected_sender": sender,
         "flagged_only": flagged_only,
         "media_only": media_only,
@@ -161,11 +167,17 @@ def messages_api_view(request: HttpRequest, channel_id: str) -> JsonResponse:
     sort_dir = request.GET.get("dir", "asc")
     right_sender = request.GET.get("right", "").strip() or request.GET.get("me", "").strip()
 
+    try:
+        threshold = int(request.GET.get("threshold", 75))
+    except (ValueError, TypeError):
+        threshold = 75
+
     result = get_paginated_chat_messages(
         channel_id,
         page=page,
         page_size=page_size,
         search=search,
+        threshold=threshold,
         sender=sender,
         flagged_only=flagged_only,
         media_only=media_only,
