@@ -508,11 +508,14 @@ def row2_c1(top_gl_df: pd.DataFrame, filtered_df: pd.DataFrame):
         height=380,
         color_discrete_sequence=["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899"],
     )
+    fig.update_traces(
+        hovertemplate="Vendor: %{x}<br>Spend: %{y:,.0f}<extra>%{data.name}</extra>",
+    )
     fig.update_layout(
         **PLOTLY_THEME_LAYOUT,
         yaxis_title="Spend in INR",
         legend_title="Year",
-        hovermode="x unified",
+        hovermode="closest",
     )
     return fig
 
