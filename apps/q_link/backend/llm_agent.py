@@ -910,33 +910,40 @@ class ForensicCopilotAgent:
         """
         Dispatches request to Model-Host (port 8434) with low temperature and strict token limit.
         """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "model": self.model,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.2,
-            "max_tokens": 600,
-        }
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.2,
+                "max_tokens": 600,
+            }
 
-        resp = requests.post(self.endpoint, json=payload, headers=headers, timeout=self.timeout)  # nosec B113
-        if resp.status_code == 200:
-            content = resp.json()["choices"][0]["message"].get("content", "").strip()
-            refusals = [
-                "cannot provide",
-                "cannot assist",
-                "unable to assist",
-                "cannot fulfill",
-                "i can't assist",
-                "i cannot help",
-                "i am not able to",
-                "illegal activities",
-                "commit fraud",
-            ]
-            if content and not any(r in content.lower() for r in refusals) and len(content) > 30:
-                return content
+            resp = requests.post(self.endpoint, json=payload, headers=headers, timeout=self.timeout)  # nosec B113
+            if resp.status_code == 200:
+                content = resp.json()["choices"][0]["message"].get("content", "").strip()
+                refusals = [
+                    "cannot provide",
+                    "cannot assist",
+                    "unable to assist",
+                    "cannot fulfill",
+                    "i can't assist",
+                    "i cannot help",
+                    "i am not able to",
+                    "illegal activities",
+                    "commit fraud",
+                ]
+                if (
+                    content
+                    and not any(r in content.lower() for r in refusals)
+                    and len(content) > 30
+                ):
+                    return content
+        except Exception as exc:
+            logger.debug(f"Model-Host request error: {exc}")
         return None
 
     def _build_deterministic_narrative(

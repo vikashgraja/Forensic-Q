@@ -113,10 +113,11 @@
 
                     <!-- Canvas Quick Filters -->
                     <div class="flex items-center gap-1.5 text-xs">
-                        <button type="button" onclick="setEntityFilter('ALL')" class="filter-chip px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold transition">All</button>
-                        <button type="button" onclick="setEntityFilter('EMPLOYEE')" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Employees</button>
-                        <button type="button" onclick="setEntityFilter('VENDOR')" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Vendors</button>
-                        <button type="button" onclick="setEntityFilter('DOCUMENT')" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Documents</button>
+                        <button type="button" onclick="setEntityFilter('ALL', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold transition">All</button>
+                        <button type="button" onclick="setEntityFilter('EMPLOYEE', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Employees</button>
+                        <button type="button" onclick="setEntityFilter('VENDOR', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Vendors</button>
+                        <button type="button" onclick="setEntityFilter('BANK_ACCOUNT', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Accounts</button>
+                        <button type="button" onclick="setEntityFilter('DOCUMENT', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Documents</button>
                         <button type="button" onclick="togglePhysics()" id="btn-physics" class="px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white border border-[#805232] dark:border-slate-700 transition" title="Toggle Graph Physics">
                             <i class="fa-solid fa-atom mr-1 text-cyan-400"></i><span id="text-physics">Freeze</span>
                         </button>
@@ -124,14 +125,14 @@
                 </div>
 
                 <!-- Active Mode Information & Interlinks Status Banner -->
-                <div id="mode-status-banner" class="px-3.5 py-2 bg-slate-950/90 border-b border-slate-800/80 flex flex-wrap items-center justify-between text-xs text-slate-300 gap-2">
+                <div id="mode-status-banner" class="px-3.5 py-2 bg-[#B5D2E6]/60 dark:bg-slate-950/90 border-b border-[#805232]/30 dark:border-slate-800/80 flex flex-wrap items-center justify-between text-xs text-slate-800 dark:text-slate-300 gap-2">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-link text-amber-400 text-xs" id="mode-status-icon"></i>
-                        <span class="font-bold text-amber-400 font-mono tracking-wide" id="mode-status-title">Interlinks based on keywords</span>
-                        <span class="text-slate-600 hidden sm:inline">•</span>
-                        <span class="text-slate-400 text-[11px] hidden sm:inline" id="mode-status-desc">Correlating cross-module entities and auditees sharing common forensic keywords</span>
+                        <i class="fa-solid fa-link text-amber-600 dark:text-amber-400 text-xs" id="mode-status-icon"></i>
+                        <span class="font-bold text-amber-700 dark:text-amber-400 font-mono tracking-wide" id="mode-status-title">Interlinks based on keywords</span>
+                        <span class="text-slate-400 dark:text-slate-600 hidden sm:inline">•</span>
+                        <span class="text-slate-600 dark:text-slate-400 text-[11px] hidden sm:inline" id="mode-status-desc">Correlating cross-module entities and auditees sharing common forensic keywords</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700" id="mode-status-count">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#FFF1E7] dark:bg-slate-800 text-slate-800 dark:text-slate-300 border border-[#805232]/30 dark:border-slate-700" id="mode-status-count">
                         Discovering Interlinks...
                     </span>
                 </div>
@@ -170,7 +171,8 @@
         <div class="lg:col-span-4 space-y-4">
             
             <div class="bg-[#FFF1E7] dark:bg-slate-900 border border-[#B5D2E6] dark:border-slate-800 rounded-2xl overflow-hidden shadow-xl"
-                x-data="{ activeTab: 'copilot' }">
+                x-data="{ activeTab: 'copilot' }"
+                @switch-panel-tab.window="activeTab = $event.detail">
                 
                 <!-- Panel Tab Navigation -->
                 <div class="flex border-b border-[#B5D2E6] dark:border-slate-800 bg-[#B5D2E6]/70 dark:bg-slate-950/70 p-1.5 text-xs font-semibold">
@@ -259,42 +261,42 @@
 
                     <div id="inspector-content" class="hidden space-y-4 text-xs">
                         <!-- Entity Header -->
-                        <div class="bg-[#FFF1E7]/80 dark:bg-slate-950/80 border border-[#B5D2E6] dark:border-slate-800 rounded-xl p-3.5">
+                        <div class="bg-[#B5D2E6]/60 dark:bg-slate-950/80 border border-[#805232]/30 dark:border-slate-800 rounded-xl p-3.5">
                             <div class="flex items-start justify-between gap-2">
                                 <div>
-                                    <span id="inspect-type-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"></span>
-                                    <h3 id="inspect-name" class="font-bold text-sm text-white mt-1"></h3>
-                                    <p id="inspect-identifier" class="text-[11px] text-slate-400 font-mono mt-0.5"></p>
+                                    <span id="inspect-type-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"></span>
+                                    <h3 id="inspect-name" class="font-bold text-sm text-slate-900 dark:text-white mt-1"></h3>
+                                    <p id="inspect-identifier" class="text-[11px] text-slate-600 dark:text-slate-400 font-mono mt-0.5"></p>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-[10px] text-slate-700 uppercase font-mono block">Risk Rating</span>
-                                    <span id="inspect-risk" class="text-base font-extrabold text-amber-400 font-mono"></span>
+                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-mono block">Risk Rating</span>
+                                    <span id="inspect-risk" class="text-base font-extrabold text-amber-600 dark:text-amber-400 font-mono"></span>
                                 </div>
                             </div>
 
-                            <div id="inspect-aliases-box" class="mt-2.5 pt-2 border-t border-slate-800/80 text-[11px]">
-                                <span class="text-slate-700">Aliases / Variants:</span>
+                            <div id="inspect-aliases-box" class="mt-2.5 pt-2 border-t border-[#805232]/20 dark:border-slate-800/80 text-[11px]">
+                                <span class="text-slate-600 dark:text-slate-400 font-semibold">Aliases / Variants:</span>
                                 <div id="inspect-aliases" class="flex flex-wrap gap-1 mt-1"></div>
                             </div>
 
-                            <div id="inspect-tags-box" class="mt-2 pt-2 border-t border-slate-800/80 text-[11px]">
-                                <span class="text-slate-700 block mb-1">Forensic Flags & Tags:</span>
+                            <div id="inspect-tags-box" class="mt-2 pt-2 border-t border-[#805232]/20 dark:border-slate-800/80 text-[11px]">
+                                <span class="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Forensic Flags & Tags:</span>
                                 <div id="inspect-tags-list" class="flex flex-wrap gap-1 mt-1"></div>
                             </div>
                         </div>
 
                         <!-- Direct Connections -->
                         <div class="space-y-1.5">
-                            <span class="font-bold text-slate-300 text-xs flex items-center gap-1.5">
-                                <i class="fa-solid fa-diagram-next text-amber-400"></i> Direct Relationships
+                            <span class="font-bold text-slate-900 dark:text-slate-300 text-xs flex items-center gap-1.5">
+                                <i class="fa-solid fa-diagram-next text-amber-500 dark:text-amber-400"></i> Direct Relationships
                             </span>
                             <div id="inspect-relations-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
                         </div>
 
                         <!-- Underlying Evidence Citations -->
                         <div class="space-y-1.5">
-                            <span class="font-bold text-slate-300 text-xs flex items-center gap-1.5">
-                                <i class="fa-solid fa-file-shield text-emerald-400"></i> Evidence Pointers (1-Click Drill Down)
+                            <span class="font-bold text-slate-900 dark:text-slate-300 text-xs flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-shield text-emerald-500 dark:text-emerald-400"></i> Evidence Pointers (1-Click Drill Down)
                             </span>
                             <div id="inspect-evidence-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
                         </div>
@@ -354,20 +356,20 @@
 
     <!-- Slide-out Side Drawer: Audit Evidence Trail -->
     <div id="evidence-trail-drawer"
-        class="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-[#FFF1E7] dark:bg-slate-950 border-l border-[#B5D2E6] dark:border-slate-800 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        class="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-[#FFF1E7] dark:bg-slate-950 border-l border-[#805232]/40 dark:border-slate-800 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
         <!-- Drawer Header -->
-        <div class="p-4 border-b border-[#B5D2E6] dark:border-slate-800 flex items-center justify-between bg-[#FFF1E7]/90 dark:bg-slate-900/90 backdrop-blur">
+        <div class="p-4 border-b border-[#805232]/30 dark:border-slate-800 flex items-center justify-between bg-[#B5D2E6]/80 dark:bg-slate-900/90 backdrop-blur">
             <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
                     <i class="fa-solid fa-fingerprint text-sm"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-sm text-white">Audit Evidence Trail</h3>
-                    <p class="text-[11px] text-slate-400 font-mono" id="drawer-edge-header">Connecting Edge Evidence</p>
+                    <h3 class="font-bold text-sm text-slate-900 dark:text-white">Audit Evidence Trail</h3>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-400 font-mono" id="drawer-edge-header">Connecting Edge Evidence</p>
                 </div>
             </div>
             <button type="button" onclick="closeEvidenceDrawer()"
-                class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer">
+                class="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-[#FFF1E7] dark:hover:bg-slate-800 transition cursor-pointer">
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
         </div>
@@ -438,19 +440,20 @@
                     isSubstantiated = true;
                 }
 
-                if (n.type === "VENDOR") {
+                const nType = String(n.type || "").toUpperCase();
+                if (nType === "VENDOR" || nType === "SUPPLIER") {
                     colorBg = "#f59e0b"; // Amber
                     borderCol = "#d97706";
-                } else if (n.type === "DOCUMENT") {
+                } else if (nType === "DOCUMENT" || nType === "FILE") {
                     colorBg = "#f43f5e"; // Rose
                     borderCol = "#e11d48";
-                } else if (n.type === "PO" || n.type === "INVOICE") {
+                } else if (nType === "PO" || nType === "INVOICE") {
                     colorBg = "#a855f7"; // Purple
                     borderCol = "#9333ea";
-                } else if (n.type === "BANK_ACCOUNT") {
+                } else if (nType === "BANK_ACCOUNT" || nType === "ACCOUNT") {
                     colorBg = "#10b981"; // Emerald
                     borderCol = "#059669";
-                } else if (n.type === "COMPANY") {
+                } else if (nType === "COMPANY" || nType === "CORPORATE") {
                     colorBg = "#6366f1"; // Indigo
                     borderCol = "#4f46e5";
                 }
@@ -598,6 +601,7 @@
                     const nodeId = params.nodes[0];
                     highlightNodeNetwork(nodeId);
                     inspectEntity(nodeId);
+                    window.dispatchEvent(new CustomEvent('switch-panel-tab', { detail: 'inspector' }));
                 } else if (params.edges.length > 0) {
                     const edgeId = params.edges[0];
                     inspectEdge(edgeId);
@@ -839,53 +843,53 @@
                     ${rlBanner}
 
                     <!-- Edge Summary Card -->
-                    <div class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                    <div class="p-3.5 rounded-xl bg-[#B5D2E6]/60 dark:bg-slate-900 border border-[#805232]/30 dark:border-slate-800 space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                 ${edge.relation_type_display || edge.relation_type}
                             </span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-400 border border-slate-700">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#FFF1E7] dark:bg-slate-800 text-slate-700 dark:text-slate-400 border border-[#805232]/30 dark:border-slate-700">
                                 [${(edge.module || 'LINK').toUpperCase()}]
                             </span>
                         </div>
                         <div class="flex items-center justify-between text-xs pt-1">
-                            <span class="text-slate-400">Weight / Amount:</span>
-                            <span class="font-mono font-bold text-amber-400">₹${Number(edge.weight || 0).toLocaleString('en-IN')}</span>
+                            <span class="text-slate-600 dark:text-slate-400">Weight / Amount:</span>
+                            <span class="font-mono font-bold text-amber-600 dark:text-amber-400">₹${Number(edge.weight || 0).toLocaleString('en-IN')}</span>
                         </div>
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-slate-400">Confidence Score:</span>
-                            <span class="font-mono text-emerald-400 font-semibold">${Math.round((edge.confidence || 1.0) * 100)}%</span>
+                            <span class="text-slate-600 dark:text-slate-400">Confidence Score:</span>
+                            <span class="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">${Math.round((edge.confidence || 1.0) * 100)}%</span>
                         </div>
                     </div>
 
                     <!-- Granular Evidence Records -->
                     <div class="space-y-3">
-                        <div class="flex items-center justify-between text-xs font-bold text-slate-300 border-b border-slate-800 pb-1.5">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-300 border-b border-[#805232]/20 dark:border-slate-800 pb-1.5">
                             <span class="flex items-center gap-1.5">
-                                <i class="fa-solid fa-fingerprint text-emerald-400"></i> Evidence Records (${items.length})
+                                <i class="fa-solid fa-fingerprint text-emerald-500 dark:text-emerald-400"></i> Evidence Records (${items.length})
                             </span>
-                            <span class="text-[10px] text-slate-700 font-mono uppercase">${edge.category}</span>
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase">${edge.category}</span>
                         </div>
                 `;
 
                 if (items.length === 0) {
-                    html += `<div class="text-slate-700 text-center py-4">No granular source citations recorded.</div>`;
+                    html += `<div class="text-slate-500 dark:text-slate-400 text-center py-4">No granular source citations recorded.</div>`;
                 } else {
                     items.forEach((ev, idx) => {
                         let specificFields = "";
 
                         if (edge.category === "FINANCIAL" || ev.narration || ev.debit_amount || ev.credit_amount) {
                             specificFields = `
-                                <div class="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-800/60 font-mono">
-                                    ${ev.date ? `<div><span class="text-slate-700 block text-[10px]">Date</span><span class="text-slate-300">${ev.date}</span></div>` : ''}
-                                    ${ev.ref_no ? `<div><span class="text-slate-700 block text-[10px]">Ref / UTR</span><span class="text-slate-300">${ev.ref_no}</span></div>` : ''}
-                                    ${ev.account_no ? `<div><span class="text-slate-700 block text-[10px]">Source Account</span><span class="text-slate-300">${ev.account_no}</span></div>` : ''}
-                                    ${ev.turnaround ? `<div><span class="text-slate-700 block text-[10px]">Turnaround</span><span class="text-rose-400 font-bold">${ev.turnaround}</span></div>` : ''}
+                                <div class="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[#805232]/20 dark:border-slate-800/60 font-mono">
+                                    ${ev.date ? `<div><span class="text-slate-500 dark:text-slate-400 block text-[10px]">Date</span><span class="text-slate-800 dark:text-slate-300 font-medium">${ev.date}</span></div>` : ''}
+                                    ${ev.ref_no ? `<div><span class="text-slate-500 dark:text-slate-400 block text-[10px]">Ref / UTR</span><span class="text-slate-800 dark:text-slate-300 font-medium">${ev.ref_no}</span></div>` : ''}
+                                    ${ev.account_no ? `<div><span class="text-slate-500 dark:text-slate-400 block text-[10px]">Source Account</span><span class="text-slate-800 dark:text-slate-300 font-medium">${ev.account_no}</span></div>` : ''}
+                                    ${ev.turnaround ? `<div><span class="text-slate-500 dark:text-slate-400 block text-[10px]">Turnaround</span><span class="text-rose-500 dark:text-rose-400 font-bold">${ev.turnaround}</span></div>` : ''}
                                 </div>
                                 ${ev.narration ? `
                                     <div class="mt-2 text-[11px]">
-                                        <span class="text-slate-700 block text-[10px]">Transaction Narration</span>
-                                        <div class="p-2 rounded bg-slate-900 border border-slate-800 text-slate-200 font-mono text-[11px] break-all">
+                                        <span class="text-slate-500 dark:text-slate-400 block text-[10px]">Transaction Narration</span>
+                                        <div class="p-2 rounded bg-[#FFF1E7] dark:bg-slate-900 border border-[#805232]/30 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-mono text-[11px] break-all">
                                             ${ev.narration}
                                         </div>
                                     </div>
@@ -895,15 +899,15 @@
 
                         if (ev.file_name || ev.page_number || edge.category === "DOCUMENT") {
                             specificFields += `
-                                <div class="space-y-1.5 pt-1 border-t border-slate-800/60 text-[11px]">
+                                <div class="space-y-1.5 pt-1 border-t border-[#805232]/20 dark:border-slate-800/60 text-[11px]">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-slate-400 flex items-center gap-1 font-mono">
-                                            <i class="fa-solid fa-file-pdf text-rose-400"></i> ${ev.file_name || 'Document'}
+                                        <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1 font-mono">
+                                            <i class="fa-solid fa-file-pdf text-rose-500 dark:text-rose-400"></i> ${ev.file_name || 'Document'}
                                         </span>
-                                        ${ev.page_number ? `<span class="px-1.5 py-0.2 rounded bg-slate-800 text-amber-300 text-[10px] font-mono">Page ${ev.page_number}</span>` : ''}
+                                        ${ev.page_number ? `<span class="px-1.5 py-0.2 rounded bg-[#FFF1E7] dark:bg-slate-800 text-amber-700 dark:text-amber-300 text-[10px] font-mono border border-[#805232]/20">Page ${ev.page_number}</span>` : ''}
                                     </div>
                                     ${ev.snippet ? `
-                                        <div class="p-2 rounded bg-slate-900/90 border-l-2 border-amber-400 text-slate-200 text-[11px] leading-relaxed">
+                                        <div class="p-2 rounded bg-[#FFF1E7] dark:bg-slate-900/90 border-l-2 border-amber-500 text-slate-800 dark:text-slate-200 text-[11px] leading-relaxed">
                                             "${ev.snippet}"
                                         </div>
                                     ` : ''}
@@ -913,17 +917,17 @@
 
                         if (edge.category === "VOICE" || ev.audio_file || ev.audio_timestamp) {
                             specificFields += `
-                                <div class="space-y-1.5 pt-1 border-t border-slate-800/60 text-[11px]">
+                                <div class="space-y-1.5 pt-1 border-t border-[#805232]/20 dark:border-slate-800/60 text-[11px]">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-slate-400 flex items-center gap-1 font-mono">
-                                            <i class="fa-solid fa-waveform-lines text-cyan-400"></i> ${ev.audio_file || 'Voice Recording'}
+                                        <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1 font-mono">
+                                            <i class="fa-solid fa-waveform-lines text-cyan-600 dark:text-cyan-400"></i> ${ev.audio_file || 'Voice Recording'}
                                         </span>
-                                        <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono font-bold text-[10px]">
+                                        <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-mono font-bold text-[10px]">
                                             ⏱ ${ev.audio_timestamp || '00:00'}
                                         </span>
                                     </div>
                                     ${(ev.transcript_snippet || ev.snippet) ? `
-                                        <div class="p-2 rounded bg-slate-900/90 border-l-2 border-cyan-400 text-slate-200 text-[11px] leading-relaxed">
+                                        <div class="p-2 rounded bg-[#FFF1E7] dark:bg-slate-900/90 border-l-2 border-cyan-500 text-slate-800 dark:text-slate-200 text-[11px] leading-relaxed">
                                             "${ev.transcript_snippet || ev.snippet}"
                                         </div>
                                     ` : ''}
@@ -938,12 +942,12 @@
 
                         if (edge.category === "CHAT") {
                             specificFields += `
-                                <div class="space-y-1.5 pt-1 border-t border-slate-800/60 text-[11px]">
-                                    <div class="text-slate-400 flex items-center gap-1 font-mono">
-                                        <i class="fa-brands fa-whatsapp text-emerald-400"></i> ${ev.file_name || 'Chat Export'}
+                                <div class="space-y-1.5 pt-1 border-t border-[#805232]/20 dark:border-slate-800/60 text-[11px]">
+                                    <div class="text-slate-600 dark:text-slate-400 flex items-center gap-1 font-mono">
+                                        <i class="fa-brands fa-whatsapp text-emerald-500 dark:text-emerald-400"></i> ${ev.file_name || 'Chat Export'}
                                     </div>
                                     ${ev.snippet ? `
-                                        <div class="p-2 rounded bg-slate-900/90 border-l-2 border-emerald-400 text-slate-200 text-[11px] leading-relaxed">
+                                        <div class="p-2 rounded bg-[#FFF1E7] dark:bg-slate-900/90 border-l-2 border-emerald-500 text-slate-800 dark:text-slate-200 text-[11px] leading-relaxed">
                                             "${ev.snippet}"
                                         </div>
                                     ` : ''}
@@ -952,16 +956,16 @@
                         }
 
                         html += `
-                            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                            <div class="p-3 rounded-xl bg-[#B5D2E6]/60 dark:bg-slate-950 border border-[#805232]/30 dark:border-slate-800 space-y-2">
                                 <div class="flex items-center justify-between text-[11px]">
-                                    <span class="font-bold text-cyan-400 font-mono uppercase">[${ev.source_module}] ${ev.source_model || ''}</span>
-                                    ${ev.occurred_at ? `<span class="text-slate-700 font-mono text-[10px]">${ev.occurred_at}</span>` : ''}
+                                    <span class="font-bold text-cyan-600 dark:text-cyan-400 font-mono uppercase">[${ev.source_module}] ${ev.source_model || ''}</span>
+                                    ${ev.occurred_at ? `<span class="text-slate-500 dark:text-slate-400 font-mono text-[10px]">${ev.occurred_at}</span>` : ''}
                                 </div>
-                                <p class="text-slate-300 text-xs">${ev.summary || ''}</p>
+                                <p class="text-slate-800 dark:text-slate-300 text-xs">${ev.summary || ''}</p>
                                 ${specificFields}
                                 ${ev.evidence_url ? `
                                     <div class="pt-1.5">
-                                        <a href="${ev.evidence_url}" target="_blank" class="inline-flex items-center gap-1 text-amber-400 hover:underline text-[10px] font-semibold">
+                                        <a href="${ev.evidence_url}" target="_blank" class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:underline text-[10px] font-semibold">
                                             <span>Drill Down into Source Record</span>
                                             <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
                                         </a>
@@ -1079,25 +1083,39 @@
                 networkInstance.focus(matching[0].id, { scale: 1.2, animation: true });
                 highlightNodeNetwork(matching[0].id);
                 inspectEntity(matching[0].id);
+                window.dispatchEvent(new CustomEvent('switch-panel-tab', { detail: 'inspector' }));
             }
         }
 
         // Entity Type Quick Filter
-        function setEntityFilter(type) {
+        function setEntityFilter(type, btnElement) {
             document.querySelectorAll(".filter-chip").forEach(el => {
                 el.classList.remove("bg-amber-500", "text-slate-950", "font-bold");
                 el.classList.add("bg-[#B5D2E6]", "dark:bg-slate-800", "text-slate-800", "dark:text-slate-300");
             });
-            event.target.classList.add("bg-amber-500", "text-slate-950", "font-bold");
-            event.target.classList.remove("bg-[#B5D2E6]", "dark:bg-slate-800", "text-slate-800", "dark:text-slate-300");
+            const targetBtn = btnElement || (window.event ? window.event.target.closest("button") : null);
+            if (targetBtn) {
+                targetBtn.classList.add("bg-amber-500", "text-slate-950", "font-bold");
+                targetBtn.classList.remove("bg-[#B5D2E6]", "dark:bg-slate-800", "text-slate-800", "dark:text-slate-300");
+            }
 
             if (!graphNodes) return;
-            if (type === "ALL") {
+            const filterType = String(type).toUpperCase();
+            const hiddenNodeIds = new Set();
+            if (filterType === "ALL") {
                 graphNodes.forEach(n => graphNodes.update({ id: n.id, hidden: false }));
             } else {
                 graphNodes.forEach(n => {
-                    const isMatch = n.raw && n.raw.type === type;
+                    const nodeType = n.raw ? String(n.raw.type || "").toUpperCase() : "";
+                    const isMatch = (nodeType === filterType);
                     graphNodes.update({ id: n.id, hidden: !isMatch });
+                    if (!isMatch) hiddenNodeIds.add(n.id);
+                });
+            }
+            if (graphEdges) {
+                graphEdges.forEach(e => {
+                    const shouldHide = hiddenNodeIds.has(e.from) || hiddenNodeIds.has(e.to);
+                    graphEdges.update({ id: e.id, hidden: shouldHide });
                 });
             }
         }
@@ -1171,19 +1189,19 @@
                 if (allRels.length > 0) {
                     allRels.slice(0, 10).forEach(r => {
                         const item = document.createElement("div");
-                        item.className = "p-2 rounded bg-[#B5D2E6]/70 dark:bg-slate-950/70 border border-[#B5D2E6]/80 dark:border-slate-800/80 flex items-center justify-between text-[11px] cursor-pointer hover:border-amber-500/50 transition";
+                        item.className = "p-2 rounded bg-[#B5D2E6]/70 dark:bg-slate-950/70 border border-[#805232]/30 dark:border-slate-800/80 flex items-center justify-between text-[11px] cursor-pointer hover:border-amber-500/50 transition";
                         item.onclick = () => inspectEdge(r.id);
                         item.innerHTML = `
                             <div>
-                                <span class="font-bold text-slate-200">${r.target_name || r.source_name}</span>
-                                <span class="text-slate-700 block text-[10px]">${r.type} (${r.module})</span>
+                                <span class="font-bold text-slate-900 dark:text-slate-200">${r.target_name || r.source_name}</span>
+                                <span class="text-slate-600 dark:text-slate-400 block text-[10px]">${r.type} (${r.module})</span>
                             </div>
-                            <span class="text-amber-400 font-mono text-[10px]">₹${r.weight ? Number(r.weight).toLocaleString('en-IN') : '1'}</span>
+                            <span class="text-amber-600 dark:text-amber-400 font-mono text-[10px]">₹${r.weight ? Number(r.weight).toLocaleString('en-IN') : '1'}</span>
                         `;
                         relList.appendChild(item);
                     });
                 } else {
-                    relList.innerHTML = "<div class='text-slate-700 text-[11px] py-1'>No direct relations recorded.</div>";
+                    relList.innerHTML = "<div class='text-slate-500 dark:text-slate-400 text-[11px] py-1'>No direct relations recorded.</div>";
                 }
 
                 // Underlying Evidence Citations
@@ -1192,19 +1210,19 @@
                 if (data.evidence && data.evidence.length > 0) {
                     data.evidence.forEach(ev => {
                         const card = document.createElement("div");
-                        card.className = "p-2 rounded bg-[#B5D2E6] dark:bg-slate-950 border border-[#B5D2E6] dark:border-slate-800 text-[11px] space-y-1";
+                        card.className = "p-2 rounded bg-[#B5D2E6]/60 dark:bg-slate-950 border border-[#805232]/30 dark:border-slate-800 text-[11px] space-y-1";
                         card.innerHTML = `
                             <div class="flex items-center justify-between">
-                                <span class="font-bold text-cyan-400 uppercase text-[10px]">[${ev.module}] ${ev.model}</span>
-                                <span class="text-slate-700 text-[10px]">${ev.date}</span>
+                                <span class="font-bold text-cyan-600 dark:text-cyan-400 uppercase text-[10px]">[${ev.module}] ${ev.model}</span>
+                                <span class="text-slate-500 dark:text-slate-400 text-[10px]">${ev.date}</span>
                             </div>
-                            <p class="text-slate-300 text-[11px]">${ev.summary}</p>
-                            ${ev.url ? `<a href="${ev.url}" target="_blank" class="inline-flex items-center gap-1 text-amber-400 hover:underline text-[10px] font-semibold mt-1"><span>Inspect Source Record</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>` : ''}
+                            <p class="text-slate-800 dark:text-slate-300 text-[11px]">${ev.summary}</p>
+                            ${ev.url ? `<a href="${ev.url}" target="_blank" class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:underline text-[10px] font-semibold mt-1"><span>Inspect Source Record</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>` : ''}
                         `;
                         evList.appendChild(card);
                     });
                 } else {
-                    evList.innerHTML = "<div class='text-slate-700 text-[11px] py-1'>No granular evidence citations.</div>";
+                    evList.innerHTML = "<div class='text-slate-500 dark:text-slate-400 text-[11px] py-1'>No granular evidence citations.</div>";
                 }
 
                 // Update Timeline Stream
@@ -1222,7 +1240,7 @@
             container.innerHTML = "";
 
             if (!events || events.length === 0) {
-                container.innerHTML = `<div class='text-slate-700 italic py-2 text-center'>No timeline events recorded for ${entityName || 'selected entity'}.</div>`;
+                container.innerHTML = `<div class='text-slate-500 dark:text-slate-400 italic py-2 text-center'>No timeline events recorded for ${entityName || 'selected entity'}.</div>`;
                 badge.innerText = "0 events";
                 return;
             }
@@ -1230,13 +1248,13 @@
             badge.innerText = `${events.length} events for ${entityName}`;
             events.forEach(ev => {
                 const row = document.createElement("div");
-                row.className = "flex items-start gap-3 p-2 rounded-lg bg-[#B5D2E6]/60 dark:bg-slate-950/60 border border-[#B5D2E6]/80 dark:border-slate-800/80";
+                row.className = "flex items-start gap-3 p-2 rounded-lg bg-[#B5D2E6]/60 dark:bg-slate-950/60 border border-[#805232]/20 dark:border-slate-800/80";
                 row.innerHTML = `
-                    <span class="font-mono text-[10px] text-amber-400 whitespace-nowrap pt-0.5">${ev.date}</span>
-                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-slate-900 border border-slate-700 text-slate-400">${ev.module}</span>
+                    <span class="font-mono text-[10px] text-amber-600 dark:text-amber-400 whitespace-nowrap pt-0.5">${ev.date}</span>
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-[#FFF1E7] dark:bg-slate-900 border border-[#805232]/30 dark:border-slate-700 text-slate-700 dark:text-slate-400">${ev.module}</span>
                     <div class="flex-1">
-                        <span class="font-bold text-slate-200 text-xs">${ev.title}</span>
-                        <p class="text-slate-400 text-[11px] mt-0.5">${ev.description}</p>
+                        <span class="font-bold text-slate-900 dark:text-slate-200 text-xs">${ev.title}</span>
+                        <p class="text-slate-600 dark:text-slate-400 text-[11px] mt-0.5">${ev.description}</p>
                     </div>
                 `;
                 container.appendChild(row);

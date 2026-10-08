@@ -867,6 +867,8 @@ def get_mode1_keyword_graph(
     )
     for ev in ev_pointers:
         rel = ev.relationship
+        if not rel or not rel.source_entity or not rel.target_entity:
+            continue
         for e in [rel.source_entity, rel.target_entity]:
             if (
                 audit_profile_names
