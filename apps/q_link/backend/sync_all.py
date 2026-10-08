@@ -832,6 +832,7 @@ def sync_all_modules() -> dict[str, int]:
                             "source_module": "q_voice",
                             "source_model": "AudioRecording",
                             "source_record_id": str(rec.id),
+                            "evidence_url": f"/voice/recording/{rec.id}/",
                             "summary_snippet": "Indhumathi from Metec Design HR confirmed payment and coordination.",
                             "metadata": {
                                 "file_name": audio_fname,

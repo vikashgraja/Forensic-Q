@@ -106,6 +106,8 @@ def check_ruff() -> bool:
             cwd=str(BASE_DIR),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         # Check formatting
@@ -114,6 +116,8 @@ def check_ruff() -> bool:
             cwd=str(BASE_DIR),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         print("   [OK] Ruff linting and formatting passed (0 issues).")
@@ -142,6 +146,8 @@ def check_bandit() -> bool:
             cwd=str(BASE_DIR),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         print("   [OK] Bandit security checks passed (0 vulnerabilities detected).")
@@ -159,6 +165,8 @@ def check_django_system() -> bool:
             cwd=str(BASE_DIR),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         print("   [OK] Django system checks passed (0 issues).")
@@ -184,6 +192,8 @@ def check_django_migrations() -> bool:
             cwd=str(BASE_DIR),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         print("   [OK] Django model migrations are fully up to date (0 pending migrations).")

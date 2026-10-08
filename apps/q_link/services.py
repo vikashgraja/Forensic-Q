@@ -248,16 +248,42 @@ def create_or_update_relationship(
     # Attach evidence pointer if provided
     evidence_pointer: EvidencePointer | None = None
     if evidence_data:
-        evidence_pointer = EvidencePointer.objects.create(
+        src_mod = source_module or evidence_data.get("source_module", "core")
+        src_model = evidence_data.get("source_model", "UnknownModel")
+        src_rec_id = str(evidence_data.get("source_record_id", ""))
+        ev_url = evidence_data.get("evidence_url", "")
+        summary = evidence_data.get("summary_snippet", "")
+        ev_time = occurred_at or evidence_data.get("occurred_at") or timezone.now()
+
+        # Deduplicate evidence pointers across repeated synchronizations
+        existing_pointer = EvidencePointer.objects.filter(
             relationship=relationship,
-            source_module=source_module or evidence_data.get("source_module", "core"),
-            source_model=evidence_data.get("source_model", "UnknownModel"),
-            source_record_id=str(evidence_data.get("source_record_id", "")),
-            evidence_url=evidence_data.get("evidence_url", ""),
-            summary_snippet=evidence_data.get("summary_snippet", ""),
-            occurred_at=occurred_at or evidence_data.get("occurred_at") or timezone.now(),
-            metadata=evidence_data.get("metadata", {}),
-        )
+            source_module=src_mod,
+            source_record_id=src_rec_id,
+        ).first()
+
+        if existing_pointer:
+            update_fields = []
+            if ev_url and not existing_pointer.evidence_url:
+                existing_pointer.evidence_url = ev_url
+                update_fields.append("evidence_url")
+            if summary and not existing_pointer.summary_snippet:
+                existing_pointer.summary_snippet = summary
+                update_fields.append("summary_snippet")
+            if update_fields:
+                existing_pointer.save(update_fields=update_fields)
+            evidence_pointer = existing_pointer
+        else:
+            evidence_pointer = EvidencePointer.objects.create(
+                relationship=relationship,
+                source_module=src_mod,
+                source_model=src_model,
+                source_record_id=src_rec_id,
+                evidence_url=ev_url,
+                summary_snippet=summary,
+                occurred_at=ev_time,
+                metadata=evidence_data.get("metadata", {}),
+            )
 
     # Evaluate automated alerts for involved entities
     evaluate_relationship_risks(source_entity)
@@ -280,7 +306,17 @@ def record_timeline_event(
 ) -> ForensicTimelineEvent:
     """
     Records a chronological event for an entity's timeline.
+    Prevents duplicate timeline entries for identical timestamp, title, and module.
     """
+    existing_event = ForensicTimelineEvent.objects.filter(
+        entity=entity,
+        event_title=title,
+        event_timestamp=timestamp,
+        source_module=source_module,
+    ).first()
+    if existing_event:
+        return existing_event
+
     return ForensicTimelineEvent.objects.create(
         entity=entity,
         relationship=relationship,

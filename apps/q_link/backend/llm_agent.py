@@ -4,25 +4,79 @@ Provides an autonomous forensic reasoning copilot equipped with function tools:
 - get_entity_network: Traverses graph connections up to N hops.
 - find_paths_between: Identifies direct and indirect conduit chains.
 - get_entity_timeline: Reconstructs chronological interactions across modules.
-- query_evidence_pointers: Fetches granular underlying evidence and URLs.
+- get_evidence_details: Fetches granular underlying evidence citations and URLs.
 - evaluate_conflicts_of_interest: Checks multi-tool nexus between auditees and vendors.
+- get_syndicate_overview: Synthesizes high-level network topology, high-risk clusters, and active alerts.
 
-Supports OpenAI-compatible endpoints, Ollama, and resilient local deterministic fallback.
+Supports local Model-Host (Llama-3.2-1B-Instruct), OpenAI-compatible endpoints, and resilient deterministic fallback.
 """
 
+import re
 from typing import Any
 
 import requests
 from django.conf import settings
 from loguru import logger
 
-from ..models import ForensicEntity
+from ..models import ForensicEntity, RelationshipAlert
 from ..selectors import (
     find_paths_between,
     get_entity_evidence,
     get_entity_network,
     get_entity_timeline,
+    get_high_risk_entities,
+    get_link_dashboard_metrics,
+    get_recent_alerts,
 )
+
+STOP_WORDS = {
+    "the",
+    "in",
+    "to",
+    "for",
+    "with",
+    "from",
+    "on",
+    "at",
+    "by",
+    "this",
+    "that",
+    "entity",
+    "company",
+    "audit",
+    "tell",
+    "me",
+    "what",
+    "who",
+    "where",
+    "how",
+    "why",
+    "about",
+    "is",
+    "are",
+    "was",
+    "were",
+    "show",
+    "give",
+    "risk",
+    "risks",
+    "and",
+    "or",
+    "path",
+    "between",
+    "link",
+    "connect",
+    "connection",
+    "connections",
+    "find",
+    "check",
+    "analyze",
+    "associated",
+    "all",
+    "any",
+    "please",
+    "help",
+}
 
 
 class ForensicToolRegistry:
@@ -115,6 +169,31 @@ class ForensicToolRegistry:
                     },
                 },
             },
+            {
+                "type": "function",
+                "function": {
+                    "name": "evaluate_conflicts_of_interest",
+                    "description": "Checks for undisclosed employee-vendor nexus, shared affiliations, shell company conduits, and multi-tool risk flags for an entity.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "entity_name": {
+                                "type": "string",
+                                "description": "Entity name to inspect for conflicts of interest.",
+                            },
+                        },
+                        "required": ["entity_name"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_syndicate_overview",
+                    "description": "Provides macro intelligence summary of the entire knowledge graph, including top high-risk entities, critical syndicate alerts, and network volume.",
+                    "parameters": {"type": "object", "properties": {}},
+                },
+            },
         ]
 
     @classmethod
@@ -174,16 +253,23 @@ class ForensicToolRegistry:
                     return {"status": "error", "message": f"Entity '{entity_name}' not found."}
 
                 events = get_entity_timeline(str(entity.id), limit=30)
-                timeline_data = [
-                    {
-                        "date": e.event_timestamp.strftime("%Y-%m-%d %H:%M"),
-                        "module": e.source_module,
-                        "title": e.event_title,
-                        "description": e.event_description,
-                        "severity": e.severity,
-                    }
-                    for e in events
-                ]
+                seen_events = set()
+                timeline_data = []
+                for e in events:
+                    date_str = e.event_timestamp.strftime("%Y-%m-%d %H:%M")
+                    k = (date_str, e.source_module, e.event_title)
+                    if k in seen_events:
+                        continue
+                    seen_events.add(k)
+                    timeline_data.append(
+                        {
+                            "date": date_str,
+                            "module": e.source_module,
+                            "title": e.event_title,
+                            "description": e.event_description,
+                            "severity": e.severity,
+                        }
+                    )
                 return {
                     "status": "success",
                     "entity": entity.display_name,
@@ -197,24 +283,99 @@ class ForensicToolRegistry:
                 if not entity:
                     return {"status": "error", "message": f"Entity '{entity_name}' not found."}
 
-                evidences = get_entity_evidence(str(entity.id), limit=20)
-                ev_data = [
-                    {
-                        "module": ev.source_module,
-                        "model": ev.source_model,
-                        "record_id": ev.source_record_id,
-                        "url": ev.evidence_url,
-                        "summary": ev.summary_snippet,
-                        "occurred_at": ev.occurred_at.strftime("%Y-%m-%d")
-                        if ev.occurred_at
-                        else "N/A",
-                    }
-                    for ev in evidences
-                ]
+                evidences = get_entity_evidence(str(entity.id), limit=30)
+                seen_evidence = set()
+                ev_data = []
+                for ev in evidences:
+                    k = (ev.source_module, ev.summary_snippet)
+                    if k in seen_evidence:
+                        continue
+                    seen_evidence.add(k)
+                    ev_data.append(
+                        {
+                            "module": ev.source_module,
+                            "model": ev.source_model,
+                            "record_id": ev.source_record_id,
+                            "url": ev.evidence_url,
+                            "summary": ev.summary_snippet,
+                            "occurred_at": ev.occurred_at.strftime("%Y-%m-%d")
+                            if ev.occurred_at
+                            else "N/A",
+                        }
+                    )
                 return {
                     "status": "success",
                     "entity": entity.display_name,
                     "evidence_items": ev_data,
+                }
+
+            elif tool_name == "evaluate_conflicts_of_interest":
+                entity_name = arguments.get("entity_name", "")
+                entity = cls._find_entity(entity_name)
+                if not entity:
+                    return {"status": "error", "message": f"Entity '{entity_name}' not found."}
+
+                alerts = list(
+                    RelationshipAlert.objects.filter(primary_entity=entity).values(
+                        "title", "alert_level", "is_acknowledged"
+                    )[:10]
+                )
+
+                vendor_rels = []
+                for r in entity.out_relations.select_related("target_entity").all()[:15]:
+                    if r.target_entity.entity_type in (
+                        ForensicEntity.EntityType.VENDOR,
+                        ForensicEntity.EntityType.COMPANY,
+                    ):
+                        vendor_rels.append(
+                            {
+                                "target": r.target_entity.display_name,
+                                "relation": r.relation_type,
+                                "weight": r.weight,
+                                "module": r.source_module,
+                            }
+                        )
+                for r in entity.in_relations.select_related("source_entity").all()[:15]:
+                    if r.source_entity.entity_type in (
+                        ForensicEntity.EntityType.VENDOR,
+                        ForensicEntity.EntityType.COMPANY,
+                    ):
+                        vendor_rels.append(
+                            {
+                                "source": r.source_entity.display_name,
+                                "relation": r.relation_type,
+                                "weight": r.weight,
+                                "module": r.source_module,
+                            }
+                        )
+
+                return {
+                    "status": "success",
+                    "entity": entity.display_name,
+                    "risk_rating": entity.risk_rating,
+                    "is_target": entity.is_target,
+                    "conflicts_count": len(vendor_rels) + len(alerts),
+                    "alerts": alerts,
+                    "vendor_connections": vendor_rels,
+                }
+
+            elif tool_name == "get_syndicate_overview":
+                metrics = get_link_dashboard_metrics()
+                high_risks = list(
+                    get_high_risk_entities(min_risk=40, limit=10).values(
+                        "display_name", "entity_type", "risk_rating", "is_target"
+                    )
+                )
+                recent_alerts = list(
+                    get_recent_alerts(limit=5, unacknowledged_only=False).values(
+                        "title", "alert_level"
+                    )
+                )
+                return {
+                    "status": "success",
+                    "metrics": metrics,
+                    "high_risk_entities": high_risks,
+                    "recent_alerts": recent_alerts,
                 }
 
             return {"status": "error", "message": f"Unknown tool: '{tool_name}'"}
@@ -223,14 +384,69 @@ class ForensicToolRegistry:
             logger.error(f"Error executing forensic tool {tool_name}: {err}")
             return {"status": "error", "message": str(err)}
 
-    @staticmethod
-    def _find_entity(query: str) -> ForensicEntity | None:
+    @classmethod
+    def _find_entity(cls, query: str) -> ForensicEntity | None:
         clean = query.strip()
-        return (
+        if not clean:
+            return None
+
+        # 1. Exact case-insensitive match on display_name, identifier, or aliases
+        exact = (
             ForensicEntity.objects.filter(display_name__iexact=clean).first()
-            or ForensicEntity.objects.filter(display_name__icontains=clean).first()
+            or ForensicEntity.objects.filter(identifier__iexact=clean).first()
+            or ForensicEntity.objects.filter(aliases__alias_name__iexact=clean).first()
+        )
+        if exact:
+            return exact
+
+        # Prevent short tokens (< 3 chars) from matching arbitrary entities
+        if len(clean) < 3:
+            return None
+
+        # 2. Substring matching for search tokens of 3 or more characters
+        return (
+            ForensicEntity.objects.filter(display_name__icontains=clean).first()
             or ForensicEntity.objects.filter(aliases__alias_name__icontains=clean).first()
         )
+
+    @classmethod
+    def _find_entities_in_text(cls, text: str) -> list[ForensicEntity]:
+        """
+        Scans freeform text for mentions of indexed entities or aliases using word boundary matching.
+        Returns matched entities ordered by longest name match first to avoid partial substring collisions.
+        """
+        if not text:
+            return []
+
+        all_entities = list(ForensicEntity.objects.all().prefetch_related("aliases"))
+        matched: list[ForensicEntity] = []
+        matched_ids: set[Any] = set()
+        lower_text = text.lower()
+
+        # Sort candidates descending by length of display name
+        sorted_entities = sorted(all_entities, key=lambda e: len(e.display_name), reverse=True)
+        for ent in sorted_entities:
+            name_lower = ent.display_name.lower().strip()
+            if len(name_lower) < 3 or name_lower in STOP_WORDS:
+                continue
+
+            pattern = r"\b" + re.escape(name_lower) + r"\b"
+            if re.search(pattern, lower_text):
+                if ent.id not in matched_ids:
+                    matched.append(ent)
+                    matched_ids.add(ent.id)
+                continue
+
+            for a in ent.aliases.all():
+                alias_lower = a.alias_name.lower().strip()
+                if len(alias_lower) >= 3 and alias_lower not in STOP_WORDS:
+                    if re.search(r"\b" + re.escape(alias_lower) + r"\b", lower_text):
+                        if ent.id not in matched_ids:
+                            matched.append(ent)
+                            matched_ids.add(ent.id)
+                        break
+
+        return matched
 
 
 class ForensicCopilotAgent:
@@ -249,36 +465,88 @@ class ForensicCopilotAgent:
         self.model = getattr(
             settings, "LLM_MODEL_NAME", "./models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
         )
-        self.timeout = getattr(settings, "LLM_API_TIMEOUT", 30.0)
+        self.timeout = float(getattr(settings, "LLM_API_TIMEOUT", 15.0))
 
     def analyze_investigative_query(
         self, user_query: str, active_entity_name: str | None = None
     ) -> dict[str, Any]:
         """
         Runs the agentic reasoning loop:
-        1. Analyzes user request and resolves target entity.
-        2. Executes investigative tools (network graph, timeline, evidence pointers).
+        1. Analyzes user request and resolves target entity or dual conduit targets.
+        2. Executes investigative tools (network graph, timeline, evidence pointers, pathfinding).
         3. Attempts neural synthesis via the live LLM endpoint (Model-Host / Llama-3.2).
         4. Seamlessly falls back to structured deterministic synthesis if LLM is offline or refuses.
         """
-        tool_calls = []
+        matched_entities = ForensicToolRegistry._find_entities_in_text(user_query)
+        active_entity = (
+            ForensicToolRegistry._find_entity(active_entity_name) if active_entity_name else None
+        )
 
-        # Target entity resolution
-        target = None
-        if active_entity_name:
-            target = ForensicToolRegistry._find_entity(active_entity_name)
+        query_lower = user_query.lower()
+        is_path_query = any(
+            w in query_lower
+            for w in [
+                "path",
+                "between",
+                "connect",
+                "link",
+                "conduit",
+                "route",
+                "nexus",
+                "relation",
+                "how is",
+            ]
+        )
+
+        # -------------------------------------------------------------
+        # Mode A: Dual-Entity / Conduit Path Analysis
+        # -------------------------------------------------------------
+        if (
+            len(matched_entities) >= 2
+            or (
+                active_entity
+                and len(matched_entities) >= 1
+                and active_entity.id != matched_entities[0].id
+            )
+            or (is_path_query and len(matched_entities) >= 2)
+        ):
+            e1 = active_entity if active_entity else matched_entities[0]
+            e2 = (
+                matched_entities[0]
+                if (active_entity and active_entity.id != matched_entities[0].id)
+                else matched_entities[1]
+            )
+            return self._analyze_dual_entities(user_query, e1, e2)
+
+        # -------------------------------------------------------------
+        # Mode B: Macro Audit / Syndicate Threat Overview
+        # -------------------------------------------------------------
+        is_overview_query = any(
+            w in query_lower
+            for w in [
+                "overview",
+                "summary",
+                "high risk",
+                "top risk",
+                "alerts",
+                "syndicate",
+                "threats",
+                "clusters",
+                "targets",
+                "what are the risks in this audit",
+                "audit risks",
+            ]
+        )
+        if not matched_entities and not active_entity and is_overview_query:
+            return self._analyze_syndicate_overview(user_query)
+
+        # -------------------------------------------------------------
+        # Mode C: Single-Entity Deep-Dive Dossier
+        # -------------------------------------------------------------
+        target = active_entity or (matched_entities[0] if matched_entities else None)
 
         if not target:
-            # Try to extract entity mention from query
-            words = user_query.split()
-            for w in words:
-                cand = ForensicToolRegistry._find_entity(w)
-                if cand:
-                    target = cand
-                    break
-
-        if not target:
-            # Select highest risk entity in repository
+            # Fallback to the primary high-risk target in the database
             target = ForensicEntity.objects.order_by("-is_target", "-risk_rating").first()
 
         if not target:
@@ -288,6 +556,14 @@ class ForensicCopilotAgent:
                 "tool_calls": [],
                 "mode": "deterministic_fallback",
             }
+
+        return self._analyze_single_entity(user_query, target)
+
+    def _analyze_single_entity(self, user_query: str, target: ForensicEntity) -> dict[str, Any]:
+        """
+        Executes single-entity investigation tools and synthesizes findings.
+        """
+        tool_calls = []
 
         # 1. Execute get_entity_network
         net_out = ForensicToolRegistry.execute_tool(
@@ -325,24 +601,44 @@ class ForensicCopilotAgent:
             }
         )
 
-        # Attempt synthesis with live LLM endpoint (e.g. local Model-Host)
-        llm_response = self._synthesize_with_llm(
-            user_query, target, net_out, timeline_out, evidence_out
+        # 4. Execute evaluate_conflicts_of_interest
+        conflict_out = ForensicToolRegistry.execute_tool(
+            "evaluate_conflicts_of_interest", {"entity_name": target.display_name}
+        )
+        tool_calls.append(
+            {
+                "tool": "evaluate_conflicts_of_interest",
+                "arguments": {"entity_name": target.display_name},
+                "output": conflict_out,
+            }
         )
 
+        # Synthesis via LLM endpoint or deterministic fallback
+        llm_response = self._synthesize_single_with_llm(
+            user_query, target, net_out, timeline_out, evidence_out, conflict_out
+        )
+
+        evidence_items = evidence_out.get("evidence_items", [])
+        citations = []
+        seen_cit = set()
+        for item in evidence_items:
+            k = (item.get("module"), item.get("summary"))
+            if k in seen_cit:
+                continue
+            seen_cit.add(k)
+            url_part = f" ([Inspect Record]({item['url']}))" if item.get("url") else ""
+            citations.append(f"- **[{item['module'].upper()}]** {item['summary']}{url_part}")
+
         if llm_response:
-            evidence_items = evidence_out.get("evidence_items", [])
-            citations = []
-            if evidence_items:
-                citations.append("\n\n#### 🔗 Cross-Tool Converged Evidence:")
-                for item in evidence_items[:5]:
-                    citations.append(
-                        f"- **[{item['module'].upper()}]** {item['summary']} ([Inspect Record]({item['url']}))"
-                    )
-            final_narrative = llm_response + "\n".join(citations)
+            cit_block = (
+                ("\n\n#### 🔗 Cross-Tool Converged Evidence:\n" + "\n".join(citations[:5]))
+                if citations
+                else ""
+            )
+            final_narrative = llm_response + cit_block
         else:
             final_narrative = self._build_deterministic_narrative(
-                target, net_out, timeline_out, evidence_out
+                target, net_out, timeline_out, evidence_out, conflict_out
             )
 
         return {
@@ -352,16 +648,130 @@ class ForensicCopilotAgent:
             "mode": "agentic_tool_calling",
         }
 
-    def _synthesize_with_llm(
+    def _analyze_dual_entities(
+        self, user_query: str, source: ForensicEntity, target: ForensicEntity
+    ) -> dict[str, Any]:
+        """
+        Executes multi-entity conduit search, pathfinding, and relationship convergence.
+        """
+        tool_calls = []
+
+        # 1. Execute find_paths_between
+        path_out = ForensicToolRegistry.execute_tool(
+            "find_paths_between",
+            {"source_name": source.display_name, "target_name": target.display_name, "max_hops": 3},
+        )
+        tool_calls.append(
+            {
+                "tool": "find_paths_between",
+                "arguments": {
+                    "source_name": source.display_name,
+                    "target_name": target.display_name,
+                },
+                "output": path_out,
+            }
+        )
+
+        # 2. Execute get_entity_network for both
+        net_src = ForensicToolRegistry.execute_tool(
+            "get_entity_network", {"entity_name": source.display_name, "max_hops": 1}
+        )
+        tool_calls.append(
+            {
+                "tool": "get_entity_network",
+                "arguments": {"entity_name": source.display_name},
+                "output": net_src,
+            }
+        )
+
+        net_tgt = ForensicToolRegistry.execute_tool(
+            "get_entity_network", {"entity_name": target.display_name, "max_hops": 1}
+        )
+        tool_calls.append(
+            {
+                "tool": "get_entity_network",
+                "arguments": {"entity_name": target.display_name},
+                "output": net_tgt,
+            }
+        )
+
+        # 3. Evidence details for both
+        ev_src = ForensicToolRegistry.execute_tool(
+            "get_evidence_details", {"entity_name": source.display_name}
+        )
+        ev_tgt = ForensicToolRegistry.execute_tool(
+            "get_evidence_details", {"entity_name": target.display_name}
+        )
+
+        # LLM Synthesis or deterministic fallback
+        llm_response = self._synthesize_dual_with_llm(user_query, source, target, path_out)
+
+        combined_evidence = ev_src.get("evidence_items", []) + ev_tgt.get("evidence_items", [])
+        citations = []
+        seen_cit = set()
+        for item in combined_evidence:
+            k = (item.get("module"), item.get("summary"))
+            if k in seen_cit:
+                continue
+            seen_cit.add(k)
+            url_part = f" ([Inspect Record]({item['url']}))" if item.get("url") else ""
+            citations.append(f"- **[{item['module'].upper()}]** {item['summary']}{url_part}")
+
+        if llm_response:
+            cit_block = (
+                ("\n\n#### 🔗 Cross-Tool Converged Evidence:\n" + "\n".join(citations[:5]))
+                if citations
+                else ""
+            )
+            final_narrative = llm_response + cit_block
+        else:
+            final_narrative = self._build_dual_entity_narrative(source, target, path_out, citations)
+
+        return {
+            "query": user_query,
+            "response": final_narrative,
+            "tool_calls": tool_calls,
+            "mode": "agentic_tool_calling",
+        }
+
+    def _analyze_syndicate_overview(self, user_query: str) -> dict[str, Any]:
+        """
+        Executes syndicate macro inspection tools and generates an executive overview.
+        """
+        tool_calls = []
+        overview_out = ForensicToolRegistry.execute_tool("get_syndicate_overview", {})
+        tool_calls.append(
+            {
+                "tool": "get_syndicate_overview",
+                "arguments": {},
+                "output": overview_out,
+            }
+        )
+
+        llm_response = self._synthesize_overview_with_llm(user_query, overview_out)
+        if llm_response:
+            final_narrative = llm_response
+        else:
+            final_narrative = self._build_syndicate_overview_narrative(overview_out)
+
+        return {
+            "query": user_query,
+            "response": final_narrative,
+            "tool_calls": tool_calls,
+            "mode": "agentic_tool_calling",
+        }
+
+    def _synthesize_single_with_llm(
         self,
         query: str,
         target: ForensicEntity,
         net_out: dict[str, Any],
         timeline_out: dict[str, Any],
         evidence_out: dict[str, Any],
+        conflict_out: dict[str, Any],
     ) -> str | None:
         """
-        Calls the LLM endpoint (e.g. Model-Host) to synthesize an investigative intelligence report.
+        Calls Model-Host with readable relationship edges and deduplicated findings.
         """
         try:
             connected_count = max(0, net_out.get("connected_nodes_count", 1) - 1)
@@ -369,47 +779,164 @@ class ForensicCopilotAgent:
             events = timeline_out.get("timeline", [])
             evidence_items = evidence_out.get("evidence_items", [])
 
-            ev_snippets = [f"[{ev['module'].upper()}] {ev['summary']}" for ev in evidence_items[:5]]
-            ev_str = "; ".join(ev_snippets) if ev_snippets else "No direct evidence pointers."
+            # Format human-readable relationship edges
+            node_labels = {
+                n.get("id"): n.get("label", n.get("display_name", ""))
+                for n in net_out.get("nodes", [])
+            }
+            readable_edges = []
+            for e in net_out.get("edges", [])[:10]:
+                src_lbl = node_labels.get(e.get("from"), "Entity")
+                dst_lbl = node_labels.get(e.get("to"), "Entity")
+                rel_lbl = e.get("label", "RELATED_TO")
+                readable_edges.append(f"- {src_lbl} -> {dst_lbl} ({rel_lbl})")
+            edges_text = "\n".join(readable_edges) if readable_edges else "Direct connections only."
 
-            time_snippets = [f"{e['date']} ({e['module']}): {e['title']}" for e in events[:4]]
-            time_str = "; ".join(time_snippets) if time_snippets else "No recorded timeline events."
+            ev_snippets = [f"[{ev['module'].upper()}] {ev['summary']}" for ev in evidence_items[:5]]
+            ev_str = (
+                "\n".join(f"- {s}" for s in ev_snippets)
+                if ev_snippets
+                else "- No direct evidence records."
+            )
+
+            time_snippets = [
+                f"{e['date']} [{e['module'].upper()}]: {e['title']}" for e in events[:4]
+            ]
+            time_str = (
+                "\n".join(f"- {t}" for t in time_snippets)
+                if time_snippets
+                else "- No recorded timeline events."
+            )
+
+            conflicts_count = conflict_out.get("conflicts_count", 0)
+            alerts = conflict_out.get("alerts", [])
+            alert_str = (
+                ", ".join(a.get("title", "") for a in alerts[:3]) if alerts else "None active"
+            )
 
             prompt = (
                 f"You are ForensiQ Copilot, a senior forensic data intelligence analyst.\n"
-                f"Summarize the following cross-module entity intelligence findings for {target.display_name}:\n\n"
+                f"Analyze the following cross-module entity intelligence dossier for '{target.display_name}':\n\n"
                 f"Target Entity: {target.display_name} ({target.get_entity_type_display()}, Risk Score: {target.risk_rating}/100)\n"
-                f"Network Connections: Connected to {connected_count} unique entities across {edges_count} multi-tool edges.\n"
-                f"Evidence Records: {ev_str}\n"
-                f"Timeline Events: {time_str}\n\n"
+                f"Network Connections ({connected_count} entities, {edges_count} edges):\n{edges_text}\n\n"
+                f"Underlying Evidence Records:\n{ev_str}\n\n"
+                f"Reconstructed Timeline Events:\n{time_str}\n\n"
+                f"Conflicts & Syndicate Flags: {conflicts_count} total flags (Recent: {alert_str})\n\n"
                 f"User Inquiry: {query}\n\n"
-                f"Provide a concise, professional investigative summary with key findings and recommendations:"
+                f"Provide a concise, professional investigative summary with specific findings, connected counterparties, and recommendations:"
             )
 
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-            }
-            payload = {
-                "model": self.model,
-                "messages": [{"role": "user", "content": prompt}],
-            }
-
-            resp = requests.post(self.endpoint, json=payload, headers=headers, timeout=self.timeout)  # nosec B113
-            if resp.status_code == 200:
-                content = resp.json()["choices"][0]["message"].get("content", "").strip()
-                refusals = [
-                    "cannot provide legal advice",
-                    "cannot provide information about a private citizen",
-                ]
-                if (
-                    content
-                    and not any(r in content.lower() for r in refusals)
-                    and len(content) > 30
-                ):
-                    return content
+            return self._call_model_host(prompt)
         except Exception as err:
-            logger.debug(f"LLM synthesis unavailable or errored: {err}")
+            logger.debug(f"LLM single synthesis failed: {err}")
+            return None
+
+    def _synthesize_dual_with_llm(
+        self,
+        query: str,
+        source: ForensicEntity,
+        target: ForensicEntity,
+        path_out: dict[str, Any],
+    ) -> str | None:
+        """
+        Synthesizes conduit paths and connection intelligence between two entities.
+        """
+        try:
+            paths = path_out.get("path_details", [])
+            paths_count = path_out.get("paths_found", 0)
+
+            path_lines = []
+            for idx, p in enumerate(paths[:4], 1):
+                steps = []
+                for hop in p:
+                    steps.append(
+                        f"{hop.get('from_name')} --[{hop.get('relation_type')}]--> {hop.get('to_name')}"
+                    )
+                path_lines.append(f"Route {idx}: " + " -> ".join(steps))
+
+            paths_str = (
+                "\n".join(path_lines) if path_lines else "No direct path within traversal limits."
+            )
+
+            prompt = (
+                f"You are ForensiQ Copilot, an enterprise knowledge graph data analyst.\n"
+                f"Analyze the connection pathways between Node 1 ({source.display_name}) and Node 2 ({target.display_name}):\n\n"
+                f"Graph Pathways ({paths_count} routes found):\n{paths_str}\n\n"
+                f"User Inquiry: {query}\n\n"
+                f"Describe the connection path from {source.display_name} to {target.display_name}, noting any intermediate conduits or connecting entities in 3-4 professional sentences:"
+            )
+
+            return self._call_model_host(prompt)
+        except Exception as err:
+            logger.debug(f"LLM dual synthesis failed: {err}")
+            return None
+
+    def _synthesize_overview_with_llm(self, query: str, overview_out: dict[str, Any]) -> str | None:
+        """
+        Synthesizes audit-wide threat briefing from overview metrics.
+        """
+        try:
+            metrics = overview_out.get("metrics", {})
+            high_risks = overview_out.get("high_risk_entities", [])
+            alerts = overview_out.get("recent_alerts", [])
+
+            risk_lines = [
+                f"- {e.get('display_name')} ({e.get('entity_type')}, Risk: {e.get('risk_rating')}/100)"
+                for e in high_risks[:6]
+            ]
+            risk_str = "\n".join(risk_lines) if risk_lines else "None flagged above threshold."
+
+            alert_lines = [f"- [{a.get('severity')}] {a.get('title')}" for a in alerts[:4]]
+            alert_str = "\n".join(alert_lines) if alert_lines else "No active alerts."
+
+            prompt = (
+                f"You are ForensiQ Copilot, an enterprise audit and financial data reconciliation system.\n"
+                f"Summarize the macro syndicate risks across the current audit:\n\n"
+                f"Total Indexed Entities: {metrics.get('total_entities', 0)}\n"
+                f"Total Inter-Tool Relationships: {metrics.get('total_relationships', 0)}\n"
+                f"Unacknowledged Relationship Alerts: {metrics.get('unack_alerts', 0)}\n\n"
+                f"Top High-Risk Entities:\n{risk_str}\n\n"
+                f"Recent Syndicate Alerts:\n{alert_str}\n\n"
+                f"User Inquiry: {query}\n\n"
+                f"Provide an executive briefing detailing high-risk syndicates, primary focal targets, and recommended reconciliation actions:"
+            )
+
+            return self._call_model_host(prompt)
+        except Exception as err:
+            logger.debug(f"LLM overview synthesis failed: {err}")
+            return None
+
+    def _call_model_host(self, prompt: str) -> str | None:
+        """
+        Dispatches request to Model-Host (port 8434) with low temperature and strict token limit.
+        """
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.2,
+            "max_tokens": 600,
+        }
+
+        resp = requests.post(self.endpoint, json=payload, headers=headers, timeout=self.timeout)  # nosec B113
+        if resp.status_code == 200:
+            content = resp.json()["choices"][0]["message"].get("content", "").strip()
+            refusals = [
+                "cannot provide",
+                "cannot assist",
+                "unable to assist",
+                "cannot fulfill",
+                "i can't assist",
+                "i cannot help",
+                "i am not able to",
+                "illegal activities",
+                "commit fraud",
+            ]
+            if content and not any(r in content.lower() for r in refusals) and len(content) > 30:
+                return content
         return None
 
     def _build_deterministic_narrative(
@@ -418,6 +945,7 @@ class ForensicCopilotAgent:
         net_out: dict[str, Any],
         timeline_out: dict[str, Any],
         evidence_out: dict[str, Any],
+        conflict_out: dict[str, Any],
     ) -> str:
         """
         Builds a structured markdown forensic briefing deterministically.
@@ -426,20 +954,31 @@ class ForensicCopilotAgent:
         edges_count = net_out.get("connected_edges_count", 0)
         events = timeline_out.get("timeline", [])
         evidence_items = evidence_out.get("evidence_items", [])
+        vendor_rels = conflict_out.get("vendor_connections", [])
 
         narrative = [
             f"### 🛡️ Forensic Syndicate Analysis: {target.display_name}",
             f"- **Entity Classification**: {target.get_entity_type_display()} (Risk Score: `{target.risk_rating}/100`)",
             f"- **Network Density**: Connected to **{connected_count} unique entities** across **{edges_count} multi-tool edges**.",
-            "",
-            "#### 🔗 Cross-Tool Converged Evidence:",
         ]
 
+        if vendor_rels:
+            narrative.append(
+                f"- **Commercial Footprint**: Active affiliations with {len(vendor_rels)} corporate/vendor counterparties."
+            )
+
+        narrative.append("\n#### 🔗 Cross-Tool Converged Evidence:")
         if evidence_items:
-            for item in evidence_items[:5]:
-                narrative.append(
-                    f"- **[{item['module'].upper()}]** {item['summary']} ([Inspect Record]({item['url']}))"
-                )
+            seen = set()
+            for item in evidence_items:
+                k = (item.get("module"), item.get("summary"))
+                if k in seen:
+                    continue
+                seen.add(k)
+                url_part = f" ([Inspect Record]({item['url']}))" if item.get("url") else ""
+                narrative.append(f"- **[{item['module'].upper()}]** {item['summary']}{url_part}")
+                if len(seen) >= 5:
+                    break
         else:
             narrative.append("- *No direct granular evidence pointers logged yet.*")
 
@@ -447,7 +986,7 @@ class ForensicCopilotAgent:
         if events:
             for ev in events[:4]:
                 narrative.append(
-                    f"- **{ev['date']}** (`{ev['module']}`): {ev['title']} — {ev['description']}"
+                    f"- **{ev['date']}** (`{ev['module'].upper()}`): {ev['title']} — {ev['description']}"
                 )
         else:
             narrative.append("- *No timestamped events available.*")
@@ -456,6 +995,92 @@ class ForensicCopilotAgent:
             f"\n> **Investigative Hypothesis**: {target.display_name} acts as a central hub connecting multiple transaction channels. "
             "Cross-referencing fund flows against procurement documentation shows tight temporal correlation. "
             "Recommend immediate deep-dive into intermediary conduit accounts."
+        )
+
+        return "\n".join(narrative)
+
+    def _build_dual_entity_narrative(
+        self,
+        source: ForensicEntity,
+        target: ForensicEntity,
+        path_out: dict[str, Any],
+        citations: list[str],
+    ) -> str:
+        """
+        Builds a structured markdown connection trail between two entities deterministically.
+        """
+        paths = path_out.get("path_details", [])
+        paths_count = path_out.get("paths_found", 0)
+
+        narrative = [
+            "### 🔍 Inter-Entity Nexus & Conduit Analysis",
+            f"- **Source**: **{source.display_name}** ({source.get_entity_type_display()}, Risk: `{source.risk_rating}/100`)",
+            f"- **Target**: **{target.display_name}** ({target.get_entity_type_display()}, Risk: `{target.risk_rating}/100`)",
+            f"- **Discovered Routes**: **{paths_count} path(s)** identified across the multi-tool graph.",
+            "",
+            "#### 🛤️ Conduit Transmission Routes:",
+        ]
+
+        if paths:
+            for idx, p in enumerate(paths[:3], 1):
+                steps = []
+                for hop in p:
+                    steps.append(
+                        f"`{hop.get('from_name')}` --[{hop.get('relation_type')}]--> `{hop.get('to_name')}`"
+                    )
+                narrative.append(f"{idx}. " + " ➔ ".join(steps))
+        else:
+            narrative.append(
+                "- *No direct paths found within 3 hops. Entities appear in separate graph clusters or communicate via external channels.*"
+            )
+
+        if citations:
+            narrative.append("\n#### 🔗 Cross-Tool Converged Evidence:")
+            narrative.extend(citations[:5])
+
+        narrative.append(
+            f"\n> **Nexus Evaluation**: Direct and indirect linkages establish an operational conduit between {source.display_name} and {target.display_name}. "
+            "Examine intermediate nodes for shell company indicators or pass-through transaction timing."
+        )
+
+        return "\n".join(narrative)
+
+    def _build_syndicate_overview_narrative(self, overview_out: dict[str, Any]) -> str:
+        """
+        Builds an executive overview of the audit syndicate deterministically.
+        """
+        metrics = overview_out.get("metrics", {})
+        high_risks = overview_out.get("high_risk_entities", [])
+        alerts = overview_out.get("recent_alerts", [])
+
+        narrative = [
+            "### 🌐 Executive Syndicate Intelligence Briefing",
+            f"- **Repository Volume**: `{metrics.get('total_entities', 0)}` indexed entities across `{metrics.get('total_relationships', 0)}` inter-tool relationships.",
+            f"- **High-Risk Nodes**: `{len(high_risks)}` entities identified above critical risk threshold.",
+            f"- **Unresolved Flags**: `{metrics.get('unack_alerts', 0)}` active multi-tool correlation alerts.",
+            "",
+            "#### 🚨 Primary High-Risk Targets:",
+        ]
+
+        if high_risks:
+            for e in high_risks[:5]:
+                target_badge = " [TARGET]" if e.get("is_target") else ""
+                narrative.append(
+                    f"- **{e.get('display_name')}** ({e.get('entity_type')}{target_badge}) — Risk Score: `{e.get('risk_rating')}/100`"
+                )
+        else:
+            narrative.append("- *No high-risk entities detected.*")
+
+        narrative.append("\n#### ⚡ Urgent Relationship Alerts:")
+        if alerts:
+            for a in alerts[:4]:
+                narrative.append(f"- **[{a.get('severity')}]** {a.get('title')}")
+        else:
+            narrative.append("- *No recent unacknowledged alerts.*")
+
+        narrative.append(
+            "\n> **Strategic Recommendation**: Focus investigative inquiry on targets exhibiting both financial layering and voice/chat coordination. "
+            "Select any entity from the knowledge graph or use Copilot queries to inspect individual conduit paths."
         )
 
         return "\n".join(narrative)
