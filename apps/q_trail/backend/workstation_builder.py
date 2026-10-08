@@ -376,9 +376,9 @@ def build_topology_graph(
     plate_h = 54
 
     # Categorize nodes into 3 columns:
-    # Col 0 (x=160): Origins / Senders
+    # Col 0 (x=160): Origins / Primary Auditees
     # Col 1 (x=530): Intermediary Conduits
-    # Col 2 (x=900): Beneficiaries / Receivers
+    # Col 2 (x=900): Beneficiaries / Counterparties
     origins_set: set[str] = set()
     conduits_set: set[str] = set()
     beneficiaries_set: set[str] = set()
@@ -397,15 +397,36 @@ def build_topology_graph(
         origins_set = origins_set - conduits_set
         beneficiaries_set = beneficiaries_set - conduits_set
 
-    # Fallback if empty
-    if not origins_set and analyzed_profiles:
-        origins_set = {analyzed_profiles[0]["name"]}
-        if len(analyzed_profiles) > 1:
-            beneficiaries_set = {analyzed_profiles[1]["name"]}
+    primary_origin = analyzed_profiles[0]["name"] if analyzed_profiles else ""
 
-    origin_list = sorted(origins_set)
+    origin_entities: set[str] = set()
+    beneficiary_entities: set[str] = set()
+    all_non_conduits = (origins_set | beneficiaries_set) - conduits_set
+
+    for ent in all_non_conduits:
+        if primary_origin and ent.lower() == primary_origin.lower():
+            origin_entities.add(ent)
+        elif ent in beneficiaries_set and ent not in origins_set:
+            beneficiary_entities.add(ent)
+        elif ent in origins_set and ent not in beneficiaries_set:
+            origin_entities.add(ent)
+        else:
+            # Present in both: primary goes to Origin, others go to Beneficiary
+            if primary_origin and ent.lower() == primary_origin.lower():
+                origin_entities.add(ent)
+            else:
+                beneficiary_entities.add(ent)
+
+    if not origin_entities and primary_origin:
+        origin_entities.add(primary_origin)
+    if not origin_entities and all_non_conduits:
+        first_ent = sorted(all_non_conduits)[0]
+        origin_entities.add(first_ent)
+        beneficiary_entities.discard(first_ent)
+
+    origin_list = sorted(origin_entities)
     conduit_list = sorted(conduits_set)
-    beneficiary_list = sorted(beneficiaries_set)
+    beneficiary_list = sorted(beneficiary_entities)
 
     # Dynamic Canvas Height calculation based on max column item count
     max_col_count = max(len(origin_list), len(conduit_list), len(beneficiary_list), 1)
@@ -464,11 +485,45 @@ def build_topology_graph(
                 return n_obj
         return None
 
+    def _compute_edge_geom(
+        s_node: dict[str, Any], t_node: dict[str, Any], force_return: bool = False
+    ):
+        sx, sy = s_node["x"], s_node["y"]
+        tx, ty = t_node["x"], t_node["y"]
+        if sx < tx and not force_return:
+            # Standard forward flow
+            x1 = sx + half_w
+            y1 = sy
+            x2 = tx - half_w
+            y2 = ty
+            cx1 = x1 + (x2 - x1) * 0.48
+            cx2 = x1 + (x2 - x1) * 0.52
+            d = f"M {x1} {y1} C {cx1} {y1}, {cx2} {y2}, {x2} {y2}"
+            return d, (x1 + x2) / 2.0, (y1 + y2) / 2.0, False
+        elif sx > tx or force_return:
+            # Return / backward flow (underneath nodes)
+            x1 = sx
+            y1 = sy + (plate_h / 2.0)
+            x2 = tx
+            y2 = ty + (plate_h / 2.0)
+            sweep_y = max(y1, y2) + 42.0
+            d = f"M {x1} {y1} C {x1} {sweep_y}, {x2} {sweep_y}, {x2} {y2}"
+            return d, (x1 + x2) / 2.0, sweep_y, True
+        else:
+            # Same column flow (loop bracket on the right)
+            x1 = sx + half_w
+            y1 = sy
+            x2 = tx + half_w
+            y2 = ty
+            arc_x = x1 + 45.0
+            d = f"M {x1} {y1} C {arc_x} {y1}, {arc_x} {y2}, {x2} {y2}"
+            return d, arc_x, (y1 + y2) / 2.0, False
+
     edges: list[dict[str, Any]] = []
     edge_idx = 1
     half_w = plate_w / 2.0
 
-    # Add direct edges (dock from Origin right edge to Beneficiary left edge)
+    # Add direct edges
     if not direct_df.empty:
         for _, row in direct_df.iterrows():
             s_name = _clean_str(row.get("Sender_Person"))
@@ -478,13 +533,7 @@ def build_topology_graph(
             s_node = _find_node(s_name)
             t_node = _find_node(t_name)
             if s_node and t_node:
-                x1, y1 = s_node["x"] + half_w, s_node["y"]
-                x2, y2 = t_node["x"] - half_w, t_node["y"]
-                cx1 = x1 + (x2 - x1) * 0.45
-                cx2 = x1 + (x2 - x1) * 0.55
-                d = f"M {x1} {y1} C {cx1} {y1}, {cx2} {y2}, {x2} {y2}"
-                mid_x = (x1 + x2) / 2
-                mid_y = (y1 + y2) / 2
+                d, mid_x, mid_y, is_ret = _compute_edge_geom(s_node, t_node)
                 edges.append(
                     {
                         "id": f"L{edge_idx}",
@@ -492,12 +541,14 @@ def build_topology_graph(
                         "to": t_node["id"],
                         "from_name": s_name,
                         "to_name": t_name,
-                        "kind": "direct",
+                        "kind": "return" if is_ret else "direct",
                         "amount": _format_inr_short(amt),
                         "amount_num": amt,
                         "d": d,
-                        "color": "#10b981",  # Emerald for direct
-                        "dashed": False,
+                        "color": "#f59e0b"
+                        if is_ret
+                        else "#10b981",  # Amber for return, Emerald for forward
+                        "dashed": is_ret,
                         "utr": utr,
                         "via": "",
                         "ret": 0.0,
@@ -520,13 +571,9 @@ def build_topology_graph(
             c_node = _find_node(c_name)
             t_node = _find_node(t_name)
 
-            # Leg 1: Sender right edge -> Conduit left edge
+            # Leg 1: Sender -> Conduit
             if s_node and c_node:
-                x1, y1 = s_node["x"] + half_w, s_node["y"]
-                x2, y2 = c_node["x"] - half_w, c_node["y"]
-                cx1 = x1 + (x2 - x1) * 0.5
-                cx2 = x1 + (x2 - x1) * 0.5
-                d = f"M {x1} {y1} C {cx1} {y1}, {cx2} {y2}, {x2} {y2}"
+                d, mid_x, mid_y, is_ret = _compute_edge_geom(s_node, c_node)
                 edges.append(
                     {
                         "id": f"L{edge_idx}",
@@ -534,27 +581,23 @@ def build_topology_graph(
                         "to": c_node["id"],
                         "from_name": s_name,
                         "to_name": c_name,
-                        "kind": "hop",
+                        "kind": "return" if is_ret else "hop",
                         "amount": _format_inr_short(out_amt),
                         "amount_num": out_amt,
                         "d": d,
-                        "color": "#38bdf8",  # Sky blue for conduit hop
-                        "dashed": False,
+                        "color": "#f59e0b" if is_ret else "#38bdf8",
+                        "dashed": is_ret,
                         "utr": "",
                         "via": c_name,
                         "ret": 0.0,
-                        "mid": {"x": round((x1 + x2) / 2, 1), "y": round((y1 + y2) / 2, 1)},
+                        "mid": {"x": round(mid_x, 1), "y": round(mid_y, 1)},
                     }
                 )
                 edge_idx += 1
 
-            # Leg 2: Conduit right edge -> Recipient left edge
+            # Leg 2: Conduit -> Recipient
             if c_node and t_node:
-                x1, y1 = c_node["x"] + half_w, c_node["y"]
-                x2, y2 = t_node["x"] - half_w, t_node["y"]
-                cx1 = x1 + (x2 - x1) * 0.5
-                cx2 = x1 + (x2 - x1) * 0.5
-                d = f"M {x1} {y1} C {cx1} {y1}, {cx2} {y2}, {x2} {y2}"
+                d, mid_x, mid_y, is_ret = _compute_edge_geom(c_node, t_node)
                 edges.append(
                     {
                         "id": f"L{edge_idx}",
@@ -562,16 +605,16 @@ def build_topology_graph(
                         "to": t_node["id"],
                         "from_name": c_name,
                         "to_name": t_name,
-                        "kind": "hop",
+                        "kind": "return" if is_ret else "hop",
                         "amount": _format_inr_short(in_amt),
                         "amount_num": in_amt,
                         "d": d,
-                        "color": "#f59e0b" if ret_amt > 0 else "#38bdf8",
-                        "dashed": False,
+                        "color": "#f59e0b" if (is_ret or ret_amt > 0) else "#38bdf8",
+                        "dashed": is_ret,
                         "utr": "",
                         "via": c_name,
                         "ret": ret_amt,
-                        "mid": {"x": round((x1 + x2) / 2, 1), "y": round((y1 + y2) / 2, 1)},
+                        "mid": {"x": round(mid_x, 1), "y": round(mid_y, 1)},
                     }
                 )
                 edge_idx += 1

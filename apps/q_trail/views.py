@@ -182,11 +182,60 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
     # Saved case dossiers for reference
     saved_cases = get_all_trail_cases()[:5]
 
+    # Executive Forensic Summary Intelligence
+    executive_findings = []
+    if formatted_metrics.get("total_intermediate_hops_count", 0) > 0:
+        hops_cnt = formatted_metrics["total_intermediate_hops_count"]
+        leakage = formatted_metrics.get("total_retained_formatted", "₹0.00")
+        executive_findings.append(
+            {
+                "severity": "CRITICAL" if circular_trails else "WARNING",
+                "icon": "fa-solid fa-layer-group",
+                "title": f"Rapid Layering & Conduit Velocity: {hops_cnt} Hop(s) Detected",
+                "detail": f"Funds routed through unverified third-party conduits with total conduit leakage of {leakage}.",
+            }
+        )
+
+    if circular_trails:
+        loop_cnt = len(circular_trails)
+        executive_findings.append(
+            {
+                "severity": "CRITICAL",
+                "icon": "fa-solid fa-arrows-spin",
+                "title": f"Circular Flow / Round-Trip Kickbacks: {loop_cnt} Closed Loop(s)",
+                "detail": "Capital routed outwards and returned to originator within forensic temporal windows, characteristic of rebate kickback mechanisms.",
+            }
+        )
+
+    if formatted_metrics.get("total_direct_transfers_count", 0) > 0:
+        d_cnt = formatted_metrics["total_direct_transfers_count"]
+        d_vol = formatted_metrics.get("total_direct_volume_formatted", "₹0.00")
+        executive_findings.append(
+            {
+                "severity": "INFO",
+                "icon": "fa-solid fa-hand-holding-dollar",
+                "title": f"Direct Counterparty Volume: {d_cnt} Direct Transfer(s) ({d_vol})",
+                "detail": "Direct bank transactions reconciled between auditees and primary targets without intermediary shielding.",
+            }
+        )
+
+    if analysis.get("metrics", {}).get("keyword_hits_count", 0) > 0:
+        kw_cnt = analysis["metrics"]["keyword_hits_count"]
+        executive_findings.append(
+            {
+                "severity": "WARNING",
+                "icon": "fa-solid fa-bullseye",
+                "title": f"Keyword Interlink Corroboration: {kw_cnt} Match(es)",
+                "detail": "Transaction narrations match monitored audit keywords and cross-module investigative targets.",
+            }
+        )
+
     chronological_beats = analysis.get("chronological_beats", [])
     conduit_deck = analysis.get("conduit_deck", [])
     topology_graph = analysis.get("topology_graph", {})
 
     context = {
+        "executive_findings": executive_findings,
         "available_profiles": available_profiles,
         "selected_profile_ids": profile_ids,
         "time_window_days": time_window_days,

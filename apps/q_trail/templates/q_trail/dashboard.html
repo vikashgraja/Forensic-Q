@@ -349,6 +349,34 @@
         window.topologyGraphData = {{ topology_graph_json | safe }};
     </script>
 
+    <!-- Executive Forensic Intelligence Findings Briefing -->
+    {% if executive_findings %}
+    <div class="mb-6 p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-sm">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-amber-400 text-sm"></i>
+                <h3 class="font-bold text-sm text-white tracking-tight">Executive Forensic Intelligence Briefing</h3>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                {{ executive_findings|length }} Flagged Indicator(s)
+            </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {% for item in executive_findings %}
+            <div class="p-3 rounded-xl border flex items-start gap-3 transition {% if item.severity == 'CRITICAL' %}bg-rose-950/20 border-rose-500/30 text-rose-200{% elif item.severity == 'WARNING' %}bg-amber-950/20 border-amber-500/30 text-amber-200{% else %}bg-sky-950/20 border-sky-500/30 text-sky-200{% endif %}">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 {% if item.severity == 'CRITICAL' %}bg-rose-500/20 text-rose-400{% elif item.severity == 'WARNING' %}bg-amber-500/20 text-amber-400{% else %}bg-sky-500/20 text-sky-400{% endif %}">
+                    <i class="{{ item.icon }} text-xs"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-xs text-white leading-snug">{{ item.title }}</h4>
+                    <p class="text-[11px] text-slate-300 mt-0.5 leading-relaxed">{{ item.detail }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- 1. Forensic Vitals Summary Banner -->
     <c-trail.vitals :direct_volume="metrics.total_direct_volume_formatted"
         :direct_count="metrics.total_direct_transfers_count" :outflow_volume="metrics.total_outflow_formatted"

@@ -397,6 +397,16 @@ def match_direct_transactions(
         src_name_clean = src_person.lower().strip()
         dst_vpa_clean = dst_vpa.lower().strip()
         src_vpa_clean = src_vpa.lower().strip()
+        dst_tokens = [
+            t.lower()
+            for t in re.split(r"[\s._-]+", dst_person)
+            if len(t) >= 3 and t.lower() not in ("mr", "mrs", "ms", "shri", "smt", "dr")
+        ]
+        src_tokens = [
+            t.lower()
+            for t in re.split(r"[\s._-]+", src_person)
+            if len(t) >= 3 and t.lower() not in ("mr", "mrs", "ms", "shri", "smt", "dr")
+        ]
 
         for _, row in merged_fallback.iterrows():
             narr_d = str(row["Narration_debit"]).lower()
@@ -406,18 +416,25 @@ def match_direct_transactions(
             name_d = str(row.get("Counterparty_Name_debit") or "").lower()
             name_c = str(row.get("Counterparty_Name_credit") or "").lower()
 
+            combined_d = f"{narr_d} {name_d} {vpa_d}"
+            combined_c = f"{narr_c} {name_c} {vpa_c}"
+
             is_direct_narr_match = False
 
-            # Check if Sender narration references Recipient
-            if dst_name_clean and (dst_name_clean in narr_d or dst_name_clean in name_d):
+            # Check if Sender narration/party references Recipient
+            if dst_name_clean and (
+                dst_name_clean in combined_d or any(tok in combined_d for tok in dst_tokens)
+            ):
                 is_direct_narr_match = True
-            elif dst_vpa_clean and (dst_vpa_clean in narr_d or dst_vpa_clean in vpa_d):
+            elif dst_vpa_clean and dst_vpa_clean in combined_d:
                 is_direct_narr_match = True
 
-            # Check if Recipient narration references Sender
-            if src_name_clean and (src_name_clean in narr_c or src_name_clean in name_c):
+            # Check if Recipient narration/party references Sender
+            if src_name_clean and (
+                src_name_clean in combined_c or any(tok in combined_c for tok in src_tokens)
+            ):
                 is_direct_narr_match = True
-            elif src_vpa_clean and (src_vpa_clean in narr_c or src_vpa_clean in vpa_c):
+            elif src_vpa_clean and src_vpa_clean in combined_c:
                 is_direct_narr_match = True
 
             if is_direct_narr_match:
@@ -899,10 +916,87 @@ def detect_rapid_layering_for_profile(
                 records.append(
                     {
                         "Transfer_Type": "Rapid_Layering",
+                        "Layering_Type": "RAPID_PASS_THROUGH",
                         "Match_Method": "TEMPORAL_RAPID_LAYERING",
                         "Sender_Person": in_party,
                         "Intermediary_Entity": account_holder_name,
                         "Recipient_Person": out_party,
+                        "Inflow_Date": in_date_str,
+                        "Outflow_Date": out_date_str,
+                        "Inflow_Amount": in_amt,
+                        "Outflow_Amount": out_amt,
+                        "Retention_Amount": retention_amt,
+                        "Retention_Pct": retention_pct,
+                        "Time_Delta_Hours": delta_hours,
+                        "Inflow_Narration": in_row.get("Narration", ""),
+                        "Outflow_Narration": out_row.get("Narration", ""),
+                        "Inflow_UTR": in_row.get("UTR", "N/A"),
+                        "Outflow_UTR": out_row.get("UTR", "N/A"),
+                        "Inflow_VPA": in_row.get("Counterparty_VPA", ""),
+                        "Outflow_VPA": out_row.get("Counterparty_VPA", ""),
+                    }
+                )
+
+    # Pattern 2: Round-Trip Return / Kickback Rebate (Outflow followed by rapid Inflow from same or related party)
+    for _, out_row in outflows.iterrows():
+        out_amt = float(out_row["Debit"])
+        out_date_str = str(out_row.get("Date", ""))
+        out_date_dt = out_row.get("Date_dt")
+        out_party = _clean_party(
+            out_row.get("Counterparty_Name"),
+            out_row.get("Counterparty_VPA"),
+            out_row.get("Narration"),
+        )
+        if out_party.lower() == account_holder_name.lower():
+            continue
+
+        for _, in_row in inflows.iterrows():
+            in_amt = float(in_row["Credit"])
+            in_date_str = str(in_row.get("Date", ""))
+            in_date_dt = in_row.get("Date_dt")
+            in_party = _clean_party(
+                in_row.get("Counterparty_Name"),
+                in_row.get("Counterparty_VPA"),
+                in_row.get("Narration"),
+            )
+            if in_party.lower() == account_holder_name.lower():
+                continue
+
+            party_match = (
+                in_party.lower() == out_party.lower()
+                or (len(in_party) >= 4 and in_party.lower() in out_party.lower())
+                or (len(out_party) >= 4 and out_party.lower() in in_party.lower())
+            )
+            if not party_match:
+                continue
+
+            is_temporal_match = False
+            delta_hours = 0.0
+            if pd.notna(out_date_dt) and pd.notna(in_date_dt):
+                delta_sec = (in_date_dt - out_date_dt).total_seconds()
+                if time_window_days and time_window_days > 0:
+                    if 0 <= delta_sec <= (time_window_days * 86400):
+                        is_temporal_match = True
+                        delta_hours = round(max(0.1, delta_sec / 3600.0), 1)
+                else:
+                    if delta_sec >= 0:
+                        is_temporal_match = True
+                        delta_hours = round(max(0.1, delta_sec / 3600.0), 1)
+            elif out_date_str and in_date_str and out_date_str == in_date_str:
+                is_temporal_match = True
+                delta_hours = 0.5
+
+            if is_temporal_match:
+                retention_amt = max(0.0, out_amt - in_amt)
+                retention_pct = round((retention_amt / out_amt * 100.0) if out_amt > 0 else 0.0, 1)
+                records.append(
+                    {
+                        "Transfer_Type": "Rapid_Layering",
+                        "Layering_Type": "ROUND_TRIP_KICKBACK",
+                        "Match_Method": "TEMPORAL_RETURN_FLOW",
+                        "Sender_Person": account_holder_name,
+                        "Intermediary_Entity": out_party,
+                        "Recipient_Person": account_holder_name,
                         "Inflow_Date": in_date_str,
                         "Outflow_Date": out_date_str,
                         "Inflow_Amount": in_amt,

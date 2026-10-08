@@ -301,16 +301,57 @@ def analyze_profiles_money_trail(
                 from .backend.reconciliation import _prepare_statement_dataframe
 
                 prep_a = _prepare_statement_dataframe(df_a)
-                b_pat = name_b.lower()
-
-                # Case 1: Inflow into A from B (B -> A)
-                b_inflows = prep_a[
-                    (prep_a["Credit"] > 0)
-                    & (
-                        prep_a["Narration"].str.lower().str.contains(b_pat, na=False)
-                        | prep_a["Counterparty_Name"].str.lower().str.contains(b_pat, na=False)
+                b_pat = name_b.lower().strip()
+                b_tokens = [
+                    t.lower()
+                    for t in re.split(r"[\s._-]+", name_b)
+                    if len(t) >= 3
+                    and t.lower()
+                    not in (
+                        "mr",
+                        "mrs",
+                        "ms",
+                        "shri",
+                        "smt",
+                        "dr",
+                        "and",
+                        "the",
+                        "ltd",
+                        "pvt",
+                        "inc",
+                        "corp",
                     )
                 ]
+                from core.profiles import get_profile_keywords
+
+                b_kws = [
+                    k.lower().strip()
+                    for k in get_profile_keywords(profile_id=pid_b)
+                    if len(k.strip()) >= 3
+                ]
+
+                def _matches_counterparty_b(
+                    row,
+                    _pat: str = b_pat,
+                    _tokens: list[str] = b_tokens,
+                    _keywords: list[str] = b_kws,
+                ) -> bool:
+                    narr = str(row.get("Narration", "")).lower()
+                    cpty = str(row.get("Counterparty_Name", "")).lower()
+                    vpa = str(row.get("Counterparty_VPA", "")).lower()
+                    combined = f"{narr} {cpty} {vpa}"
+                    if _pat and _pat in combined:
+                        return True
+                    if _tokens and any(tok in combined for tok in _tokens):
+                        return True
+                    if _keywords and any(kw in combined for kw in _keywords):
+                        return True
+                    return False
+
+                mask_b = prep_a.apply(_matches_counterparty_b, axis=1)
+
+                # Case 1: Inflow into A from B (B -> A)
+                b_inflows = prep_a[(prep_a["Credit"] > 0) & mask_b]
                 if not b_inflows.empty:
                     synth_in = pd.DataFrame(
                         {
@@ -333,13 +374,7 @@ def analyze_profiles_money_trail(
                     direct_records_list.append(synth_in)
 
                 # Case 2: Outflow from A to B (A -> B)
-                b_outflows = prep_a[
-                    (prep_a["Debit"] > 0)
-                    & (
-                        prep_a["Narration"].str.lower().str.contains(b_pat, na=False)
-                        | prep_a["Counterparty_Name"].str.lower().str.contains(b_pat, na=False)
-                    )
-                ]
+                b_outflows = prep_a[(prep_a["Debit"] > 0) & mask_b]
                 if not b_outflows.empty:
                     synth_out = pd.DataFrame(
                         {
@@ -366,7 +401,14 @@ def analyze_profiles_money_trail(
         combined_direct = pd.concat(direct_records_list, ignore_index=True)
         # Deduplicate identical direct records that may appear in both permutations (A->B and B->A evaluation)
         combined_direct = combined_direct.drop_duplicates(
-            subset=["Sender_Person", "Recipient_Person", "UTR", "Amount", "Transfer_Date"]
+            subset=[
+                "Sender_Person",
+                "Recipient_Person",
+                "UTR",
+                "Amount",
+                "Transfer_Date",
+                "Sender_Narration",
+            ]
         ).reset_index(drop=True)
     else:
         combined_direct = pd.DataFrame()
@@ -403,7 +445,7 @@ def analyze_profiles_money_trail(
 
             def _match_direct_kw(row):
                 matched = []
-                text = f"{row.get('Narration_Out', '')} {row.get('Narration_In', '')}".upper()
+                text = f"{row.get('Sender_Narration', '')} {row.get('Recipient_Narration', '')} {row.get('Narration', '')} {row.get('Narration_Out', '')} {row.get('Narration_In', '')} {row.get('Sender_Person', '')} {row.get('Recipient_Person', '')} {row.get('Sender_VPA', '')} {row.get('Recipient_VPA', '')}".upper()
                 for kw in trail_keywords:
                     clean_kw = kw.strip().upper()
                     if clean_kw and clean_kw in text and clean_kw not in matched:
@@ -422,7 +464,7 @@ def analyze_profiles_money_trail(
 
             def _match_inter_kw(row):
                 matched = []
-                text = f"{row.get('Intermediary_Entity', '')} {row.get('Outflow_Narration', '')} {row.get('Inflow_Narration', '')}".upper()
+                text = f"{row.get('Intermediary_Entity', '')} {row.get('Outflow_Narration', '')} {row.get('Inflow_Narration', '')} {row.get('Sender_Person', '')} {row.get('Recipient_Person', '')} {row.get('Inflow_VPA', '')} {row.get('Outflow_VPA', '')}".upper()
                 for kw in trail_keywords:
                     clean_kw = kw.strip().upper()
                     if clean_kw and clean_kw in text and clean_kw not in matched:
