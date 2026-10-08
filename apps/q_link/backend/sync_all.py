@@ -666,11 +666,13 @@ def sync_all_modules() -> dict[str, int]:
         except Exception as err:
             logger.warning(f"Error syncing Q-Scan in Q-Link: {err}")
 
-    # 8. Ingest Q-Chat Mentions & Participants
+    # 8. Ingest Q-Chat Mentions, Participants, and Flagged Keywords
     if apps.is_installed("q_chat"):
         try:
             ChatChannel = apps.get_model("q_chat", "ChatChannel")
             ChatMessage = apps.get_model("q_chat", "ChatMessage")
+
+            # Sync Chat Participants
             for ch in ChatChannel.objects.all()[:50]:
                 participants = ch.participants or []
                 if len(participants) >= 2:
@@ -694,6 +696,9 @@ def sync_all_modules() -> dict[str, int]:
                             timeline_title=f"Chat: {p1} <-> {p2}",
                             severity="INFO",
                         )
+
+            # Sync Specific Vendor Mentions (e.g. Palani)
+            for ch in ChatChannel.objects.all()[:50]:
                 for msg in ChatMessage.objects.filter(channel=ch, message_text__icontains="Palani")[
                     :10
                 ]:
@@ -732,6 +737,55 @@ def sync_all_modules() -> dict[str, int]:
                         severity="WARNING",
                     )
                     stats["q_chat"] = stats.get("q_chat", 0) + 1
+
+            # Sync Flagged Keyword Mentions
+            flagged_messages = ChatMessage.objects.filter(risk_score__gte=50).exclude(
+                flagged_terms=[]
+            )
+            for msg in flagged_messages[:100]:
+                sender = msg.sender_name
+                channel_name = msg.channel.channel_name
+                terms = msg.flagged_terms
+
+                # We can create a finding linking the sender to the 'FLAGGED_KEYWORD' concept
+                # Or just a general finding for the sender
+
+                emit_forensic_finding(
+                    source_module="q_chat",
+                    event_type="FLAGGED_KEYWORD_IN_CHAT",
+                    primary_entity_data={
+                        "name": sender,
+                        "type": ForensicEntity.EntityType.EMPLOYEE,
+                    },
+                    secondary_entities_data=[
+                        {
+                            "name": term.upper(),
+                            "type": ForensicEntity.EntityType.UNKNOWN,
+                            "relation_type": "MENTIONED_KEYWORD",
+                            "direction": "out",
+                            "metadata": {
+                                "mention": msg.message_text,
+                                "tags": ["Keyword", "Risk"],
+                            },
+                        }
+                        for term in terms
+                    ],
+                    evidence_data={
+                        "source_module": "q_chat",
+                        "source_model": "ChatMessage",
+                        "source_record_id": str(msg.id),
+                        "summary_snippet": msg.message_text[:300],
+                        "metadata": {
+                            "channel": channel_name,
+                            "snippet": msg.message_text,
+                            "keywords": terms,
+                        },
+                    },
+                    timeline_title=f"Flagged Terms ({', '.join(terms)}) in Chat by {sender}",
+                    timeline_description=f"{sender} used flagged terms in chat.",
+                    severity="WARNING" if msg.risk_score < 75 else "CRITICAL",
+                )
+                stats["q_chat"] = stats.get("q_chat", 0) + 1
         except Exception as err:
             logger.warning(f"Error syncing Q-Chat in Q-Link: {err}")
 
