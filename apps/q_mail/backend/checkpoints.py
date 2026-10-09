@@ -10,109 +10,19 @@ Rule-based matching and classification for forensic audit investigations:
 7. Default Keywords (PAYMENT, GIFT, SALARY, TAX, LOAN, CIBIL)
 """
 
-import re
 from typing import Any
 
-# Domain definitions
-CORPORATE_DOMAINS = {
-    "hmil.net",
-    "hyundai.com",
-    "hyundai-autoever.com",
-    "mobis.co.kr",
-    "hyundai.co.kr",
-    "kia.com",
-}
-
-PERSONAL_WEBMAIL_DOMAINS = {
-    "gmail.com",
-    "yahoo.com",
-    "outlook.com",
-    "hotmail.com",
-    "icloud.com",
-    "rediffmail.com",
-    "zoho.com",
-    "proton.me",
-    "protonmail.com",
-    "aol.com",
-    "ymail.com",
-    "live.com",
-    "mail.com",
-}
-
-PRIMARY_BANK_DOMAINS = {
-    "hdfcbank.net",
-    "hdfcbank.com",
-    "icicibank.com",
-    "sbi.co.in",
-    "axisbank.com",
-    "kotak.com",
-    "indusind.com",
-    "yesbank.in",
-    "canarabank.com",
-    "bankofbaroda.co.in",
-    "pnb.co.in",
-    "rblbank.com",
-    "idfcfirstbank.com",
-    "unionbankofindia.co.in",
-    "federalbank.co.in",
-}
-
-PRIMARY_BANK_KEYWORDS = {
-    "hdfc",
-    "sbi",
-    "icici",
-    "axis bank",
-    "kotak",
-    "state bank",
-    "bank of baroda",
-    "canara bank",
-    "netbanking",
-    "account statement",
-    "neft cr",
-    "rtgs cr",
-    "imps cr",
-}
-
-UPI_DOMAINS = {
-    "phonepe.com",
-    "google.com",
-    "paytm.com",
-    "cred.club",
-    "razorpay.com",
-    "npci.org.in",
-    "bhimupi.org.in",
-}
-
-UPI_KEYWORDS = {
-    "phonepe",
-    "gpay",
-    "google pay",
-    "googlepay",
-    "paytm",
-    "upi",
-    "vpa",
-    "bhim",
-    "cred",
-    "upi ref",
-    "upi transaction",
-    "upi payment",
-    "okaxis",
-    "okhdfcbank",
-    "oksbi",
-    "okicici",
-    "yespay",
-    "ybl",
-    "ibl",
-}
-
-DEFAULT_KEYWORDS = ["PAYMENT", "GIFT", "SALARY", "TAX", "LOAN", "CIBIL"]
-
-# Currency Regex Pattern
-CURRENCY_PATTERN = re.compile(
-    r"(?:[₹$€£]\s*[\d,]+(?:\.\d+)?)"
-    r"|(?:\b(?:inr|rs\.?|usd|eur|gbp)\s*[\d,]+(?:\.\d+)?)"
-    r"|(?:[\d,]+(?:\.\d+)?\s*(?:lakhs?|crores?|lacs?|cr\.?|inr|usd|eur|dollars?|rupees?))",
-    re.IGNORECASE,
+from config import (
+    CORPORATE_DOMAINS,
+    CURRENCY_PATTERN,
+    PERSONAL_WEBMAIL_DOMAINS,
+    PRIMARY_BANK_DOMAINS,
+    PRIMARY_BANK_KEYWORDS,
+    UPI_DOMAINS,
+    UPI_KEYWORDS,
+)
+from config import (
+    DEFAULT_MAIL_INVESTIGATION_KEYWORDS as DEFAULT_KEYWORDS,
 )
 
 

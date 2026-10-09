@@ -5,6 +5,8 @@ Applies digital forensic rules to detect document backdating, photo manipulation
 
 from datetime import UTC, datetime, timedelta
 
+from config import SUSPICIOUS_SOFTWARE_SIGNATURES
+
 from .models_data import AnomalyFlag, ParsedMetadata, VerificationResult
 
 
@@ -14,51 +16,7 @@ class DiscrepancyAnalyzer:
     and structural PDF tampering to compute a 0-100 authenticity score.
     """
 
-    SUSPICIOUS_SOFTWARE_SIGNATURES = {
-        # Image Manipulation Tools
-        "photoshop": (
-            "Adobe Photoshop",
-            "CRITICAL",
-            35,
-            "Document was edited or created using photo editing software (Adobe Photoshop).",
-        ),
-        "canva": (
-            "Canva Online Editor",
-            "HIGH",
-            30,
-            "Document was assembled using Canva design software instead of native financial billing or accounting systems.",
-        ),
-        "gimp": (
-            "GIMP Image Editor",
-            "CRITICAL",
-            35,
-            "Document was edited using open-source raster graphics editor GIMP.",
-        ),
-        "pixelmator": (
-            "Pixelmator",
-            "HIGH",
-            30,
-            "Document created with Pixelmator graphic manipulation suite.",
-        ),
-        "snapseed": ("Snapseed", "HIGH", 30, "Image edited using mobile photo enhancer Snapseed."),
-        # Online / Third-Party PDF Modifiers
-        "ilovepdf": (
-            "iLovePDF",
-            "HIGH",
-            25,
-            "Document processed through online consumer PDF converter iLovePDF.",
-        ),
-        "smallpdf": ("Smallpdf", "HIGH", 25, "Document modified using Smallpdf online utility."),
-        "sejda": (
-            "Sejda PDF Editor",
-            "HIGH",
-            25,
-            "Document manipulated using Sejda online PDF modifier.",
-        ),
-        "pdf24": ("PDF24 Creator", "MEDIUM", 15, "Document assembled using PDF24 virtual printer."),
-        "sodapdf": ("Soda PDF", "MEDIUM", 15, "Document edited using Soda PDF modifier."),
-        "pdf candy": ("PDF Candy", "HIGH", 25, "Document converted or altered with PDF Candy."),
-    }
+    SUSPICIOUS_SOFTWARE_SIGNATURES = SUSPICIOUS_SOFTWARE_SIGNATURES
 
     @classmethod
     def analyze(cls, metadata: ParsedMetadata) -> VerificationResult:

@@ -12,31 +12,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-DEFAULT_CHAT_WATCHLIST = [
-    ("cash", 70, "Bribery & Kickbacks"),
-    ("commission", 60, "Bribery & Kickbacks"),
-    ("bribe", 95, "Bribery & Kickbacks"),
-    ("cut", 50, "Bribery & Kickbacks"),
-    ("kickback", 95, "Bribery & Kickbacks"),
-    ("hawala", 90, "Illicit Finance"),
-    ("personal account", 80, "Off-Channel Payment"),
-    ("gpay", 50, "Off-Channel Payment"),
-    ("phonepe", 50, "Off-Channel Payment"),
-    ("delete", 65, "Concealment"),
-    ("clear chat", 75, "Concealment"),
-    ("off the record", 85, "Concealment"),
-    ("dont email", 80, "Concealment"),
-    ("call me", 40, "Off-Channel Comms"),
-    ("whatsapp only", 75, "Off-Channel Comms"),
-    ("quote", 40, "Bid Rigging"),
-    ("discount", 45, "Commercial Terms"),
-    ("margin", 45, "Commercial Terms"),
-    ("tender", 50, "Procurement"),
-    ("l1", 60, "Bid Rigging"),
-    ("competitor", 55, "Bid Rigging"),
-    ("inside info", 90, "Collusion"),
-    ("gift", 60, "Bribery & Kickbacks"),
-]
+from config import (
+    DEFAULT_CHAT_EXTRA_KEYWORD_WEIGHT,
+    DEFAULT_CHAT_WATCHLIST,
+    WHATSAPP_PATTERNS,
+    WHATSAPP_SYSTEM_PATTERNS,
+    WHATSAPP_SYSTEM_REGEXES,
+)
 
 
 def screen_message_text(
@@ -71,42 +53,10 @@ def screen_message_text(
             pattern = r"\b" + re.escape(term_clean) + r"\b"
             if re.search(pattern, text_lower) and term not in flagged:
                 flagged.append(term)
-                total_score += 25
+                total_score += DEFAULT_CHAT_EXTRA_KEYWORD_WEIGHT
 
     risk_score = min(100, total_score)
     return risk_score, flagged
-
-
-WHATSAPP_SYSTEM_REGEXES = [
-    # Encryption & official notices
-    re.compile(r"^(?:messages and calls are )?end-to-end encrypted\b", re.IGNORECASE),
-    re.compile(r"\bsecured with end-to-end encryption\b", re.IGNORECASE),
-    re.compile(r"^this chat is with (?:an official )?business account\b", re.IGNORECASE),
-    # Contact notices: strictly ends with "is a contact." or "is not in your contacts."
-    re.compile(
-        r"^.+?\b(?:is a contact|is not in your contacts|was added to your contacts)\.?$",
-        re.IGNORECASE,
-    ),
-    # Security code changes
-    re.compile(
-        r"^(?:your security code with .+? changed|.+?'s security code changed)",
-        re.IGNORECASE,
-    ),
-    # Group administrative events
-    re.compile(r'^.+? created group ".*?"$', re.IGNORECASE),
-    re.compile(
-        r"^.+? changed the (?:subject to \".*?\"|group description|group's icon)$",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"^.+? (?:added you(?:\s+to\s+(?:the|this)\s+group)?|removed you|added (?:members?|participants?)|added ~?[\w\+\-]{2,25}|removed ~?[\w\+\-]{2,25})\.?$",
-        re.IGNORECASE,
-    ),
-    re.compile(r"^.+? left(?: the group)?\.?$", re.IGNORECASE),
-    re.compile(r"^you're now an admin\.?$", re.IGNORECASE),
-    re.compile(r"^disappearing messages were turned (?:on|off)\.?$", re.IGNORECASE),
-    re.compile(r"^waiting for this message\. this may take a while\.?$", re.IGNORECASE),
-]
 
 
 def is_whatsapp_system_message(text: str) -> bool:
@@ -119,39 +69,6 @@ def is_whatsapp_system_message(text: str) -> bool:
     # Strip invisible unicode formatting marks
     clean = text.replace("\u200e", "").replace("\u200f", "").strip()
     return any(pattern.search(clean) for pattern in WHATSAPP_SYSTEM_REGEXES)
-
-
-# WhatsApp Timestamp Patterns with Sender (colon separated)
-WHATSAPP_PATTERNS = [
-    # 24/04/2024, 14:32 - Sender: Message
-    re.compile(
-        r"^(\d{1,2}/\d{1,2}/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\s*[-–]\s*(.*?):\s*(.*)$"
-    ),
-    # [24/04/24, 14:32:10] Sender: Message
-    re.compile(
-        r"^\[(\d{1,2}/\d{1,2}/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\]\s*(.*?):\s*(.*)$"
-    ),
-    # 24.04.2024, 14:32 - Sender: Message
-    re.compile(
-        r"^(\d{1,2}\.\d{1,2}\.\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\s*[-–]\s*(.*?):\s*(.*)$"
-    ),
-]
-
-# WhatsApp Timestamp Patterns WITHOUT Sender (System disclaimers)
-WHATSAPP_SYSTEM_PATTERNS = [
-    # 24/04/2024, 14:32 - System message
-    re.compile(
-        r"^(\d{1,2}/\d{1,2}/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\s*[-–]\s*(.*)$"
-    ),
-    # [24/04/24, 14:32:10] System message
-    re.compile(
-        r"^\[(\d{1,2}/\d{1,2}/\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\]\s*(.*)$"
-    ),
-    # 24.04.2024, 14:32 - System message
-    re.compile(
-        r"^(\d{1,2}\.\d{1,2}\.\d{2,4}),?\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[apAP][mM])?)\s*[-–]\s*(.*)$"
-    ),
-]
 
 
 def parse_whatsapp_datetime(date_str: str, time_str: str) -> datetime:

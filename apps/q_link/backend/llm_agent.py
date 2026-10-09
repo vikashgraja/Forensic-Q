@@ -18,6 +18,14 @@ import requests
 from django.conf import settings
 from loguru import logger
 
+from config import (
+    DEFAULT_LLM_API_ENDPOINT,
+    DEFAULT_LLM_API_KEY,
+    DEFAULT_LLM_MODEL_NAME,
+    DEFAULT_LLM_TIMEOUT,
+    STOP_WORDS,
+)
+
 from ..models import ForensicEntity, RelationshipAlert
 from ..selectors import (
     find_paths_between,
@@ -28,55 +36,6 @@ from ..selectors import (
     get_link_dashboard_metrics,
     get_recent_alerts,
 )
-
-STOP_WORDS = {
-    "the",
-    "in",
-    "to",
-    "for",
-    "with",
-    "from",
-    "on",
-    "at",
-    "by",
-    "this",
-    "that",
-    "entity",
-    "company",
-    "audit",
-    "tell",
-    "me",
-    "what",
-    "who",
-    "where",
-    "how",
-    "why",
-    "about",
-    "is",
-    "are",
-    "was",
-    "were",
-    "show",
-    "give",
-    "risk",
-    "risks",
-    "and",
-    "or",
-    "path",
-    "between",
-    "link",
-    "connect",
-    "connection",
-    "connections",
-    "find",
-    "check",
-    "analyze",
-    "associated",
-    "all",
-    "any",
-    "please",
-    "help",
-}
 
 
 class ForensicToolRegistry:
@@ -458,14 +417,10 @@ class ForensicCopilotAgent:
     """
 
     def __init__(self):
-        self.endpoint = getattr(
-            settings, "LLM_API_ENDPOINT", "http://127.0.0.1:8434/v1/chat/completions"
-        )
-        self.api_key = getattr(settings, "LLM_API_KEY", "model-host")
-        self.model = getattr(
-            settings, "LLM_MODEL_NAME", "./models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
-        )
-        self.timeout = float(getattr(settings, "LLM_API_TIMEOUT", 15.0))
+        self.endpoint = getattr(settings, "LLM_API_ENDPOINT", DEFAULT_LLM_API_ENDPOINT)
+        self.api_key = getattr(settings, "LLM_API_KEY", DEFAULT_LLM_API_KEY)
+        self.model = getattr(settings, "LLM_MODEL_NAME", DEFAULT_LLM_MODEL_NAME)
+        self.timeout = float(getattr(settings, "LLM_API_TIMEOUT", DEFAULT_LLM_TIMEOUT))
 
     def analyze_investigative_query(
         self, user_query: str, active_entity_name: str | None = None

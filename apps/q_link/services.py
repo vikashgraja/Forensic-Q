@@ -15,6 +15,8 @@ from django.db import transaction
 from django.utils import timezone
 from rapidfuzz import fuzz
 
+from config import LEGAL_SUFFIXES
+
 from .models import (
     EntityAlias,
     EntityRelationship,
@@ -25,20 +27,6 @@ from .models import (
 )
 
 logger = logging.getLogger(__name__)
-
-# Common corporate stop-suffixes for fuzzy entity name normalization
-LEGAL_SUFFIXES = [
-    r"\bpvt\.?\s*ltd\.?\b",
-    r"\bltd\.?\b",
-    r"\bllp\b",
-    r"\binc\.?\b",
-    r"\bcorp\.?\b",
-    r"\benterprises?\b",
-    r"\bsolutions?\b",
-    r"\bservices?\b",
-    r"\btechnologies?\b",
-    r"\bindia\b",
-]
 
 
 def clean_entity_name(name: str) -> str:

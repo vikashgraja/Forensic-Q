@@ -14,34 +14,15 @@ from django.db import transaction
 from django.utils.dateparse import parse_datetime
 from loguru import logger
 
+from config import (
+    DEFAULT_RISK_BASE_SCORE,
+    HIGH_RISK_BASE_SCORE,
+    HIGH_RISK_KEYWORDS,
+    MEDIUM_RISK_BASE_SCORE,
+    MEDIUM_RISK_KEYWORDS,
+)
+
 from .models import FileEvidenceHit, ScannedDevice
-
-HIGH_RISK_KEYWORDS = {
-    "password",
-    "credentials",
-    "secret",
-    "private_key",
-    "id_rsa",
-    "kickback",
-    "bribe",
-    "shadow",
-    "offshore",
-    "unauthorized",
-    "exploit",
-    "backdoor",
-}
-
-MEDIUM_RISK_KEYWORDS = {
-    "salary",
-    "payroll",
-    "invoice",
-    "ledger",
-    "confidential",
-    "nda",
-    "audit",
-    "wire_transfer",
-    "p&l",
-}
 
 
 def _calculate_risk_score(keyword: str, path: str, match_type: str) -> int:
@@ -52,11 +33,11 @@ def _calculate_risk_score(keyword: str, path: str, match_type: str) -> int:
     path_lower = path.lower()
 
     if any(k in kw_lower for k in HIGH_RISK_KEYWORDS):
-        score = 85
+        score = HIGH_RISK_BASE_SCORE
     elif any(k in kw_lower for k in MEDIUM_RISK_KEYWORDS):
-        score = 65
+        score = MEDIUM_RISK_BASE_SCORE
     else:
-        score = 45
+        score = DEFAULT_RISK_BASE_SCORE
 
     # Elevation for system/security/hidden paths
     if (

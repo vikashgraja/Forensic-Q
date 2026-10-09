@@ -8,6 +8,8 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from config import ALLOWED_KEYWORDS_EXTENSIONS, MAX_KEYWORDS_FILE_SIZE
+
 from .audits import (
     create_audit,
     generate_next_audit_name,
@@ -295,10 +297,6 @@ def upload_profile_document_view(request: HttpRequest, profile_id: str) -> JsonR
         return JsonResponse(
             {"status": "error", "message": f"Failed attaching document: {err}"}, status=500
         )
-
-
-ALLOWED_KEYWORDS_EXTENSIONS = {".txt"}
-MAX_KEYWORDS_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
 @require_POST

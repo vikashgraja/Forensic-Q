@@ -31,6 +31,11 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+from config import (
+    BANKING_NOISE_TOKENS,
+    DEFAULT_MIN_TRANSACTION_THRESHOLD,
+)
+
 # =============================================================================
 # 1. Regex Engine & Parsing Constants for Indian Banking Formats
 # =============================================================================
@@ -78,42 +83,6 @@ REGEX_NAME = re.compile(
 REGEX_NAME_NOISE_PREFIX = re.compile(
     r"(?i)^(?:SENT TO MR|SENT TO MS|SENT TO|PAY TO|PAYMENT TO|TRANSFER TO)\s+"
 )
-
-# Banking protocol tokens, transfer directions, and filler noise words.
-# These must NEVER be treated as entity/person names or counterparties.
-BANKING_NOISE_TOKENS: set[str] = {
-    "UNKNOWN",
-    "NONE",
-    "NAN",
-    "NULL",
-    "NA",
-    "N/A",
-    "",
-    "IN",
-    "OUT",
-    "DR",
-    "CR",
-    "UPI",
-    "IMPS",
-    "NEFT",
-    "RTGS",
-    "P2A",
-    "P2M",
-    "TFR",
-    "TRANSFER",
-    "PAYMENT",
-    "PAY",
-    "BIL",
-    "INF",
-    "MMT",
-    "SENT",
-    "RECEIVED",
-}
-
-# Default minimum monetary threshold (INR) for money trail analysis and flagging.
-# Transactions below this value (e.g. routine micro-payments < ₹1,000) are excluded
-# from direct transfer matching, intermediate conduit hops, and rapid layering flags.
-DEFAULT_MIN_TRANSACTION_THRESHOLD: float = 1000.0
 
 
 # =============================================================================

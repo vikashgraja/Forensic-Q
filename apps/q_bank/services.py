@@ -12,6 +12,15 @@ from django.db import transaction
 from django.utils import timezone
 from loguru import logger
 
+from config import (
+    BANK_RISK_SCORE_HIGH_THRESHOLD,
+    BANK_RISK_SCORE_MEDIUM_THRESHOLD,
+    BANK_STATEMENT_BATCH_SIZE,
+    CASH_DEPOSIT_HIGH_RISK_THRESHOLD,
+    HIGH_VALUE_DEBIT_THRESHOLD,
+    HYUNDAI_ENTITY_KEYWORDS,
+)
+
 from .backend.statement_parser import (
     extract_statement_period,
     parse_bank_statement_dataframe,
@@ -201,7 +210,9 @@ def ingest_bank_statement_file(
 
         # Detect Hyundai related transactions
         is_hyundai = False
-        if "hyundai" in narr_lower or "hmil" in narr_lower or "hyundai" in party_name.lower():
+        if any(hk in narr_lower for hk in HYUNDAI_ENTITY_KEYWORDS) or any(
+            hk in party_name.lower() for hk in HYUNDAI_ENTITY_KEYWORDS
+        ):
             is_hyundai = True
             hyundai_count += 1
 
@@ -234,13 +245,13 @@ def ingest_bank_statement_file(
         risk_score = 0
         reasons = []
 
-        if is_cash and credit_val >= 50000:
+        if is_cash and credit_val >= CASH_DEPOSIT_HIGH_RISK_THRESHOLD:
             risk_score += 40
             reasons.append("High-Value Cash Deposit (CDM)")
 
-        if debit_val >= 500000:
+        if debit_val >= HIGH_VALUE_DEBIT_THRESHOLD:
             risk_score += 35
-            reasons.append("High-Value Debit Wire (> ₹5,00,000)")
+            reasons.append(f"High-Value Debit Wire (> ₹{int(HIGH_VALUE_DEBIT_THRESHOLD):,})")
 
         # Watchlist rule screening
         for rule in watchlist:
@@ -251,10 +262,10 @@ def ingest_bank_statement_file(
         risk_score = min(risk_score, 100)
         risk_level = (
             BankTransaction.RiskLevel.HIGH
-            if risk_score >= 70
+            if risk_score >= BANK_RISK_SCORE_HIGH_THRESHOLD
             else (
                 BankTransaction.RiskLevel.MEDIUM
-                if risk_score >= 40
+                if risk_score >= BANK_RISK_SCORE_MEDIUM_THRESHOLD
                 else BankTransaction.RiskLevel.LOW
             )
         )
@@ -281,13 +292,15 @@ def ingest_bank_statement_file(
                 is_hyundai_related=is_hyundai,
                 risk_score=risk_score,
                 risk_level=risk_level,
-                status="Flagged" if risk_score >= 70 else "Cleared",
+                status="Flagged" if risk_score >= BANK_RISK_SCORE_HIGH_THRESHOLD else "Cleared",
                 flag_reason="; ".join(reasons),
             )
         )
 
     # Batch insertion for N+1 prevention
-    BankTransaction.objects.bulk_create(transactions_to_create, batch_size=250)
+    BankTransaction.objects.bulk_create(
+        transactions_to_create, batch_size=BANK_STATEMENT_BATCH_SIZE
+    )
 
     account.total_transactions = len(transactions_to_create)
     account.total_debit = total_debit

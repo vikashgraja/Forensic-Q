@@ -13,26 +13,7 @@ from django.http import HttpRequest
 from loguru import logger
 from rapidfuzz import fuzz
 
-HEADER_STOPWORDS = {
-    "keyword",
-    "keywords",
-    "key identifier",
-    "key identifiers",
-    "identifier",
-    "identifiers",
-    "target",
-    "targets",
-    "term",
-    "terms",
-    "watchlist",
-    "watchlists",
-    "entity",
-    "entities",
-    "name",
-    "names",
-    "search query",
-    "search terms",
-}
+from config import HEADER_STOPWORDS
 
 
 def extract_keywords_from_string(text: str) -> list[str]:

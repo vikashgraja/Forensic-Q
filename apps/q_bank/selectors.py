@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Max, Min, OuterRef, Prefetch, Q, QuerySet, Subquery, Sum
 from django.http import HttpRequest
 
+from config import DEFAULT_BANK_INVESTIGATION_KEYWORDS
 from core.fuzzy import (
     extract_keywords_from_request,
     extract_keywords_from_string,
@@ -19,8 +20,6 @@ from core.fuzzy import (
 
 from .backend.statement_parser import format_inr
 from .models import AuditedPerson, BankAccount, BankTransaction
-
-DEFAULT_BANK_INVESTIGATION_KEYWORDS = ["trust", "sarla"]
 
 
 def get_all_audited_persons() -> list[dict[str, Any]]:
