@@ -97,7 +97,7 @@ class FundTrailPath(ForensicBaseModel):
 
 class PassThroughNode(ForensicBaseModel):
     """
-    Detailed ledger entry for an intermediate conduit node (Person X)
+    Detailed transaction entry for an intermediate conduit node (Person X)
     within a multi-hop money trail.
     """
 

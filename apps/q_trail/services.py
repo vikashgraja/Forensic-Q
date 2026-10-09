@@ -2,7 +2,7 @@
 Q-Trail Business Logic & Service Mutations
 =============================================================================
 Orchestrates multi-profile money trail analysis across banking institutions:
-1. Resolves profile transactions from Q-Bank ledger.
+1. Resolves profile transactions from Q-Bank statement records.
 2. Vectorized reconciliation across multiple profiles (A -> B, B -> A).
 3. Network intersection and 1-hop pass-through mapping (A -> X -> B).
 4. Circular round-tripping loop detection.

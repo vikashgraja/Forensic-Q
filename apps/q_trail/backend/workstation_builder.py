@@ -326,7 +326,7 @@ def build_conduit_deck(
             flags.append(f"Fee rate {ret_pct:.1f}% exceeds standard margin")
         if delta_days <= 1.0:
             flags.append("Rapid pass-through: funds moved within 24 hours")
-        flags.append("Unlinked entity: No verified ledger attached")
+        flags.append("Unlinked entity: No verified account record attached")
 
         deck.append(
             {
@@ -671,7 +671,7 @@ def build_topology_graph(
                     "letter": n["letter"],
                     "label": n["name"],
                     "sub": "Conduit Intermediary" if is_conduit else "Auditee Profile",
-                    "foot": "Unlinked VPA/Entity" if is_conduit else "Ledger Linked",
+                    "foot": "Unlinked VPA/Entity" if is_conduit else "Statement Linked",
                 },
             }
         )

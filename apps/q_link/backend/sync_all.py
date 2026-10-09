@@ -105,6 +105,54 @@ def sync_all_modules() -> dict[str, int]:
                 if not is_selective_match:
                     continue
 
+                party_lower = party_clean.lower()
+                if any(
+                    s in party_lower
+                    for s in [
+                        "ltd",
+                        "limited",
+                        "corp",
+                        "inc",
+                        "enterprises",
+                        "solutions",
+                        "pvt",
+                        "private",
+                        "traders",
+                        "industries",
+                        "engineers",
+                    ]
+                ):
+                    party_type = ForensicEntity.EntityType.VENDOR
+                elif any(
+                    s in party_lower
+                    for s in [
+                        "bank",
+                        "idfc",
+                        "hdfc",
+                        "icici",
+                        "sbi",
+                        "axis",
+                        "kotak",
+                        "canara",
+                        "account",
+                        "a/c",
+                        "okaxis",
+                        "oksbi",
+                        "okicici",
+                        "okhdfcbank",
+                        "upi",
+                    ]
+                ):
+                    party_type = ForensicEntity.EntityType.BANK_ACCOUNT
+                elif party_lower in ("out", "in", "tfr", "conduit"):
+                    party_type = ForensicEntity.EntityType.UNKNOWN
+                else:
+                    party_type = (
+                        ForensicEntity.EntityType.EMPLOYEE
+                        if "@" not in party_lower
+                        else ForensicEntity.EntityType.EMAIL_ID
+                    )
+
                 emit_forensic_finding(
                     source_module="q_bank",
                     event_type="BANK_TRANSACTION",
@@ -116,12 +164,7 @@ def sync_all_modules() -> dict[str, int]:
                     secondary_entities_data=[
                         {
                             "name": party_clean,
-                            "type": ForensicEntity.EntityType.VENDOR
-                            if any(
-                                s in party_clean.lower()
-                                for s in ["ltd", "corp", "inc", "enterprises", "solutions"]
-                            )
-                            else ForensicEntity.EntityType.UNKNOWN,
+                            "type": party_type,
                             "relation_type": "TRANSFERRED_FUNDS",
                             "weight": float(amt),
                             "direction": "out" if txn.direction == "OUT" else "in",
@@ -358,6 +401,49 @@ def sync_all_modules() -> dict[str, int]:
                             elif "indhumathi" in dest_name.lower():
                                 dest_tags = ["Design", "HR", "Metec", "Rapid Layering Hub"]
 
+                            dest_lower = dest_name.lower()
+                            if any(
+                                s in dest_lower
+                                for s in [
+                                    "ltd",
+                                    "limited",
+                                    "corp",
+                                    "inc",
+                                    "palani",
+                                    "enterprises",
+                                    "solutions",
+                                    "pvt",
+                                    "private",
+                                    "traders",
+                                    "industries",
+                                    "engineers",
+                                ]
+                            ):
+                                dest_type = ForensicEntity.EntityType.VENDOR
+                            elif any(
+                                s in dest_lower
+                                for s in [
+                                    "bank",
+                                    "idfc",
+                                    "hdfc",
+                                    "icici",
+                                    "sbi",
+                                    "axis",
+                                    "kotak",
+                                    "canara",
+                                    "account",
+                                    "a/c",
+                                    "okaxis",
+                                    "oksbi",
+                                    "okicici",
+                                    "okhdfcbank",
+                                    "upi",
+                                ]
+                            ):
+                                dest_type = ForensicEntity.EntityType.BANK_ACCOUNT
+                            else:
+                                dest_type = ForensicEntity.EntityType.UNKNOWN
+
                             emit_forensic_finding(
                                 source_module="q_trail",
                                 event_type="RAPID_LAYERING_HOP",
@@ -369,12 +455,7 @@ def sync_all_modules() -> dict[str, int]:
                                 secondary_entities_data=[
                                     {
                                         "name": dest_name,
-                                        "type": ForensicEntity.EntityType.VENDOR
-                                        if any(
-                                            s in dest_name.lower()
-                                            for s in ["ltd", "corp", "inc", "palani"]
-                                        )
-                                        else ForensicEntity.EntityType.UNKNOWN,
+                                        "type": dest_type,
                                         "relation_type": "RAPID_LAYERING",
                                         "weight": outflow_amt or inflow_amt or 1.0,
                                         "direction": "out",

@@ -142,13 +142,15 @@
 
                 <!-- Floating Canvas Legend -->
                 <div class="absolute bottom-3 left-3 bg-[#FFF1E7]/85 dark:bg-slate-950/85 backdrop-blur border border-[#B5D2E6] dark:border-slate-800 rounded-xl px-3 py-2 text-[11px] text-slate-700 dark:text-slate-400 flex flex-wrap items-center gap-3 pointer-events-none">
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Employee</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Vendor</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Bank Account</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span> Document</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-emerald-300"></span> Substantiated</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#38bdf8]"></span> Employee</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rotate-45 border border-white dark:border-slate-300 bg-[#38bdf8]"></span> Target</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></span> Vendor</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#6366f1]"></span> Company</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span> Bank Account</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></span> Document</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rotate-45 bg-[#10b981] border border-emerald-300"></span> Substantiated</span>
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-xs bg-[#B5D2E6] dark:bg-slate-800 border border-dashed border-[#805232]"></span> External Node</span>
-                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-0.5 border-t-2 border-dashed border-rose-500"></span> Rapid Layering</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-0.5 border-t-2 border-dashed border-[#ef4444]"></span> Rapid Layering</span>
                 </div>
             </div>
 
@@ -440,7 +442,39 @@
                     isSubstantiated = true;
                 }
 
-                const nType = String(n.type || "").toUpperCase();
+                let nType = String(n.type || "").toUpperCase();
+                const labelLower = String(n.label || "").toLowerCase();
+
+                // Heuristic type classification if nType is unknown, profile, or empty
+                if (!nType || nType === "UNKNOWN" || nType === "PROFILE") {
+                    if (
+                        labelLower.includes("ltd") || labelLower.includes("limited") ||
+                        labelLower.includes("corp") || labelLower.includes("inc") ||
+                        labelLower.includes("enterprises") || labelLower.includes("solutions") ||
+                        labelLower.includes("pvt") || labelLower.includes("private") ||
+                        labelLower.includes("traders") || labelLower.includes("industries") ||
+                        labelLower.includes("engineers")
+                    ) {
+                        nType = "VENDOR";
+                    } else if (
+                        labelLower.includes("bank") || labelLower.includes("idfc") ||
+                        labelLower.includes("hdfc") || labelLower.includes("icici") ||
+                        labelLower.includes("sbi") || labelLower.includes("axis") ||
+                        labelLower.includes("kotak") || labelLower.includes("canara") ||
+                        labelLower.includes("account") || labelLower.includes("a/c") ||
+                        labelLower.includes("okaxis") || labelLower.includes("oksbi") ||
+                        labelLower.includes("okicici") || labelLower.includes("okhdfcbank") ||
+                        labelLower.includes("upi")
+                    ) {
+                        nType = "BANK_ACCOUNT";
+                    } else if (
+                        labelLower === "out" || labelLower === "in" ||
+                        labelLower.includes("conduit") || labelLower.includes("tfr")
+                    ) {
+                        nType = "CONDUIT";
+                    }
+                }
+
                 if (nType === "VENDOR" || nType === "SUPPLIER") {
                     colorBg = "#f59e0b"; // Amber
                     borderCol = "#d97706";
@@ -456,6 +490,14 @@
                 } else if (nType === "COMPANY" || nType === "CORPORATE") {
                     colorBg = "#6366f1"; // Indigo
                     borderCol = "#4f46e5";
+                } else if (nType === "CONDUIT") {
+                    colorBg = "#64748b"; // Neutral Slate for conduits
+                    borderCol = "#475569";
+                }
+
+                if (isSubstantiated) {
+                    colorBg = "#10b981"; // Substantiated turns Emerald Green to match legend
+                    borderCol = "#059669";
                 }
 
                 if (isExternal) {
@@ -466,7 +508,6 @@
                 let labelText = n.label;
                 if (isSubstantiated) {
                     labelText += "\n✓ [Substantiated]";
-                    borderCol = "#10b981";
                 }
                 if (isExternal) {
                     labelText += "\n[External Vault]";
@@ -481,25 +522,28 @@
                     size: n.is_target ? 24 : 16,
                     color: {
                         background: colorBg,
-                        border: isSubstantiated ? "#10b981" : (n.is_target ? tc.targetBorder : borderCol),
-                        highlight: { background: isDarkMode() ? "#ffffff" : "#f8fafc", border: borderCol }
+                        border: isSubstantiated ? "#059669" : (n.is_target ? tc.targetBorder : borderCol),
+                        highlight: {
+                            background: isDarkMode() ? "#ffffff" : "#f8fafc",
+                            border: isSubstantiated ? "#10b981" : borderCol
+                        }
                     },
                     font: {
                         color: fontColor,
                         size: 11,
                         face: "Inter, sans-serif",
-                        bold: isSubstantiated
+                        bold: isSubstantiated || n.is_target
                     },
                     borderWidth: isSubstantiated ? 3 : (n.is_target ? 3 : 1.5),
                     originalColor: {
                         background: colorBg,
-                        border: isSubstantiated ? "#10b981" : (n.is_target ? tc.targetBorder : borderCol),
+                        border: isSubstantiated ? "#059669" : (n.is_target ? tc.targetBorder : borderCol),
                     },
                     originalFont: {
                         color: fontColor,
                         size: 11,
                         face: "Inter, sans-serif",
-                        bold: isSubstantiated
+                        bold: isSubstantiated || n.is_target
                     },
                     raw: n
                 };

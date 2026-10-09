@@ -106,10 +106,19 @@ def resolve_or_create_entity(
     """
     canonical_id = normalize_identifier(raw_identifier or display_name, entity_type)
 
-    # 1. Exact canonical identifier lookup
-    exact_entity = ForensicEntity.objects.filter(identifier=canonical_id).first()
+    # 1. Exact canonical identifier or exact display name lookup
+    exact_entity = (
+        ForensicEntity.objects.filter(identifier=canonical_id).first()
+        or ForensicEntity.objects.filter(display_name__iexact=display_name.strip()).first()
+    )
     if exact_entity:
         updated_fields = []
+        if (
+            entity_type != ForensicEntity.EntityType.UNKNOWN
+            and exact_entity.entity_type == ForensicEntity.EntityType.UNKNOWN
+        ):
+            exact_entity.entity_type = entity_type
+            updated_fields.append("entity_type")
         if is_target and not exact_entity.is_target:
             exact_entity.is_target = True
             updated_fields.append("is_target")

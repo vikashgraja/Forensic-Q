@@ -103,9 +103,57 @@ def _format_node(
     except Exception as exc:
         logger.debug(f"Profile enrichment bypassed: {exc}")
 
+    if (
+        entity.metadata
+        and entity.metadata.get("is_substantiated")
+        and "Substantiated" not in raw_tags
+    ):
+        raw_tags.append("Substantiated")
+
     node_type = (
         str(entity.entity_type).lower() if hasattr(entity.entity_type, "lower") else "profile"
     )
+    if node_type in ("unknown", "profile", ""):
+        name_lower = entity.display_name.lower()
+        if any(
+            s in name_lower
+            for s in [
+                "ltd",
+                "limited",
+                "corp",
+                "inc",
+                "enterprises",
+                "solutions",
+                "pvt",
+                "private",
+                "traders",
+                "industries",
+                "engineers",
+            ]
+        ):
+            node_type = "vendor"
+        elif any(
+            s in name_lower
+            for s in [
+                "bank",
+                "idfc",
+                "hdfc",
+                "icici",
+                "sbi",
+                "axis",
+                "kotak",
+                "canara",
+                "account",
+                "a/c",
+                "okaxis",
+                "oksbi",
+                "okicici",
+                "okhdfcbank",
+                "upi",
+            ]
+        ):
+            node_type = "bank_account"
+
     data: dict[str, Any] = {
         "id": str(entity.id),
         "label": entity.display_name,
