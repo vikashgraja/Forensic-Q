@@ -132,6 +132,38 @@ class QTrailFeatureExtractionTests(TestCase):
         self.assertEqual(extracted["Counterparty_Name"].iloc[3], "ARUN KUMAR")
         self.assertEqual(extracted["Counterparty_Name"].iloc[4], "VIKASH RAJA")
 
+    def test_direction_tokens_never_extracted_as_names(self):
+        df = pd.DataFrame(
+            {
+                "Narration": [
+                    "UPI/OUT/522651197003/silviyaj95@oksbi/UPI/0000 TFR",
+                    "UPI/OUT/522666484986/shanthisubu1991-3@okaxis/ 0000 TFR",
+                    "UPI/IN/522641053073/epalani1977@okicici/UPI/0000 TFR",
+                    "UPI/DR/123456789012/user@axis/UPI",
+                    "UPI/CR/123456789012/user@axis/UPI",
+                ],
+                "Party_Name": [
+                    "SILVIYAJ",
+                    "SHANTHISUBU",
+                    "",
+                    "",
+                    "TFR",
+                ],
+            }
+        )
+        extracted = extract_banking_features(df)
+        for name in extracted["Counterparty_Name"]:
+            if name:
+                self.assertNotIn(name.upper(), ["OUT", "IN", "DR", "CR", "TFR", "UPI"])
+        self.assertEqual(extracted["Counterparty_Name"].iloc[0], "SILVIYAJ")
+        self.assertEqual(extracted["Counterparty_Name"].iloc[1], "SHANTHISUBU")
+        self.assertIsNone(extracted["Counterparty_Name"].iloc[2])
+        self.assertIsNone(extracted["Counterparty_Name"].iloc[3])
+        self.assertIsNone(extracted["Counterparty_Name"].iloc[4])
+        self.assertEqual(extracted["Counterparty_VPA"].iloc[0], "silviyaj95@oksbi")
+        self.assertEqual(extracted["Counterparty_VPA"].iloc[1], "shanthisubu1991-3@okaxis")
+        self.assertEqual(extracted["Counterparty_VPA"].iloc[2], "epalani1977@okicici")
+
     def test_empty_dataframe_handling(self):
         empty_df = pd.DataFrame()
         res = extract_banking_features(empty_df)
@@ -1266,3 +1298,26 @@ class QTrailMinimumThresholdTests(TestCase):
         self.assertEqual(res["metrics"]["total_direct_transfers_count"], 1)
         self.assertEqual(res["metrics"]["total_direct_volume_inr"], 12000.0)
         self.assertEqual(res["metrics"]["min_amount_threshold"], 1000.0)
+
+    def test_rapid_layering_never_emits_out_or_in_as_counterparty(self):
+        stmt = pd.DataFrame(
+            {
+                "Date": ["2025-08-14", "2025-08-14"],
+                "Narration": [
+                    "UPI IN/522641053073/epalani1977@okicici/UPI/0000 TFR",
+                    "UPI/OUT/522651197003/silviyaj95@oksbi/UPI/0000 TFR",
+                ],
+                "Credit": [30000.0, 0.0],
+                "Debit": [0.0, 25000.0],
+                "Party_Name": ["", "SILVIYAJ"],
+            }
+        )
+        res = detect_rapid_layering_for_profile(
+            stmt, account_holder_name="Veeramani Velmurugan", time_window_days=1
+        )
+        self.assertEqual(len(res), 1)
+        row = res.iloc[0]
+        self.assertNotEqual(row["Sender_Person"], "IN")
+        self.assertNotEqual(row["Recipient_Person"], "OUT")
+        self.assertEqual(row["Recipient_Person"], "SILVIYAJ")
+        self.assertEqual(row["Sender_Person"], "epalani1977@okicici")

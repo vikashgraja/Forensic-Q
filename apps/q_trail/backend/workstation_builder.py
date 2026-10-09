@@ -16,6 +16,8 @@ from typing import Any
 
 import pandas as pd
 
+from .reconciliation import BANKING_NOISE_TOKENS
+
 
 def _clean_str(val: Any) -> str:
     if val is None or pd.isna(val):
@@ -392,6 +394,23 @@ def build_topology_graph(
         conduits_set.update(intermediate_df["Intermediary_Entity"].dropna().unique())
         beneficiaries_set.update(intermediate_df["Recipient_Person"].dropna().unique())
 
+    # Filter out empty strings and banking protocol / direction noise tokens
+    origins_set = {
+        _clean_str(x)
+        for x in origins_set
+        if _clean_str(x) and _clean_str(x).upper() not in BANKING_NOISE_TOKENS
+    }
+    conduits_set = {
+        _clean_str(x)
+        for x in conduits_set
+        if _clean_str(x) and _clean_str(x).upper() not in BANKING_NOISE_TOKENS
+    }
+    beneficiaries_set = {
+        _clean_str(x)
+        for x in beneficiaries_set
+        if _clean_str(x) and _clean_str(x).upper() not in BANKING_NOISE_TOKENS
+    }
+
     # Ensure conduits are distinct so 3-column topology flows left-to-right
     if conduits_set:
         origins_set = origins_set - conduits_set
@@ -657,6 +676,20 @@ def build_topology_graph(
     plates: list[dict[str, Any]] = []
     for n in nodes:
         is_conduit = n["kind"] == "conduit"
+        is_auditee = any(
+            p.get("name", "").strip().lower() == n["name"].strip().lower()
+            for p in (analyzed_profiles or [])
+        )
+        if is_conduit:
+            sub_title = "Conduit Intermediary"
+            foot_title = "Intermediate Pass-Through"
+        elif is_auditee:
+            sub_title = "Auditee Profile"
+            foot_title = "Statement Linked"
+        else:
+            sub_title = "External Beneficiary"
+            foot_title = "Counterparty Sink"
+
         plates.append(
             {
                 "id": n["id"],
@@ -670,8 +703,8 @@ def build_topology_graph(
                     "kind": n["kind"],
                     "letter": n["letter"],
                     "label": n["name"],
-                    "sub": "Conduit Intermediary" if is_conduit else "Auditee Profile",
-                    "foot": "Unlinked VPA/Entity" if is_conduit else "Statement Linked",
+                    "sub": sub_title,
+                    "foot": foot_title,
                 },
             }
         )

@@ -28,6 +28,7 @@ from q_bank.models import AuditedPerson
 from core.models import InvestigationProfile
 
 from .backend.reconciliation import (
+    BANKING_NOISE_TOKENS,
     DEFAULT_MIN_TRANSACTION_THRESHOLD,
     group_intermediate_transfers_by_intermediary,
     reconcile_and_match_network,
@@ -184,7 +185,7 @@ def analyze_profiles_money_trail(
         if not raw_val:
             return []
         s = str(raw_val).strip()
-        if not s or s.upper() in ("UNKNOWN", "NONE", "NAN", "OUT", "IN", "TFR", "UPI"):
+        if not s or s.upper() in BANKING_NOISE_TOKENS:
             return []
         found = []
         for term in [
@@ -203,7 +204,7 @@ def analyze_profiles_money_trail(
         if "@" in s:
             user_part = s.split("@")[0].strip()
             clean_u = re.sub(r"\d+", "", user_part).strip()
-            if len(clean_u) >= 3:
+            if len(clean_u) >= 3 and clean_u.upper() not in BANKING_NOISE_TOKENS:
                 found.append(clean_u.title())
         clean_name = re.sub(
             r"^(?:Mr\.|Mrs\.|Ms\.|Shri\.|Smt\.|UPI/\d+/)\s*", "", s, flags=re.IGNORECASE
@@ -214,16 +215,7 @@ def analyze_profiles_money_trail(
             if len(t.strip()) >= 3 and not t.strip().isdigit()
         ]
         for t in tokens:
-            if t.upper() not in (
-                "UPI",
-                "TFR",
-                "OUT",
-                "INR",
-                "TRANSFER",
-                "PAYMENT",
-                "LIMITED",
-                "LTD",
-            ):
+            if t.upper() not in BANKING_NOISE_TOKENS and t.upper() not in ("INR", "LIMITED", "LTD"):
                 found.append(t)
         return list(dict.fromkeys(found))
 

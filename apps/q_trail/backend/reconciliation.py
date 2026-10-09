@@ -59,8 +59,9 @@ REGEX_VPA_GENERAL = re.compile(r"([a-zA-Z0-9.\-_]+@[a-zA-Z]+)")
 REGEX_ACCOUNT = re.compile(r"(?i)\b([X*]{2,12}\d{4,6}|[A-Z]{4}0[A-Z0-9]{6})\b")
 
 # Counterparty Name Regex Pattern:
-# In HDFC and ICICI narrations, the counterparty name appears after the transaction mode prefix
+# In HDFC, ICICI, and Indian bank narrations, the counterparty name appears after the transaction mode prefix
 # (UPI, IMPS, NEFT, RTGS, MMT/IMPS, BIL/IN/UPI, INF/NEFT) and before the UTR, VPA, IFSC, or account mask.
+# We strictly exclude direction tokens (IN, OUT, DR, CR, P2A, P2M, UPI, etc.) from being captured as names.
 REGEX_NAME = re.compile(
     r"(?i)"
     r"(?:^|[\s/_-])"
@@ -68,14 +69,46 @@ REGEX_NAME = re.compile(
     r"(?:[\s/_-]+(?:P2A|P2M|DR|CR|IN|OUT))?"
     r"(?:[\s/_-]+(?:[A-Z]{3,4}[NR][A-Z0-9]+|[NR]?\d{10,18}))?"
     r"[-/]"
+    r"(?!(?:IN|OUT|DR|CR|P2A|P2M|UPI|IMPS|NEFT|RTGS|TFR|BIL|INF|MMT|TRANSFER|PAYMENT|PAY|NA)\b)"
     r"([A-Za-z][A-Za-z\s.]{1,35}?)"
-    r"(?=[-/](?:[a-zA-Z0-9.\-_]+@|[A-Z]{4}0|\d{10,18}|[X*]{2,}\d*|PAYMENT|ICICI|HDFC|AXIS|SBIN|$)|$)"
+    r"(?=[-/](?:[a-zA-Z0-9.\-_]+@|[A-Z]{4}0|\d{10,18}|[X*]{2,}\d*|PAYMENT|ICICI|HDFC|AXIS|SBIN|SBI|P2A|P2M|UPI|$)|$)"
 )
 
 # Clutter prefix cleaner for entity names
 REGEX_NAME_NOISE_PREFIX = re.compile(
     r"(?i)^(?:SENT TO MR|SENT TO MS|SENT TO|PAY TO|PAYMENT TO|TRANSFER TO)\s+"
 )
+
+# Banking protocol tokens, transfer directions, and filler noise words.
+# These must NEVER be treated as entity/person names or counterparties.
+BANKING_NOISE_TOKENS: set[str] = {
+    "UNKNOWN",
+    "NONE",
+    "NAN",
+    "NULL",
+    "NA",
+    "N/A",
+    "",
+    "IN",
+    "OUT",
+    "DR",
+    "CR",
+    "UPI",
+    "IMPS",
+    "NEFT",
+    "RTGS",
+    "P2A",
+    "P2M",
+    "TFR",
+    "TRANSFER",
+    "PAYMENT",
+    "PAY",
+    "BIL",
+    "INF",
+    "MMT",
+    "SENT",
+    "RECEIVED",
+}
 
 # Default minimum monetary threshold (INR) for money trail analysis and flagging.
 # Transactions below this value (e.g. routine micro-payments < ₹1,000) are excluded
@@ -166,6 +199,22 @@ def extract_banking_features(
     cleaned_name_series = cleaned_name_series.replace(
         r"(?i)\b(?:PAYMENT|PAY|TRF|TRANSFER|NA)\b", "", regex=True
     ).str.strip()
+    # Nullify any standalone noise tokens or directions (e.g. 'OUT', 'IN', 'DR', 'CR')
+    is_noise_mask = cleaned_name_series.str.upper().isin(BANKING_NOISE_TOKENS)
+    cleaned_name_series = cleaned_name_series.mask(is_noise_mask, "")
+
+    # Fallback to Party_Name from DataFrame if present and clean
+    party_col = _detect_column(
+        df_out, ["Party_Name", "Party Name", "Beneficiary Name", "Party", "Beneficiary"]
+    )
+    if party_col and party_col in df_out.columns:
+        raw_party = df_out[party_col].fillna("").astype(str).str.strip()
+        clean_party = raw_party.apply(
+            lambda x: "" if str(x).upper() in BANKING_NOISE_TOKENS else str(x)
+        )
+        empty_mask = cleaned_name_series.isna() | (cleaned_name_series == "")
+        cleaned_name_series = cleaned_name_series.mask(empty_mask, clean_party)
+
     df_out[f"{output_prefix}Counterparty_Name"] = cleaned_name_series.replace({"": None})
 
     return df_out
@@ -190,6 +239,7 @@ def _prepare_statement_dataframe(
                 "Narration",
                 "Debit",
                 "Credit",
+                "Party_Name",
                 "UTR",
                 "Counterparty_VPA",
                 "Counterparty_Account",
@@ -209,6 +259,9 @@ def _prepare_statement_dataframe(
     )
     resolved_credit = credit_col or _detect_column(
         df, ["Credit", "Credit Amount", "Deposit", "Deposit Amount", "CR"]
+    )
+    resolved_party = _detect_column(
+        df, ["Party_Name", "Party Name", "Beneficiary Name", "Party", "Beneficiary"]
     )
 
     std = pd.DataFrame(index=df.index)
@@ -244,6 +297,12 @@ def _prepare_statement_dataframe(
         ).fillna(0.0)
     else:
         std["Credit"] = 0.0
+
+    # Party Name normalization
+    if resolved_party and resolved_party in df.columns:
+        std["Party_Name"] = df[resolved_party].fillna("").astype(str).str.strip()
+    else:
+        std["Party_Name"] = ""
 
     # Retain original index for provenance
     std["orig_idx"] = df.index
@@ -574,11 +633,12 @@ def match_intermediate_transactions(
 
     def derive_counterparty_key(row: pd.Series) -> str | None:
         vpa = str(row.get("Counterparty_VPA") or "").strip().lower()
-        if vpa and vpa != "none" and vpa != "nan" and "@" in vpa:
+        if vpa and vpa not in ("none", "nan", "") and "@" in vpa:
             return vpa
-        name = str(row.get("Counterparty_Name") or "").strip().upper()
-        if name and name != "NONE" and name != "NAN" and len(name) >= 3:
-            return name
+        for name_key in ["Counterparty_Name", "Party_Name"]:
+            name = str(row.get(name_key) or "").strip().upper()
+            if name and name not in BANKING_NOISE_TOKENS and len(name) >= 3:
+                return name
         return None
 
     matched_dfs: list[pd.DataFrame] = []
@@ -856,23 +916,22 @@ def detect_rapid_layering_for_profile(
     if inflows.empty or outflows.empty:
         return pd.DataFrame()
 
-    def _clean_party(name_val, vpa_val, narr_val):
-        for candidate in [name_val, vpa_val]:
+    def _clean_party(name_val, party_name_val, vpa_val, narr_val):
+        for candidate in [name_val, party_name_val]:
             cand_str = str(candidate or "").strip()
-            if cand_str and cand_str.upper() not in ("UNKNOWN", "NONE", "NAN", ""):
+            if cand_str and cand_str.upper() not in BANKING_NOISE_TOKENS and len(cand_str) >= 2:
                 return cand_str
+        vpa_str = str(vpa_val or "").strip()
+        if vpa_str and vpa_str.upper() not in BANKING_NOISE_TOKENS and "@" in vpa_str:
+            return vpa_str
         # Fallback to narration extraction
         n = str(narr_val or "").strip()
-        if "/" in n:
-            tokens = [t.strip() for t in n.split("/") if t.strip()]
+        if "/" in n or "-" in n:
+            tokens = [t.strip() for t in re.split(r"[/_-]", n) if t.strip()]
             for tok in tokens:
                 if "@" in tok:
                     return tok
-                if (
-                    len(tok) > 3
-                    and not tok.isdigit()
-                    and tok.upper() not in ("UPI", "IN", "OUT", "TFR")
-                ):
+                if len(tok) > 2 and not tok.isdigit() and tok.upper() not in BANKING_NOISE_TOKENS:
                     return tok
         return "Unknown Counterparty"
 
@@ -883,6 +942,7 @@ def detect_rapid_layering_for_profile(
         in_date_dt = in_row.get("Date_dt")
         in_party = _clean_party(
             in_row.get("Counterparty_Name"),
+            in_row.get("Party_Name"),
             in_row.get("Counterparty_VPA"),
             in_row.get("Narration"),
         )
@@ -893,6 +953,7 @@ def detect_rapid_layering_for_profile(
             out_date_dt = out_row.get("Date_dt")
             out_party = _clean_party(
                 out_row.get("Counterparty_Name"),
+                out_row.get("Party_Name"),
                 out_row.get("Counterparty_VPA"),
                 out_row.get("Narration"),
             )
@@ -956,6 +1017,7 @@ def detect_rapid_layering_for_profile(
         out_date_dt = out_row.get("Date_dt")
         out_party = _clean_party(
             out_row.get("Counterparty_Name"),
+            out_row.get("Party_Name"),
             out_row.get("Counterparty_VPA"),
             out_row.get("Narration"),
         )
@@ -968,6 +1030,7 @@ def detect_rapid_layering_for_profile(
             in_date_dt = in_row.get("Date_dt")
             in_party = _clean_party(
                 in_row.get("Counterparty_Name"),
+                in_row.get("Party_Name"),
                 in_row.get("Counterparty_VPA"),
                 in_row.get("Narration"),
             )
