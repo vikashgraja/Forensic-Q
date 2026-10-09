@@ -19,6 +19,9 @@ from django.urls import reverse
 from django.utils import timezone
 from q_bank.models import AuditedPerson, BankAccount, BankTransaction
 from q_trail.backend.reconciliation import (
+    DEFAULT_MIN_TRANSACTION_THRESHOLD,
+    detect_pass_through_patterns,
+    detect_rapid_layering_for_profile,
     extract_banking_features,
     group_intermediate_transfers_by_intermediary,
     match_direct_transactions,
@@ -1084,3 +1087,182 @@ class QTrailAuditScopingTests(TestCase):
         self.assertEqual(res_all.status_code, 200)
         self.assertEqual(res_all.context["scope"], "all")
         self.assertGreaterEqual(len(res_all.context["available_profiles"]), 3)
+
+
+class QTrailMinimumThresholdTests(TestCase):
+    """
+    Tests for the minimum transaction threshold constraint (default ₹1,000).
+    Verifies that micro-transactions, small personal expenses, or petty values
+    below ₹1,000 are explicitly ignored and NOT flagged in Q-Trail.
+    """
+
+    def test_default_constant_is_1000(self):
+        self.assertEqual(DEFAULT_MIN_TRANSACTION_THRESHOLD, 1000.0)
+
+    def test_direct_transactions_below_1000_not_flagged(self):
+        # A sends 500 to B with UTR, and 1500 to B with UTR
+        stmt_a = pd.DataFrame(
+            {
+                "Date": ["2026-05-01", "2026-05-02"],
+                "Narration": [
+                    "UPI-412345678901-PERSON B-b@okaxis-TEA",  # ₹500 (below threshold)
+                    "UPI-412345678902-PERSON B-b@okaxis-FEES",  # ₹1500 (meets threshold)
+                ],
+                "Debit": [500.0, 1500.0],
+                "Credit": [0.0, 0.0],
+            }
+        )
+        stmt_b = pd.DataFrame(
+            {
+                "Date": ["2026-05-01", "2026-05-02"],
+                "Narration": [
+                    "UPI-412345678901-PERSON A-a@okhdfc-TEA",
+                    "UPI-412345678902-PERSON A-a@okhdfc-FEES",
+                ],
+                "Debit": [0.0, 0.0],
+                "Credit": [500.0, 1500.0],
+            }
+        )
+
+        # Default threshold (1000.0)
+        res_default = match_direct_transactions(
+            stmt_a, stmt_b, person_a_name="Person A", person_b_name="Person B"
+        )
+        self.assertEqual(len(res_default), 1)
+        self.assertEqual(res_default.iloc[0]["Amount"], 1500.0)
+        self.assertNotIn(500.0, res_default["Amount"].values)
+
+        # Explicit lower threshold (100.0)
+        res_low = match_direct_transactions(stmt_a, stmt_b, min_amount=100.0)
+        self.assertEqual(len(res_low), 2)
+
+    def test_intermediate_transactions_below_1000_not_flagged(self):
+        # A sends 500 to conduit X, and B receives 450 from conduit X (both < 1000)
+        # A sends 25000 to conduit Y, and B receives 24000 from conduit Y (both >= 1000)
+        stmt_a = pd.DataFrame(
+            {
+                "Date": ["2026-05-01", "2026-05-01"],
+                "Narration": [
+                    "UPI-CONDUIT X-conduitx@okaxis-MICRO",  # ₹500
+                    "UPI-CONDUIT Y-conduity@okaxis-LARGE",  # ₹25000
+                ],
+                "Debit": [500.0, 25000.0],
+                "Credit": [0.0, 0.0],
+            }
+        )
+        stmt_b = pd.DataFrame(
+            {
+                "Date": ["2026-05-02", "2026-05-02"],
+                "Narration": [
+                    "UPI-CONDUIT X-conduitx@okaxis-MICRO",  # ₹450
+                    "UPI-CONDUIT Y-conduity@okaxis-LARGE",  # ₹24000
+                ],
+                "Debit": [0.0, 0.0],
+                "Credit": [450.0, 24000.0],
+            }
+        )
+
+        res = match_intermediate_transactions(stmt_a, stmt_b, time_window_days=3)
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res.iloc[0]["Intermediary_Entity"], "conduity@okaxis")
+        self.assertNotIn("conduitx@okaxis", res["Intermediary_Entity"].values)
+
+    def test_rapid_layering_below_1000_not_flagged(self):
+        stmt = pd.DataFrame(
+            {
+                "Date": ["2026-05-01", "2026-05-01", "2026-05-02", "2026-05-02"],
+                "Narration": [
+                    "UPI-MICRO IN-microin@okaxis",  # Credit ₹500
+                    "UPI-MICRO OUT-microout@okaxis",  # Debit ₹450
+                    "UPI-LARGE IN-largein@okaxis",  # Credit ₹50000
+                    "UPI-LARGE OUT-largeout@okaxis",  # Debit ₹48000
+                ],
+                "Credit": [500.0, 0.0, 50000.0, 0.0],
+                "Debit": [0.0, 450.0, 0.0, 48000.0],
+            }
+        )
+
+        res = detect_rapid_layering_for_profile(
+            stmt, account_holder_name="Test Holder", time_window_days=1
+        )
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res.iloc[0]["Inflow_Amount"], 50000.0)
+        self.assertEqual(res.iloc[0]["Outflow_Amount"], 48000.0)
+        self.assertNotIn(500.0, res["Inflow_Amount"].values)
+        self.assertNotIn(450.0, res["Outflow_Amount"].values)
+
+    def test_pass_through_patterns_below_1000_not_flagged(self):
+        stmt = pd.DataFrame(
+            {
+                "Date": ["2026-05-01", "2026-05-01"],
+                "Narration": [
+                    "UPI-IN-small@okaxis",
+                    "UPI-OUT-small@okaxis",
+                ],
+                "Credit": [500.0, 0.0],
+                "Debit": [0.0, 450.0],
+            }
+        )
+        patterns, suspicious = detect_pass_through_patterns(stmt, account_holder_name="Test Holder")
+        self.assertEqual(patterns, [])
+
+    def test_analyze_profiles_money_trail_service_threshold(self):
+        person_a = AuditedPerson.objects.create(
+            full_name="Threshold Auditee A", department="Logistics"
+        )
+        account_a = BankAccount.objects.create(
+            person=person_a, account_number="TH_A1", bank_name="HDFC Bank"
+        )
+        # 1 micro-transaction < 1000
+        BankTransaction.objects.create(
+            account=account_a,
+            txn_ref="TXN_MICRO",
+            txn_date=timezone.now(),
+            narration="UPI-412345678901-THRESHOLD AUDITEE B-auditeeb@okhdfc-PAYMENT",
+            party_name="Threshold Auditee B",
+            direction=BankTransaction.Direction.DEBIT,
+            debit_amount=Decimal("500.00"),
+        )
+        # 1 valid transaction >= 1000
+        BankTransaction.objects.create(
+            account=account_a,
+            txn_ref="TXN_VALID",
+            txn_date=timezone.now(),
+            narration="UPI-412345678902-THRESHOLD AUDITEE B-auditeeb@okhdfc-PAYMENT",
+            party_name="Threshold Auditee B",
+            direction=BankTransaction.Direction.DEBIT,
+            debit_amount=Decimal("12000.00"),
+        )
+
+        person_b = AuditedPerson.objects.create(
+            full_name="Threshold Auditee B", department="Procurement"
+        )
+        account_b = BankAccount.objects.create(
+            person=person_b, account_number="TH_B1", bank_name="ICICI Bank"
+        )
+        BankTransaction.objects.create(
+            account=account_b,
+            txn_ref="TXN_MICRO_CR",
+            txn_date=timezone.now(),
+            narration="BIL/IN/UPI/412345678901/Threshold Auditee A/auditeea@okhdfc/HDFC0000123",
+            party_name="Threshold Auditee A",
+            direction=BankTransaction.Direction.CREDIT,
+            credit_amount=Decimal("500.00"),
+        )
+        BankTransaction.objects.create(
+            account=account_b,
+            txn_ref="TXN_VALID_CR",
+            txn_date=timezone.now(),
+            narration="BIL/IN/UPI/412345678902/Threshold Auditee A/auditeea@okhdfc/HDFC0000123",
+            party_name="Threshold Auditee A",
+            direction=BankTransaction.Direction.CREDIT,
+            credit_amount=Decimal("12000.00"),
+        )
+
+        res = analyze_profiles_money_trail([str(person_a.id), str(person_b.id)])
+        direct_df = res["direct_transfers"]
+        self.assertEqual(len(direct_df), 1)
+        self.assertEqual(float(direct_df.iloc[0]["Amount"]), 12000.0)
+        self.assertEqual(res["metrics"]["total_direct_transfers_count"], 1)
+        self.assertEqual(res["metrics"]["total_direct_volume_inr"], 12000.0)
+        self.assertEqual(res["metrics"]["min_amount_threshold"], 1000.0)

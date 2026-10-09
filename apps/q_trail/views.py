@@ -65,7 +65,7 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
         request.GET.get("compare_all") == "1" or request.POST.get("action") == "compare_all"
     )
 
-    # Parse profile IDs from POST or GET
+    # Parse profile IDs and parameters from POST or GET
     if compare_all:
         profiles_with_data = [p["id"] for p in available_profiles if p.get("has_data")]
         profile_ids = (
@@ -74,16 +74,19 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
         time_window_str = request.POST.get(
             "time_window_days", request.GET.get("time_window_days", "0")
         )
+        min_amount_str = request.POST.get("min_amount", request.GET.get("min_amount", "1000"))
         save_dossier = False
         case_title = ""
     elif request.method == "POST":
         profile_ids = request.POST.getlist("profile_ids")
         time_window_str = request.POST.get("time_window_days", "0")
+        min_amount_str = request.POST.get("min_amount", "1000")
         save_dossier = request.POST.get("save_dossier") == "on"
         case_title = request.POST.get("case_title", "").strip()
     else:
         profile_ids = request.GET.getlist("profile_ids")
         time_window_str = request.GET.get("time_window_days", "0")
+        min_amount_str = request.GET.get("min_amount", "1000")
         save_dossier = False
         case_title = ""
 
@@ -100,6 +103,11 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
     except (ValueError, TypeError):
         time_window_days = 0
 
+    try:
+        min_amount = max(0.0, float(min_amount_str))
+    except (ValueError, TypeError):
+        min_amount = 1000.0
+
     # Default auto-selection heuristic: select all profiles with available data
     if not profile_ids:
         profiles_with_data = [p["id"] for p in available_profiles if p.get("has_data")]
@@ -114,6 +122,7 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
     analysis = analyze_profiles_money_trail(
         profile_ids=profile_ids,
         time_window_days=time_window_days,
+        min_amount=min_amount,
         case_title=case_title,
         save_dossier=save_dossier,
     )
@@ -239,6 +248,7 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
         "available_profiles": available_profiles,
         "selected_profile_ids": profile_ids,
         "time_window_days": time_window_days,
+        "min_amount": min_amount,
         "active_audit": active_audit,
         "scope": scope,
         "audit_profiles_count": len(audit_profiles),
@@ -272,16 +282,18 @@ def dashboard_view(request: HttpRequest) -> HttpResponse:
 def analyze_api_view(request: HttpRequest) -> JsonResponse:
     """
     JSON API endpoint for real-time asynchronous money trail analysis.
-    Accepts JSON body or POST form data containing 'profile_ids' and 'time_window_days'.
+    Accepts JSON body or POST form data containing 'profile_ids', 'time_window_days', and 'min_amount'.
     """
     try:
         if request.content_type == "application/json":
             payload = json.loads(request.body.decode("utf-8"))
             profile_ids = payload.get("profile_ids", [])
             time_window_days = int(payload.get("time_window_days", 0))
+            min_amount = float(payload.get("min_amount", 1000.0))
         else:
             profile_ids = request.POST.getlist("profile_ids")
             time_window_days = int(request.POST.get("time_window_days", 0))
+            min_amount = float(request.POST.get("min_amount", 1000.0))
     except Exception as e:
         logger.warning(f"Invalid API request payload to Q-Trail analyze: {e}")
         return JsonResponse({"status": "error", "message": "Invalid request payload."}, status=400)
@@ -289,6 +301,7 @@ def analyze_api_view(request: HttpRequest) -> JsonResponse:
     analysis = analyze_profiles_money_trail(
         profile_ids=profile_ids,
         time_window_days=time_window_days,
+        min_amount=min_amount,
     )
 
     direct_df = analysis["direct_transfers"]

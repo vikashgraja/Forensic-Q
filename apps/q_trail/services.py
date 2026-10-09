@@ -28,6 +28,7 @@ from q_bank.models import AuditedPerson
 from core.models import InvestigationProfile
 
 from .backend.reconciliation import (
+    DEFAULT_MIN_TRANSACTION_THRESHOLD,
     group_intermediate_transfers_by_intermediary,
     reconcile_and_match_network,
 )
@@ -72,6 +73,7 @@ def analyze_profiles_money_trail(
     profile_ids: list[str],
     *,
     time_window_days: int = 0,
+    min_amount: float = DEFAULT_MIN_TRANSACTION_THRESHOLD,
     case_title: str = "",
     lead_investigator: str = "",
     save_dossier: bool = False,
@@ -88,6 +90,7 @@ def analyze_profiles_money_trail(
     Args:
         profile_ids: List of profile or AuditedPerson UUID strings.
         time_window_days: Maximum elapsed days between conduit outflow and inflow.
+        min_amount: Minimum transaction threshold (INR). Transactions below this are not flagged.
         case_title: Optional title if saving a forensic case dossier.
         lead_investigator: Optional name of the investigator.
         save_dossier: Whether to persist the generated paths in the database.
@@ -123,6 +126,7 @@ def analyze_profiles_money_trail(
         "metrics": {
             "total_profiles_analyzed": len(unique_profile_ids),
             "total_transactions_analyzed": 0,
+            "min_amount_threshold": min_amount,
             "total_direct_transfers_count": 0,
             "total_direct_volume_inr": 0.0,
             "total_intermediate_hops_count": 0,
@@ -231,6 +235,7 @@ def analyze_profiles_money_trail(
             df,
             account_holder_name=p_name,
             time_window_days=time_window_days,
+            min_amount=min_amount,
         )
         if not lay_df.empty:
             # Normalize counterparties against known profile names
@@ -287,6 +292,7 @@ def analyze_profiles_money_trail(
                     person_a_name=name_a,
                     person_b_name=name_b,
                     time_window_days=time_window_days,
+                    min_amount=min_amount,
                 )
 
                 d_df = res.get("direct_transfers")
@@ -351,7 +357,7 @@ def analyze_profiles_money_trail(
                 mask_b = prep_a.apply(_matches_counterparty_b, axis=1)
 
                 # Case 1: Inflow into A from B (B -> A)
-                b_inflows = prep_a[(prep_a["Credit"] > 0) & mask_b]
+                b_inflows = prep_a[(prep_a["Credit"] >= min_amount) & mask_b]
                 if not b_inflows.empty:
                     synth_in = pd.DataFrame(
                         {
@@ -374,7 +380,7 @@ def analyze_profiles_money_trail(
                     direct_records_list.append(synth_in)
 
                 # Case 2: Outflow from A to B (A -> B)
-                b_outflows = prep_a[(prep_a["Debit"] > 0) & mask_b]
+                b_outflows = prep_a[(prep_a["Debit"] >= min_amount) & mask_b]
                 if not b_outflows.empty:
                     synth_out = pd.DataFrame(
                         {
@@ -962,6 +968,7 @@ def analyze_profiles_money_trail(
     metrics = {
         "total_profiles_analyzed": len(unique_profile_ids),
         "total_transactions_analyzed": total_txns_count,
+        "min_amount_threshold": min_amount,
         "total_direct_transfers_count": len(combined_direct),
         "total_direct_volume_inr": round(total_direct_vol, 2),
         "total_intermediate_hops_count": len(combined_intermediate),

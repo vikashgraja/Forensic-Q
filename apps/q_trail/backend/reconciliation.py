@@ -77,6 +77,11 @@ REGEX_NAME_NOISE_PREFIX = re.compile(
     r"(?i)^(?:SENT TO MR|SENT TO MS|SENT TO|PAY TO|PAYMENT TO|TRANSFER TO)\s+"
 )
 
+# Default minimum monetary threshold (INR) for money trail analysis and flagging.
+# Transactions below this value (e.g. routine micro-payments < ₹1,000) are excluded
+# from direct transfer matching, intermediate conduit hops, and rapid layering flags.
+DEFAULT_MIN_TRANSACTION_THRESHOLD: float = 1000.0
+
 
 # =============================================================================
 # 2. Data Normalization & Feature Extraction Engine
@@ -261,6 +266,7 @@ def match_direct_transactions(
     person_b_name: str = "Person B",
     person_a_vpa: str = "",
     person_b_vpa: str = "",
+    min_amount: float = DEFAULT_MIN_TRANSACTION_THRESHOLD,
     date_col: str | None = None,
     debit_col: str | None = None,
     credit_col: str | None = None,
@@ -323,9 +329,9 @@ def match_direct_transactions(
     ]
 
     for direction, src_df, dst_df, src_person, dst_person, src_vpa, dst_vpa in transfer_scenarios:
-        # Filter source debits and destination credits
-        debits = src_df[src_df["Debit"] > 0].copy()
-        credits = dst_df[dst_df["Credit"] > 0].copy()
+        # Filter source debits and destination credits meeting minimum transaction threshold
+        debits = src_df[src_df["Debit"] >= min_amount].copy()
+        credits = dst_df[dst_df["Credit"] >= min_amount].copy()
 
         if debits.empty or credits.empty:
             continue
@@ -493,6 +499,7 @@ def match_intermediate_transactions(
     person_b_name: str = "Person B",
     bidirectional: bool = True,
     time_window_days: int = 0,
+    min_amount: float = DEFAULT_MIN_TRANSACTION_THRESHOLD,
     direct_matched_utrs: set[str] | None = None,
     date_col: str | None = None,
     debit_col: str | None = None,
@@ -577,9 +584,9 @@ def match_intermediate_transactions(
     matched_dfs: list[pd.DataFrame] = []
 
     for direction, src_df, dst_df, src_person, dst_person in transfer_scenarios:
-        # Step 1: Subsets of Source Debits (src -> X) and Destination Credits (X -> dst)
-        src_debits = src_df[src_df["Debit"] > 0].copy()
-        dst_credits = dst_df[dst_df["Credit"] > 0].copy()
+        # Step 1: Subsets of Source Debits (src -> X) and Destination Credits (X -> dst) meeting minimum threshold
+        src_debits = src_df[src_df["Debit"] >= min_amount].copy()
+        dst_credits = dst_df[dst_df["Credit"] >= min_amount].copy()
 
         # Exclude direct transfers already identified
         if direct_matched_utrs:
@@ -728,6 +735,7 @@ def reconcile_and_match_network(
     person_a_vpa: str = "",
     person_b_vpa: str = "",
     time_window_days: int = 0,
+    min_amount: float = DEFAULT_MIN_TRANSACTION_THRESHOLD,
     date_col: str | None = None,
     debit_col: str | None = None,
     credit_col: str | None = None,
@@ -750,6 +758,7 @@ def reconcile_and_match_network(
         person_b_name=person_b_name,
         person_a_vpa=person_a_vpa,
         person_b_vpa=person_b_vpa,
+        min_amount=min_amount,
         date_col=date_col,
         debit_col=debit_col,
         credit_col=credit_col,
@@ -771,6 +780,7 @@ def reconcile_and_match_network(
         person_b_name=person_b_name,
         bidirectional=True,
         time_window_days=time_window_days,
+        min_amount=min_amount,
         direct_matched_utrs=direct_utrs,
         date_col=date_col,
         debit_col=debit_col,
@@ -818,6 +828,7 @@ def detect_rapid_layering_for_profile(
     *,
     account_holder_name: str = "Account Holder",
     time_window_days: int = 1,
+    min_amount: float = DEFAULT_MIN_TRANSACTION_THRESHOLD,
     date_col: str | None = None,
     debit_col: str | None = None,
     credit_col: str | None = None,
@@ -825,8 +836,9 @@ def detect_rapid_layering_for_profile(
 ) -> pd.DataFrame:
     """
     Detects Rapid Layering (Immediate Hop Pass-Through):
-    Identifies transactions where an inflow (Credit > 0) is followed within hours or the same day
-    (<= time_window_days) by rapid outflows (Debit > 0) to third-party counterparties.
+    Identifies transactions where an inflow (Credit >= min_amount) is followed within hours or the same day
+    (<= time_window_days) by rapid outflows (Debit >= min_amount) to third-party counterparties.
+    Transactions below min_amount (default ₹1,000) are excluded from layering flags.
     """
     df = _prepare_statement_dataframe(
         statement,
@@ -838,8 +850,8 @@ def detect_rapid_layering_for_profile(
     if df.empty:
         return pd.DataFrame()
 
-    inflows = df[df["Credit"] > 0].copy()
-    outflows = df[df["Debit"] > 0].copy()
+    inflows = df[df["Credit"] >= min_amount].copy()
+    outflows = df[df["Debit"] >= min_amount].copy()
 
     if inflows.empty or outflows.empty:
         return pd.DataFrame()
@@ -1034,10 +1046,14 @@ def detect_rapid_layering_for_profile(
 
 
 def detect_pass_through_patterns(
-    df: pd.DataFrame, account_holder_name: str
+    df: pd.DataFrame,
+    account_holder_name: str,
+    *,
+    min_amount: float = DEFAULT_MIN_TRANSACTION_THRESHOLD,
 ) -> tuple[list[dict], list[str]]:
     """
     Detects pass-through patterns based on an 80-100% value threshold constraint within 3 days.
+    Transactions below min_amount (default ₹1,000) are excluded from pass-through analysis.
     Returns:
         (patterns_list, suspicious_list)
     """
@@ -1047,8 +1063,8 @@ def detect_pass_through_patterns(
     df["Date_dt"] = pd.to_datetime(df["Date"], errors="coerce", format="mixed")
     df = df.sort_values("Date_dt")
 
-    inflows = df[df["Credit"] > 0].copy()
-    outflows = df[df["Debit"] > 0].copy()
+    inflows = df[df["Credit"] >= min_amount].copy()
+    outflows = df[df["Debit"] >= min_amount].copy()
 
     def _clean_party(row):
         for col in ["Counterparty_Name", "Counterparty_VPA"]:
