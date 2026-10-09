@@ -209,13 +209,42 @@ def get_all_profiles() -> QuerySet[InvestigationProfile]:
 def get_profile_by_id(profile_id: str | uuid.UUID | None) -> InvestigationProfile | None:
     """
     Retrieves an investigation profile by ID.
+    If the provided identifier corresponds to a Q-Bank AuditedPerson, resolves or
+    synchronizes the corresponding InvestigationProfile.
     """
     if not profile_id:
         return None
     try:
-        return InvestigationProfile.objects.filter(id=profile_id).first()
+        prof = InvestigationProfile.objects.filter(id=profile_id).first()
+        if prof:
+            return prof
     except (ValueError, TypeError, ValidationError):
         return None
+
+    # Cross-app fallback: if ID belongs to an AuditedPerson, locate matching InvestigationProfile
+    try:
+        from q_bank.models import AuditedPerson
+
+        person = AuditedPerson.objects.filter(id=profile_id).first()
+        if person:
+            matched_prof = InvestigationProfile.objects.filter(
+                full_name__iexact=person.full_name
+            ).first()
+            if matched_prof:
+                return matched_prof
+            return InvestigationProfile.objects.create(
+                full_name=person.full_name,
+                employee_id=person.employee_id,
+                department=person.department,
+                designation=person.designation,
+                email=person.email,
+                phone=person.phone,
+                notes=person.notes,
+            )
+    except Exception as exc:
+        logger.debug(f"Cross-app AuditedPerson fallback resolution skipped: {exc}")
+
+    return None
 
 
 def get_active_profile(request: HttpRequest) -> InvestigationProfile | None:

@@ -69,6 +69,7 @@ def _format_node(
     is_external: bool = False,
     additional_tags: list[str] | None = None,
     is_root: bool | None = None,
+    profile_map: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Formats a ForensicEntity dictionary conforming to the Developer Data Schema Contract."""
     raw_tags = list(entity.tags)
@@ -80,7 +81,13 @@ def _format_node(
     try:
         from core.models import InvestigationProfile
 
-        prof = InvestigationProfile.objects.filter(full_name__iexact=entity.display_name).first()
+        if profile_map is not None:
+            prof = profile_map.get(entity.display_name.strip().lower())
+        else:
+            prof = InvestigationProfile.objects.filter(
+                full_name__iexact=entity.display_name
+            ).first()
+
         if prof:
             if prof.is_substantiated and "Substantiated" not in raw_tags:
                 raw_tags.append("Substantiated")
@@ -116,7 +123,9 @@ def _format_node(
 
 def _format_edge(rel: EntityRelationship, *, is_external: bool = False) -> dict[str, Any]:
     """Formats an EntityRelationship dictionary conforming to the Developer Data Schema Contract."""
-    first_ev = rel.evidence_pointers.first()
+    ev_pointers = list(rel.evidence_pointers.all())
+    first_ev = ev_pointers[0] if ev_pointers else None
+    evidence_count = len(ev_pointers)
     ev_meta: dict[str, Any] = (first_ev.metadata or {}) if first_ev else {}
 
     evidence_dict: dict[str, Any] = {
@@ -173,7 +182,7 @@ def _format_edge(rel: EntityRelationship, *, is_external: bool = False) -> dict[
         "is_rapid_layering": is_rl,
         "is_external": is_ext,
         "evidence": evidence_dict,
-        "evidence_count": rel.evidence_pointers.count(),
+        "evidence_count": evidence_count,
     }
 
 
@@ -187,13 +196,16 @@ def get_entity_network(
     Traverses the knowledge graph starting from entity_id up to max_hops (BFS).
     Returns nodes and edges structured for Vis.js / Cytoscape rendering.
     """
+    from core.models import InvestigationProfile
+
+    profile_map = {p.full_name.strip().lower(): p for p in InvestigationProfile.objects.all()}
     root_entity = get_entity_by_id(entity_id)
     if not root_entity:
         return {"nodes": [], "edges": [], "root_id": entity_id}
 
     visited_node_ids: set[str] = {str(root_entity.id)}
     nodes_map: dict[str, dict[str, Any]] = {
-        str(root_entity.id): _format_node(root_entity, is_root=True)
+        str(root_entity.id): _format_node(root_entity, is_root=True, profile_map=profile_map)
     }
     edges_list: list[dict[str, Any]] = []
 
@@ -220,7 +232,9 @@ def get_entity_network(
             neighbor_id = str(neighbor.id)
 
             if neighbor_id not in nodes_map:
-                nodes_map[neighbor_id] = _format_node(neighbor, is_root=False)
+                nodes_map[neighbor_id] = _format_node(
+                    neighbor, is_root=False, profile_map=profile_map
+                )
 
             edges_list.append(_format_edge(rel))
 
@@ -798,7 +812,10 @@ def get_mode1_keyword_graph(
                 if fe:
                     matching_entities_dict[str(fe.id)] = fe
 
-        nodes = [_format_node(e) for e in matching_entities_dict.values()]
+        from core.models import InvestigationProfile
+
+        profile_map = {p.full_name.strip().lower(): p for p in InvestigationProfile.objects.all()}
+        nodes = [_format_node(e, profile_map=profile_map) for e in matching_entities_dict.values()]
         key_terms_str = (
             f" (Key terms: {', '.join(sorted(active_kw_names)[:6])})" if active_kw_names else ""
         )
@@ -914,8 +931,10 @@ def get_mode1_keyword_graph(
             if nr not in existing_rels:
                 existing_rels.append(nr)
 
-    # Format nodes
-    nodes = [_format_node(e) for e in matching_entities]
+    from core.models import InvestigationProfile
+
+    profile_map = {p.full_name.strip().lower(): p for p in InvestigationProfile.objects.all()}
+    nodes = [_format_node(e, profile_map=profile_map) for e in matching_entities]
 
     edges = [_format_edge(r) for r in existing_rels]
     connected_pairs = {(e["source"], e["target"]) for e in edges} | {
@@ -1038,8 +1057,11 @@ def get_mode2_audit_graph(
             )[:max_nodes]
         )
 
+    from core.models import InvestigationProfile
+
+    profile_map = {p.full_name.strip().lower(): p for p in InvestigationProfile.objects.all()}
     entity_ids = [str(e.id) for e in entities]
-    nodes = [_format_node(e) for e in entities]
+    nodes = [_format_node(e, profile_map=profile_map) for e in entities]
 
     relationships = list(
         EntityRelationship.objects.filter(
@@ -1092,8 +1114,9 @@ def get_mode3_global_graph(
             ForensicEntity.objects.filter(is_target=True).order_by("-risk_rating")[:10]
         )
 
+    profile_map = {p.full_name.strip().lower(): p for p in InvestigationProfile.objects.all()}
     internal_ids = {str(e.id) for e in internal_entities}
-    nodes = [_format_node(e, is_external=False) for e in internal_entities]
+    nodes = [_format_node(e, is_external=False, profile_map=profile_map) for e in internal_entities]
 
     # Collect keywords and identifiers from internal entities
     internal_keywords = set()
@@ -1223,7 +1246,14 @@ def get_mode3_global_graph(
                     )
 
     for ext_ent in external_matched_entities:
-        nodes.append(_format_node(ext_ent, is_external=True, additional_tags=["External Vault"]))
+        nodes.append(
+            _format_node(
+                ext_ent,
+                is_external=True,
+                additional_tags=["External Vault"],
+                profile_map=profile_map,
+            )
+        )
 
     # Internal edges
     internal_rels = list(

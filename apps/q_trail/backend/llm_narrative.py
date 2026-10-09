@@ -44,7 +44,7 @@ def generate_loop_forensic_narrative(loop_data: dict[str, Any]) -> str:
         "TRAIL_LLM_ENDPOINT",
         getattr(settings, "LLM_API_ENDPOINT", "http://127.0.0.1:8434/v1/chat/completions"),
     )
-    timeout = float(getattr(settings, "LLM_API_TIMEOUT", 4.0))
+    timeout = float(getattr(settings, "LLM_API_TIMEOUT", 8.0))
 
     prompt = (
         f"Closed circular round-tripping loop detected in audit:\n"
@@ -53,33 +53,38 @@ def generate_loop_forensic_narrative(loop_data: dict[str, Any]) -> str:
         f"Return Inflow: ₹{return_amt:,.2f}\n"
         f"Conduits Withheld Fee: ₹{retained_amt:,.2f}\n"
         f"Intermediaries: {conduits_str}\n\n"
-        f"Provide a 2-sentence formal forensic intelligence summary explaining this money laundering/round-tripping scheme and how beneficial control returned to the originator."
+        f"Provide exactly two complete, factual, professional sentences summarizing this round-tripping flow and how beneficial control returned to the originator. State only the exact figures provided above."
     )
 
     payload = {
-        "model": getattr(settings, "LLM_MODEL_NAME", "default"),
+        "model": getattr(settings, "LLM_MODEL_NAME", "./models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"),
         "messages": [
             {
                 "role": "system",
-                "content": "You are a senior forensic financial intelligence auditor. Respond with exactly two professional, factual sentences.",
+                "content": "You are a senior forensic financial intelligence auditor. Respond with exactly two complete, professional sentences.",
             },
             {
                 "role": "user",
                 "content": prompt,
             },
         ],
-        "temperature": 0.2,
-        "max_tokens": 120,
+        "temperature": 0.1,
+        "max_tokens": 240,
     }
 
     if not (endpoint.startswith("http://") or endpoint.startswith("https://")):
         return fallback_narrative
 
     try:
+        headers = {"Content-Type": "application/json"}
+        api_key = getattr(settings, "LLM_API_KEY", "")
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+
         req = urllib.request.Request(
             endpoint,
             data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
+            headers=headers,
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec B310
             if resp.status == 200:
@@ -87,7 +92,11 @@ def generate_loop_forensic_narrative(loop_data: dict[str, Any]) -> str:
                 choices = result.get("choices", [])
                 if choices:
                     content = choices[0].get("message", {}).get("content", "").strip()
-                    if content:
+                    if content and len(content) > 30:
+                        # Ensure complete sentence termination
+                        last_punct = max(content.rfind("."), content.rfind("!"))
+                        if last_punct > 30:
+                            content = content[: last_punct + 1].strip()
                         return content
     except Exception as exc:
         logger.debug("Local LLM synthesis bypassed ({}); using deterministic narrative.", exc)

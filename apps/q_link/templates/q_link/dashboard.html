@@ -91,7 +91,7 @@
 
                         <!-- Mode 1 / General Keyword Search Input -->
                         <div class="relative flex items-center" id="keyword-search-container">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-700"></i>
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-700 dark:text-slate-400"></i>
                             <input type="text" id="mode1-keyword-search" value="{{ keyword }}" placeholder="Search keyword (e.g. Metec, Palani, Substantiated)..."
                                 onkeydown="if(event.key==='Enter'){ executeKeywordSearch(); }"
                                 class="bg-[#FFF1E7] dark:bg-slate-900 border border-[#805232] dark:border-slate-700 text-xs text-slate-900 dark:text-slate-200 pl-8 pr-16 py-1.5 rounded-lg focus:outline-none focus:border-amber-400 transition w-56 sm:w-72" />
@@ -103,7 +103,7 @@
 
                         <!-- Canvas In-View Quick Filter -->
                         <div class="relative hidden xl:block">
-                            <i class="fa-solid fa-filter absolute left-2.5 top-2.5 text-xs text-slate-700"></i>
+                            <i class="fa-solid fa-filter absolute left-2.5 top-2.5 text-xs text-slate-700 dark:text-slate-400"></i>
                             <input type="text" id="entity-search-input" placeholder="Find node in view..."
 
                                 oninput="filterGraphNodes(this.value)"
@@ -159,10 +159,10 @@
                         <i class="fa-solid fa-timeline text-amber-400 text-sm"></i>
                         <h4 class="font-bold text-sm text-slate-900 dark:text-slate-200">Reconstructed Timeline Sequence</h4>
                     </div>
-                    <span class="text-xs text-slate-700 font-mono" id="timeline-count-badge">Select a node or view recent</span>
+                    <span class="text-xs text-slate-700 dark:text-slate-400 font-mono" id="timeline-count-badge">Select a node or view recent</span>
                 </div>
                 <div id="timeline-stream-container" class="space-y-2 max-h-44 overflow-y-auto pr-2 text-xs">
-                    <div class="text-slate-700 italic py-3 text-center">Click on any entity or run a query in Copilot to inspect the event timeline.</div>
+                    <div class="text-slate-700 dark:text-slate-400 italic py-3 text-center">Click on any entity or run a query in Copilot to inspect the event timeline.</div>
                 </div>
             </div>
         </div>
@@ -205,7 +205,7 @@
                         <span class="flex items-center gap-1.5 text-cyan-400 font-mono">
                             <i class="fa-solid fa-microchip"></i> Tool Calling Engine
                         </span>
-                        <span class="text-[11px] text-slate-700">Autonomous Multi-Tool Agent</span>
+                        <span class="text-[11px] text-slate-700 dark:text-slate-400">Autonomous Multi-Tool Agent</span>
                     </div>
 
                     <!-- Chat Message Stream -->
@@ -219,7 +219,7 @@
                                 I autonomously connect evidence across Q-Bank, Q-Ledger, Q-Mail, Q-Trail, and Q-Verify using structured tool calls.
                             </p>
                             <div class="pt-1.5 border-t border-[#B5D2E6]/60 dark:border-slate-800/60">
-                                <span class="text-[10px] uppercase font-mono text-slate-700 tracking-wider">Suggested Queries:</span>
+                                <span class="text-[10px] uppercase font-mono text-slate-700 dark:text-slate-400 tracking-wider">Suggested Queries:</span>
                                 <div class="flex flex-col gap-1.5 mt-1.5">
                                     <button type="button" onclick="sendCopilotPrompt('Investigate Arun Kumar and detect all connected entities and fund flows.')"
 
@@ -254,8 +254,8 @@
 
                 <!-- Tab 2: Entity Inspector & Traceability Drawer -->
                 <div x-show="activeTab === 'inspector'" class="p-4 space-y-4">
-                    <div id="inspector-placeholder" class="text-center py-12 text-slate-700 space-y-2">
-                        <i class="fa-solid fa-crosshairs text-2xl text-slate-800"></i>
+                    <div id="inspector-placeholder" class="text-center py-12 text-slate-700 dark:text-slate-400 space-y-2">
+                        <i class="fa-solid fa-crosshairs text-2xl text-slate-600 dark:text-slate-500"></i>
                         <p class="text-xs">Click on any node in the canvas to inspect its complete forensic dossier and original evidence pointers.</p>
                     </div>
 
@@ -307,7 +307,7 @@
                 <div x-show="activeTab === 'alerts'" class="p-4 space-y-3">
                     <div class="flex items-center justify-between text-xs text-slate-700 dark:text-slate-400 pb-2 border-b border-[#B5D2E6] dark:border-slate-800">
                         <span class="font-bold text-slate-900 dark:text-slate-200">Continuous Monitoring Alerts</span>
-                        <span class="text-[11px] text-slate-700">{{ alerts.count }} Triggered</span>
+                        <span class="text-[11px] text-slate-700 dark:text-slate-400">{{ alerts.count }} Triggered</span>
                     </div>
 
                     <div class="space-y-2.5 max-h-[480px] overflow-y-auto pr-1 text-xs">
@@ -328,7 +328,7 @@
                                         "{{ alert.ai_summary }}"
                                     </p>
                                 {% endif %}
-                                <div class="flex items-center justify-between pt-1 border-t border-[#B5D2E6]/60 dark:border-slate-800/60 text-[10px] text-slate-700">
+                                <div class="flex items-center justify-between pt-1 border-t border-[#B5D2E6]/60 dark:border-slate-800/60 text-[10px] text-slate-700 dark:text-slate-400">
                                     <span>{{ alert.created_at|date:"M d, Y H:i" }}</span>
                                     {% if not alert.is_acknowledged %}
                                         <button type="button" onclick="acknowledgeAlert('{{ alert.id }}')"
@@ -1148,7 +1148,7 @@
                         aliasContainer.appendChild(span);
                     });
                 } else {
-                    aliasContainer.innerHTML = "<span class='text-slate-700 text-[10px]'>None</span>";
+                    aliasContainer.innerHTML = "<span class='text-slate-700 dark:text-slate-400 text-[10px]'>None</span>";
                 }
 
                 // Render Tags & Classifications (Substantiated badge, External, Rapid Layering)
@@ -1178,7 +1178,7 @@
                             tagsContainer.appendChild(badge);
                         });
                     } else {
-                        tagsContainer.innerHTML = "<span class='text-slate-700 text-[10px]'>None</span>";
+                        tagsContainer.innerHTML = "<span class='text-slate-700 dark:text-slate-400 text-[10px]'>None</span>";
                     }
                 }
 
@@ -1326,7 +1326,7 @@
                 let toolHtml = "";
                 if (toolCalls && toolCalls.length > 0) {
                     toolHtml = `<div class="p-2 rounded bg-[#B5D2E6] dark:bg-slate-900 border border-[#B5D2E6] dark:border-slate-800 font-mono text-[10px] text-cyan-400 space-y-1">
-                        <span class="text-slate-700 uppercase tracking-wider block font-bold">Executed Tools:</span>
+                        <span class="text-slate-700 dark:text-slate-400 uppercase tracking-wider block font-bold">Executed Tools:</span>
                         ${toolCalls.map(tc => `<div>⚡ <b>${tc.tool}</b>(${JSON.stringify(tc.arguments)})</div>`).join("")}
                     </div>`;
                 }

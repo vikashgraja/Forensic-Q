@@ -15,7 +15,7 @@ from typing import Any
 
 import pandas as pd
 import plotly.graph_objects as go
-from django.db.models import Count, QuerySet
+from django.db.models import Count, Q, QuerySet
 from loguru import logger
 from q_bank.models import AuditedPerson, BankTransaction
 
@@ -160,7 +160,9 @@ def get_transactions_df_for_profile(
 
     # Query all transactions linked to any bank account of this auditee
     qs = (
-        BankTransaction.objects.filter(account__person=auditee)
+        BankTransaction.objects.filter(
+            Q(account__person=auditee) | Q(account__account_holder__iexact=auditee.full_name)
+        )
         .select_related("account")
         .order_by("txn_date", "created_at")
     )
