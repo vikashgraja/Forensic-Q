@@ -273,8 +273,14 @@ def _prepare_statement_dataframe(
     else:
         std["Party_Name"] = ""
 
-    # Retain original index for provenance
+    # Retain original index and statement ordering for provenance
     std["orig_idx"] = df.index
+    if "Row_Order" in df.columns:
+        std["Row_Order"] = df["Row_Order"]
+    else:
+        std["Row_Order"] = df.index
+    if "Closing_Balance" in df.columns:
+        std["Closing_Balance"] = pd.to_numeric(df["Closing_Balance"], errors="coerce").fillna(0.0)
 
     # Perform feature extraction
     enriched = extract_banking_features(std, narration_col="Narration")
@@ -905,10 +911,14 @@ def detect_rapid_layering_for_profile(
         return "Unknown Counterparty"
 
     records = []
+    # Track unallocated debit capacity for each outflow to avoid duplicate / Cartesian over-counting
+    out_remaining = {idx: float(row["Debit"]) for idx, row in outflows.iterrows()}
+
     for _, in_row in inflows.iterrows():
         in_amt = float(in_row["Credit"])
         in_date_str = str(in_row.get("Date", ""))
         in_date_dt = in_row.get("Date_dt")
+        in_order = in_row.get("Row_Order", 0)
         in_party = _clean_party(
             in_row.get("Counterparty_Name"),
             in_row.get("Party_Name"),
@@ -916,10 +926,11 @@ def detect_rapid_layering_for_profile(
             in_row.get("Narration"),
         )
 
-        for _, out_row in outflows.iterrows():
-            out_amt = float(out_row["Debit"])
-            out_date_str = str(out_row.get("Date", ""))
-            out_date_dt = out_row.get("Date_dt")
+        candidate_outs = []
+        for out_idx, out_row in outflows.iterrows():
+            if out_remaining[out_idx] <= 0:
+                continue
+
             out_party = _clean_party(
                 out_row.get("Counterparty_Name"),
                 out_row.get("Party_Name"),
@@ -933,11 +944,19 @@ def detect_rapid_layering_for_profile(
             ):
                 continue
 
-            # Temporal match: same date string or within time_window_days
+            out_order = out_row.get("Row_Order", 0)
+            out_date_str = str(out_row.get("Date", ""))
+            out_date_dt = out_row.get("Date_dt")
+
             is_temporal_match = False
             delta_hours = 0.0
 
-            if pd.notna(in_date_dt) and pd.notna(out_date_dt):
+            if in_date_str and out_date_str and in_date_str == out_date_str:
+                # Same day: outflow MUST occur strictly after inflow in statement row sequence
+                if out_order > in_order:
+                    is_temporal_match = True
+                    delta_hours = 0.5
+            elif pd.notna(in_date_dt) and pd.notna(out_date_dt):
                 delta_sec = (out_date_dt - in_date_dt).total_seconds()
                 if time_window_days and time_window_days > 0:
                     if 0 <= delta_sec <= (time_window_days * 86400):
@@ -947,37 +966,69 @@ def detect_rapid_layering_for_profile(
                     if delta_sec >= 0:
                         is_temporal_match = True
                         delta_hours = round(max(0.1, delta_sec / 3600.0), 1)
-            elif in_date_str and out_date_str and in_date_str == out_date_str:
-                is_temporal_match = True
-                delta_hours = 0.5
 
             if is_temporal_match:
-                retention_amt = max(0.0, in_amt - out_amt)
-                retention_pct = round((retention_amt / in_amt * 100.0) if in_amt > 0 else 0.0, 1)
+                candidate_outs.append((out_idx, out_row, out_party, delta_hours))
 
-                records.append(
-                    {
-                        "Transfer_Type": "Rapid_Layering",
-                        "Layering_Type": "RAPID_PASS_THROUGH",
-                        "Match_Method": "TEMPORAL_RAPID_LAYERING",
-                        "Sender_Person": in_party,
-                        "Intermediary_Entity": account_holder_name,
-                        "Recipient_Person": out_party,
-                        "Inflow_Date": in_date_str,
-                        "Outflow_Date": out_date_str,
-                        "Inflow_Amount": in_amt,
-                        "Outflow_Amount": out_amt,
-                        "Retention_Amount": retention_amt,
-                        "Retention_Pct": retention_pct,
-                        "Time_Delta_Hours": delta_hours,
-                        "Inflow_Narration": in_row.get("Narration", ""),
-                        "Outflow_Narration": out_row.get("Narration", ""),
-                        "Inflow_UTR": in_row.get("UTR", "N/A"),
-                        "Outflow_UTR": out_row.get("UTR", "N/A"),
-                        "Inflow_VPA": in_row.get("Counterparty_VPA", ""),
-                        "Outflow_VPA": out_row.get("Counterparty_VPA", ""),
-                    }
-                )
+        if not candidate_outs:
+            continue
+
+        # Sequentially allocate from this inflow to candidate subsequent outflows
+        rem_inflow = in_amt
+        allocated_legs = []
+        for out_idx, out_row, out_party, delta_hours in candidate_outs:
+            if rem_inflow <= 0:
+                break
+            needed = out_remaining[out_idx]
+            alloc = min(rem_inflow, needed)
+            if alloc > 0:
+                rem_inflow -= alloc
+                out_remaining[out_idx] -= alloc
+                allocated_legs.append((out_row, out_party, alloc, delta_hours))
+
+        if not allocated_legs:
+            continue
+
+        tot_forwarded = sum(alloc for _, _, alloc, _ in allocated_legs)
+        tot_retained = max(0.0, in_amt - tot_forwarded)
+        ret_pct = round((tot_retained / in_amt * 100.0) if in_amt > 0 else 0.0, 2)
+
+        # Distribute the dispatched inflow (and retained fee) proportionally across matched recipient legs
+        prev_dispatched_sum = 0.0
+        for leg_idx, (out_row, out_party, alloc_amt, delta_hours) in enumerate(allocated_legs):
+            out_date_str = str(out_row.get("Date", ""))
+
+            if leg_idx == len(allocated_legs) - 1:
+                prop_dispatched = round(in_amt - prev_dispatched_sum, 2)
+            else:
+                prop_dispatched = round(in_amt * (alloc_amt / tot_forwarded), 2)
+                prev_dispatched_sum += prop_dispatched
+
+            leg_retained = max(0.0, round(prop_dispatched - alloc_amt, 2))
+
+            records.append(
+                {
+                    "Transfer_Type": "Rapid_Layering",
+                    "Layering_Type": "RAPID_PASS_THROUGH",
+                    "Match_Method": "TEMPORAL_RAPID_LAYERING",
+                    "Sender_Person": in_party,
+                    "Intermediary_Entity": account_holder_name,
+                    "Recipient_Person": out_party,
+                    "Outflow_Date": in_date_str,
+                    "Inflow_Date": out_date_str,
+                    "Outflow_Amount": prop_dispatched,
+                    "Inflow_Amount": alloc_amt,
+                    "Retention_Amount": leg_retained,
+                    "Retention_Pct": ret_pct,
+                    "Time_Delta_Hours": delta_hours,
+                    "Inflow_Narration": out_row.get("Narration", ""),
+                    "Outflow_Narration": in_row.get("Narration", ""),
+                    "Inflow_UTR": out_row.get("UTR", "N/A"),
+                    "Outflow_UTR": in_row.get("UTR", "N/A"),
+                    "Inflow_VPA": out_row.get("Counterparty_VPA", ""),
+                    "Outflow_VPA": in_row.get("Counterparty_VPA", ""),
+                }
+            )
 
     # Pattern 2: Round-Trip Return / Kickback Rebate (Outflow followed by rapid Inflow from same or related party)
     for _, out_row in outflows.iterrows():

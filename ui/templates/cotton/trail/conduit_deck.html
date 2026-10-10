@@ -150,15 +150,15 @@
                             <div class="text-[10px] text-amber-500/80 font-sans">1-Hop Intermediary</div>
                         </div>
                         <div class="flex flex-col items-center px-4">
-                            <span class="text-[11px] font-bold text-amber-400" x-text="c.retained_short + ' withheld'"></span>
-                            <div class="w-24 sm:w-32 h-0.5 bg-amber-500/60 relative my-1">
-                                <i class="fa-solid fa-caret-right text-amber-400 absolute -right-1.5 -top-2 text-xs"></i>
+                            <span class="text-[11px] font-bold text-sky-400" x-text="c.inflow_short + ' forwarded'"></span>
+                            <div class="w-24 sm:w-32 h-0.5 bg-sky-500/60 relative my-1">
+                                <i class="fa-solid fa-caret-right text-sky-400 absolute -right-1.5 -top-2 text-xs"></i>
                             </div>
-                            <span class="text-[10px] text-slate-400" x-text="'+' + c.delta_days + 'd delta'"></span>
+                            <span class="text-[10px] text-amber-400/90" x-text="c.retained_short + ' kept (' + c.retention_pct + '%)'"></span>
                         </div>
-                        <div class="text-center min-w-[100px]">
+                        <div class="text-center min-w-[120px]">
                             <span class="font-bold text-slate-900 dark:text-white" x-text="c.recipient"></span>
-                            <div class="text-[10px] text-slate-400">Recipient Sink</div>
+                            <div class="text-[10px] text-slate-400">Recipient Sink(s)</div>
                         </div>
                     </div>
 

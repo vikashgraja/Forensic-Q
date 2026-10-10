@@ -77,59 +77,68 @@ def build_chronological_beats(
 
     # 2. Intermediate conduit hops
     if not intermediate_df.empty:
+        # Group by (Sender, Conduit, Outflow_Date) to consolidate dispatched deposits
+        grouped_dispatches: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
         for _idx, row in intermediate_df.iterrows():
             sender = _clean_str(row.get("Sender_Person"))
-            recipient = _clean_str(row.get("Recipient_Person"))
             conduit = _clean_str(row.get("Intermediary_Entity"))
-            out_amt = float(row.get("Outflow_Amount", 0.0))
-            in_amt = float(row.get("Inflow_Amount", 0.0))
-            ret_amt = float(row.get("Retention_Amount", 0.0))
-            ret_pct = float(row.get("Retention_Pct", 0.0))
             out_date = _clean_str(row.get("Outflow_Date", ""))
-            in_date = _clean_str(row.get("Inflow_Date", ""))
-            raw_delta = row.get("Time_Delta_Days", 0.0)
-            try:
-                delta_days = 0.0 if pd.isna(raw_delta) else float(raw_delta)
-            except Exception:
-                delta_days = 0.0
-            int_delta = (
-                int(delta_days) if not (math.isnan(delta_days) or math.isinf(delta_days)) else 0
-            )
+            key = (sender, conduit, out_date)
+            grouped_dispatches.setdefault(key, []).append(row)
 
-            # Leg 1: Sender -> Conduit
+        for (sender, conduit, out_date), leg_rows in grouped_dispatches.items():
+            tot_dispatched = sum(float(r.get("Outflow_Amount", 0.0)) for r in leg_rows)
+            # Leg 1: Sender -> Conduit (Single consolidated event for the deposit)
             raw_events.append(
                 {
                     "date": out_date,
                     "kind": "hop",
                     "from": sender,
                     "to": conduit,
-                    "amount": out_amt,
+                    "amount": tot_dispatched,
                     "retained": 0.0,
                     "utr": "",
                     "via": conduit,
-                    "cap": f"{sender} dispatched ₹{out_amt:,.2f} to conduit '{conduit}'.",
+                    "cap": f"{sender} dispatched ₹{tot_dispatched:,.2f} to conduit '{conduit}'.",
                     "title": f"{sender} → {conduit}",
                 }
             )
 
-            # Leg 2: Conduit -> Recipient (reflecting retained margin)
-            raw_events.append(
-                {
-                    "date": in_date,
-                    "kind": "hop",
-                    "from": conduit,
-                    "to": recipient,
-                    "amount": in_amt,
-                    "retained": ret_amt,
-                    "utr": "",
-                    "via": conduit,
-                    "cap": (
-                        f"Conduit '{conduit}' forwarded ₹{in_amt:,.2f} to {recipient} "
-                        f"after {int_delta}d (withholding ₹{ret_amt:,.2f} / {ret_pct:.1f}% fee)."
-                    ),
-                    "title": f"{conduit} → {recipient}",
-                }
-            )
+            # Leg 2: Conduit -> Each Recipient
+            for row in leg_rows:
+                recipient = _clean_str(row.get("Recipient_Person"))
+                in_amt = float(row.get("Inflow_Amount", 0.0))
+                ret_amt = float(row.get("Retention_Amount", 0.0))
+                ret_pct = float(row.get("Retention_Pct", 0.0))
+                in_date = _clean_str(row.get("Inflow_Date", ""))
+                raw_delta = row.get("Time_Delta_Days", 0.0)
+                try:
+                    delta_days = 0.0 if pd.isna(raw_delta) else float(raw_delta)
+                except Exception:
+                    delta_days = 0.0
+                int_delta = (
+                    int(delta_days)
+                    if not (math.isnan(delta_days) or math.isinf(delta_days))
+                    else 0
+                )
+
+                raw_events.append(
+                    {
+                        "date": in_date,
+                        "kind": "hop",
+                        "from": conduit,
+                        "to": recipient,
+                        "amount": in_amt,
+                        "retained": ret_amt,
+                        "utr": "",
+                        "via": conduit,
+                        "cap": (
+                            f"Conduit '{conduit}' forwarded ₹{in_amt:,.2f} to {recipient} "
+                            f"after {int_delta}d (retained ₹{ret_amt:,.2f} / {ret_pct:.1f}% fee)."
+                        ),
+                        "title": f"{conduit} → {recipient}",
+                    }
+                )
 
     # 3. Circular round-trip legs
     for c_trail in circular_trails:
@@ -269,10 +278,25 @@ def build_conduit_deck(
             inflow = sum(float(r.get("Inflow_Amount", 0.0)) for r in data)
             retained = sum(float(r.get("Retention_Amount", 0.0)) for r in data)
             ret_pct = (retained / outflow * 100.0) if outflow > 0 else 0.0
-            primary_sender = data[0].get("Sender_Person", "Auditee A") if data else "Auditee A"
-            primary_recipient = (
-                data[0].get("Recipient_Person", "Auditee B") if data else "Auditee B"
+
+            # Extract all distinct senders and recipients
+            senders_list = list(
+                dict.fromkeys(
+                    _clean_str(r.get("Sender_Person"))
+                    for r in data
+                    if _clean_str(r.get("Sender_Person"))
+                )
             )
+            recipients_list = list(
+                dict.fromkeys(
+                    _clean_str(r.get("Recipient_Person"))
+                    for r in data
+                    if _clean_str(r.get("Recipient_Person"))
+                )
+            )
+
+            primary_sender = ", ".join(senders_list) if senders_list else "Auditee A"
+            primary_recipient = ", ".join(recipients_list) if recipients_list else "Auditee B"
             out_date = data[0].get("Outflow_Date", "") if data else ""
             in_date = data[0].get("Inflow_Date", "") if data else ""
             delta_days = float(data[0].get("Time_Delta_Days", 1.0)) if data else 1.0
@@ -283,8 +307,18 @@ def build_conduit_deck(
             ret_pct = float(data.get("Avg_Retention_Pct", 0.0))
             hops_count = int(data.get("Hops_Count", 1))
             details = data.get("Hops_Details", [])
-            primary_sender = details[0].get("Sender", "Auditee A") if details else "Auditee A"
-            primary_recipient = details[0].get("Recipient", "Auditee B") if details else "Auditee B"
+            senders_list = list(
+                dict.fromkeys(
+                    _clean_str(d.get("Sender")) for d in details if _clean_str(d.get("Sender"))
+                )
+            )
+            recipients_list = list(
+                dict.fromkeys(
+                    _clean_str(d.get("Recipient")) for d in details if _clean_str(d.get("Recipient"))
+                )
+            )
+            primary_sender = ", ".join(senders_list) if senders_list else "Auditee A"
+            primary_recipient = ", ".join(recipients_list) if recipients_list else "Auditee B"
             out_date = details[0].get("Outflow_Date", "") if details else ""
             delta_days = details[0].get("Time_Delta_Days", 1.0) if details else 1.0
 
@@ -336,6 +370,8 @@ def build_conduit_deck(
                 "name": name,
                 "sender": primary_sender,
                 "recipient": primary_recipient,
+                "senders_list": senders_list,
+                "recipients_list": recipients_list,
                 "outflow_amount": outflow,
                 "outflow_short": _format_inr_short(outflow),
                 "inflow_amount": inflow,
@@ -576,67 +612,113 @@ def build_topology_graph(
                 )
                 edge_idx += 1
 
-    # Add intermediate conduit edges
+    # Add intermediate conduit edges (consolidated by unique directed node pairs)
     if not intermediate_df.empty:
+        # Leg 1: Sender -> Conduit (consolidated per unique pair)
+        sender_conduit_map: dict[tuple[str, str], dict[str, Any]] = {}
         for _, row in intermediate_df.iterrows():
             s_name = _clean_str(row.get("Sender_Person"))
             c_name = _clean_str(row.get("Intermediary_Entity"))
-            t_name = _clean_str(row.get("Recipient_Person"))
             out_amt = float(row.get("Outflow_Amount", 0.0))
-            in_amt = float(row.get("Inflow_Amount", 0.0))
-            ret_amt = float(row.get("Retention_Amount", 0.0))
-
             s_node = _find_node(s_name)
             c_node = _find_node(c_name)
-            t_node = _find_node(t_name)
-
-            # Leg 1: Sender -> Conduit
             if s_node and c_node:
-                d, mid_x, mid_y, is_ret = _compute_edge_geom(s_node, c_node)
-                edges.append(
-                    {
-                        "id": f"L{edge_idx}",
-                        "from": s_node["id"],
-                        "to": c_node["id"],
-                        "from_name": s_name,
-                        "to_name": c_name,
-                        "kind": "return" if is_ret else "hop",
-                        "amount": _format_inr_short(out_amt),
+                key = (s_node["id"], c_node["id"])
+                if key not in sender_conduit_map:
+                    sender_conduit_map[key] = {
+                        "s_node": s_node,
+                        "c_node": c_node,
+                        "s_name": s_name,
+                        "c_name": c_name,
                         "amount_num": out_amt,
-                        "d": d,
-                        "color": "#f59e0b" if is_ret else "#38bdf8",
-                        "dashed": is_ret,
-                        "utr": "",
-                        "via": c_name,
-                        "ret": 0.0,
-                        "mid": {"x": round(mid_x, 1), "y": round(mid_y, 1)},
                     }
-                )
-                edge_idx += 1
+                else:
+                    sender_conduit_map[key]["amount_num"] += out_amt
 
-            # Leg 2: Conduit -> Recipient
+        for sc_data in sender_conduit_map.values():
+            s_node = sc_data["s_node"]
+            c_node = sc_data["c_node"]
+            s_name = sc_data["s_name"]
+            c_name = sc_data["c_name"]
+            tot_amt = sc_data["amount_num"]
+            d, mid_x, mid_y, is_ret = _compute_edge_geom(s_node, c_node)
+            edges.append(
+                {
+                    "id": f"L{edge_idx}",
+                    "from": s_node["id"],
+                    "to": c_node["id"],
+                    "from_name": s_name,
+                    "to_name": c_name,
+                    "kind": "return" if is_ret else "hop",
+                    "amount": _format_inr_short(tot_amt),
+                    "amount_num": tot_amt,
+                    "d": d,
+                    "color": "#f59e0b" if is_ret else "#38bdf8",
+                    "dashed": is_ret,
+                    "utr": "",
+                    "via": c_name,
+                    "ret": 0.0,
+                    "mid": {"x": round(mid_x, 1), "y": round(mid_y, 1)},
+                }
+            )
+            edge_idx += 1
+
+        # Leg 2: Conduit -> Recipient (consolidated per unique pair)
+        conduit_recipient_map: dict[tuple[str, str], dict[str, Any]] = {}
+        for _, row in intermediate_df.iterrows():
+            c_name = _clean_str(row.get("Intermediary_Entity"))
+            t_name = _clean_str(row.get("Recipient_Person"))
+            in_amt = float(row.get("Inflow_Amount", 0.0))
+            ret_amt = float(row.get("Retention_Amount", 0.0))
+            ret_pct = float(row.get("Retention_Pct", 0.0))
+            c_node = _find_node(c_name)
+            t_node = _find_node(t_name)
             if c_node and t_node:
-                d, mid_x, mid_y, is_ret = _compute_edge_geom(c_node, t_node)
-                edges.append(
-                    {
-                        "id": f"L{edge_idx}",
-                        "from": c_node["id"],
-                        "to": t_node["id"],
-                        "from_name": c_name,
-                        "to_name": t_name,
-                        "kind": "return" if is_ret else "hop",
-                        "amount": _format_inr_short(in_amt),
+                key = (c_node["id"], t_node["id"])
+                if key not in conduit_recipient_map:
+                    conduit_recipient_map[key] = {
+                        "c_node": c_node,
+                        "t_node": t_node,
+                        "c_name": c_name,
+                        "t_name": t_name,
                         "amount_num": in_amt,
-                        "d": d,
-                        "color": "#f59e0b" if (is_ret or ret_amt > 0) else "#38bdf8",
-                        "dashed": is_ret,
-                        "utr": "",
-                        "via": c_name,
-                        "ret": ret_amt,
-                        "mid": {"x": round(mid_x, 1), "y": round(mid_y, 1)},
+                        "ret_num": ret_amt,
+                        "ret_pct": ret_pct,
                     }
-                )
-                edge_idx += 1
+                else:
+                    conduit_recipient_map[key]["amount_num"] += in_amt
+                    conduit_recipient_map[key]["ret_num"] += ret_amt
+
+        for cr_data in conduit_recipient_map.values():
+            c_node = cr_data["c_node"]
+            t_node = cr_data["t_node"]
+            c_name = cr_data["c_name"]
+            t_name = cr_data["t_name"]
+            tot_amt = cr_data["amount_num"]
+            tot_ret = cr_data["ret_num"]
+            ret_pct = cr_data["ret_pct"]
+            d, mid_x, mid_y, is_ret = _compute_edge_geom(c_node, t_node)
+            is_high_fee = ret_pct >= 15.0 and tot_ret >= 2000.0
+            edges.append(
+                {
+                    "id": f"L{edge_idx}",
+                    "from": c_node["id"],
+                    "to": t_node["id"],
+                    "from_name": c_name,
+                    "to_name": t_name,
+                    "kind": "return" if is_ret else "hop",
+                    "amount": _format_inr_short(tot_amt),
+                    "amount_num": tot_amt,
+                    "d": d,
+                    "color": "#f59e0b" if (is_ret or is_high_fee) else "#38bdf8",
+                    "dashed": is_ret,
+                    "utr": "",
+                    "via": c_name,
+                    "ret": tot_ret,
+                    "mid": {"x": round(mid_x, 1), "y": round(mid_y, 1)},
+                }
+            )
+            edge_idx += 1
 
     # Add return cycle edges (underneath the graph)
     for c_trail in circular_trails:

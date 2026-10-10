@@ -171,7 +171,7 @@ def get_transactions_df_for_profile(
         qs = qs[:limit]
 
     records: list[dict[str, Any]] = []
-    for t in qs:
+    for idx, t in enumerate(qs):
         # Standardize transaction date
         date_str = ""
         if t.txn_date:
@@ -181,10 +181,12 @@ def get_transactions_df_for_profile(
 
         records.append(
             {
+                "Row_Order": idx,
                 "Date": date_str,
                 "Narration": str(t.narration or "").strip(),
                 "Debit": float(t.debit_amount or 0.0),
                 "Credit": float(t.credit_amount or 0.0),
+                "Closing_Balance": float(t.closing_balance or 0.0),
                 "Bank_Name": str(t.account.bank_name or "").strip(),
                 "Account_Number": str(t.account.account_number or "").strip(),
                 "Party_Name": str(t.party_name or "").strip(),

@@ -1218,10 +1218,10 @@ class QTrailMinimumThresholdTests(TestCase):
             stmt, account_holder_name="Test Holder", time_window_days=1
         )
         self.assertEqual(len(res), 1)
-        self.assertEqual(res.iloc[0]["Inflow_Amount"], 50000.0)
-        self.assertEqual(res.iloc[0]["Outflow_Amount"], 48000.0)
-        self.assertNotIn(500.0, res["Inflow_Amount"].values)
-        self.assertNotIn(450.0, res["Outflow_Amount"].values)
+        self.assertEqual(res.iloc[0]["Outflow_Amount"], 50000.0)
+        self.assertEqual(res.iloc[0]["Inflow_Amount"], 48000.0)
+        self.assertNotIn(500.0, res["Outflow_Amount"].values)
+        self.assertNotIn(450.0, res["Inflow_Amount"].values)
 
     def test_pass_through_patterns_below_1000_not_flagged(self):
         stmt = pd.DataFrame(
@@ -1321,3 +1321,34 @@ class QTrailMinimumThresholdTests(TestCase):
         self.assertNotEqual(row["Recipient_Person"], "OUT")
         self.assertEqual(row["Recipient_Person"], "SILVIYAJ")
         self.assertEqual(row["Sender_Person"], "epalani1977@okicici")
+
+    def test_issue_116_intra_day_sequence_and_multi_recipient_pass_through(self):
+        stmt = pd.DataFrame(
+            {
+                "Row_Order": [0, 1, 2, 3],
+                "Date": ["2025-08-14", "2025-08-14", "2025-08-14", "2025-08-14"],
+                "Narration": [
+                    "UPI IN/epalani@okicici",
+                    "UPI OUT/shanthisubu@okaxis",
+                    "UPI OUT/silviyaj@oksbi",
+                    "UPI IN/gunavengat@okhdfc",
+                ],
+                "Credit": [30000.0, 0.0, 0.0, 5000.0],
+                "Debit": [0.0, 4000.0, 25000.0, 0.0],
+                "Party_Name": ["EPALANI", "SHANTHISUBU", "SILVIYAJ", "GUNAVENGAT"],
+                "Closing_Balance": [30096.42, 26096.42, 1096.42, 6096.42],
+            }
+        )
+        res = detect_rapid_layering_for_profile(
+            stmt, account_holder_name="Veeramani", time_window_days=1
+        )
+        # 1. Gunavengat must NOT be flagged because he deposited after the payouts
+        self.assertNotIn("GUNAVENGAT", res["Sender_Person"].values)
+        # 2. Epalani funds both Shanthisubu and Silviyaj
+        self.assertEqual(len(res), 2)
+        self.assertIn("SHANTHISUBU", res["Recipient_Person"].values)
+        self.assertIn("SILVIYAJ", res["Recipient_Person"].values)
+        # 3. Total dispatched must equal 30,000, total forwarded 29,000, retained 1,000
+        self.assertEqual(res["Outflow_Amount"].sum(), 30000.0)
+        self.assertEqual(res["Inflow_Amount"].sum(), 29000.0)
+        self.assertEqual(res["Retention_Amount"].sum(), 1000.0)
