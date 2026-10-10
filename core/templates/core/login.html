@@ -13,8 +13,11 @@
     <link rel="icon" type="image/png" sizes="64x64" href="{% static 'core/images/favicon.png' %}">
     <link rel="shortcut icon" href="{% static 'core/images/favicon.ico' %}">
 
-    <!-- Theme Initialization & Mode Manager (Prevents FOUC) -->
-    <script src="{% static 'ui/js/theme-manager.js' %}"></script>
+    <!-- Force Dark Theme Exclusively on Login Page -->
+    <script>
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+    </script>
 
     <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +38,7 @@
 </head>
 
 <body
-    class="bg-slate-900 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 min-h-screen flex flex-col justify-between transition-colors duration-200 selection:bg-amber-500 selection:text-zinc-950 relative overflow-x-hidden">
+    class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-zinc-950 relative overflow-x-hidden">
 
     <!-- Live Wallpaper Video Background (Vivid HUD Elements) -->
     <div class="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
@@ -49,7 +52,7 @@
         </div>
     </div>
 
-    <!-- Top Bar with Logo & Theme Toggle -->
+    <!-- Top Bar with Logo -->
     <header class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
         <div class="flex items-center">
             <span
@@ -57,13 +60,6 @@
                 HYUNDAI MOTOR INDIA LIMITED<br>AUDIT-PLANT
             </span>
         </div>
-
-        <!-- Theme Toggle -->
-        <button id="theme-toggle" type="button" aria-label="Toggle Dark Mode"
-            class="w-9 h-9 rounded-lg flex items-center justify-center text-zinc-300 hover:bg-white/10 border border-white/20 bg-white/5 transition backdrop-blur-md shadow-sm">
-            <i id="theme-toggle-dark-icon" class="hidden fa-solid fa-moon text-sm text-sky-400"></i>
-            <i id="theme-toggle-light-icon" class="hidden fa-solid fa-sun text-sm text-amber-400"></i>
-        </button>
     </header>
 
     <!-- Main Login Card Container -->
