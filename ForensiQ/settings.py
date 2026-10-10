@@ -192,6 +192,9 @@ STATICFILES_DIRS = [
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Decoupled AI & LLM Prompt Templates Directory
+PROMPTS_DIR = BASE_DIR / "apps"
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration

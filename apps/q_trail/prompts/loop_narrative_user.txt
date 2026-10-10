@@ -1,0 +1,8 @@
+Closed circular round-tripping loop detected in audit:
+Path: {cycle_str}
+Initial Dispatched Outflow: ₹{initial_amt}
+Return Inflow: ₹{return_amt}
+Conduits Withheld Fee: ₹{retained_amt}
+Intermediaries: {conduits_str}
+
+Provide exactly two complete, factual, professional sentences summarizing this round-tripping flow and how beneficial control returned to the originator. State only the exact figures provided above.

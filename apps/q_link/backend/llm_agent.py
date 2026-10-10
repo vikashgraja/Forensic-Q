@@ -25,6 +25,7 @@ from config import (
     DEFAULT_LLM_TIMEOUT,
     STOP_WORDS,
 )
+from core.prompts import render_prompt
 
 from ..models import ForensicEntity, RelationshipAlert
 from ..selectors import (
@@ -769,7 +770,7 @@ class ForensicCopilotAgent:
                 ", ".join(a.get("title", "") for a in alerts[:3]) if alerts else "None active"
             )
 
-            prompt = (
+            fallback_prompt = (
                 f"You are ForensiQ Copilot, a senior forensic data intelligence analyst.\n"
                 f"Analyze the following cross-module entity intelligence dossier for '{target.display_name}':\n\n"
                 f"Target Entity: {target.display_name} ({target.get_entity_type_display()}, Risk Score: {target.risk_rating}/100)\n"
@@ -779,6 +780,23 @@ class ForensicCopilotAgent:
                 f"Conflicts & Syndicate Flags: {conflicts_count} total flags (Recent: {alert_str})\n\n"
                 f"User Inquiry: {query}\n\n"
                 f"Provide a concise, professional investigative summary with specific findings, connected counterparties, and recommendations:"
+            )
+
+            prompt = render_prompt(
+                "q_link",
+                "single_entity_dossier.txt",
+                fallback=fallback_prompt,
+                target_name=target.display_name,
+                target_type=target.get_entity_type_display(),
+                risk_rating=target.risk_rating,
+                connected_count=connected_count,
+                edges_count=edges_count,
+                edges_text=edges_text,
+                ev_str=ev_str,
+                time_str=time_str,
+                conflicts_count=conflicts_count,
+                alert_str=alert_str,
+                query=query,
             )
 
             return self._call_model_host(prompt)
@@ -813,12 +831,23 @@ class ForensicCopilotAgent:
                 "\n".join(path_lines) if path_lines else "No direct path within traversal limits."
             )
 
-            prompt = (
+            fallback_prompt = (
                 f"You are ForensiQ Copilot, an enterprise knowledge graph data analyst.\n"
                 f"Analyze the connection pathways between Node 1 ({source.display_name}) and Node 2 ({target.display_name}):\n\n"
                 f"Graph Pathways ({paths_count} routes found):\n{paths_str}\n\n"
                 f"User Inquiry: {query}\n\n"
                 f"Describe the connection path from {source.display_name} to {target.display_name}, noting any intermediate conduits or connecting entities in 3-4 professional sentences:"
+            )
+
+            prompt = render_prompt(
+                "q_link",
+                "dual_entity_pathways.txt",
+                fallback=fallback_prompt,
+                source_name=source.display_name,
+                target_name=target.display_name,
+                paths_count=paths_count,
+                paths_str=paths_str,
+                query=query,
             )
 
             return self._call_model_host(prompt)
@@ -844,7 +873,7 @@ class ForensicCopilotAgent:
             alert_lines = [f"- [{a.get('severity')}] {a.get('title')}" for a in alerts[:4]]
             alert_str = "\n".join(alert_lines) if alert_lines else "No active alerts."
 
-            prompt = (
+            fallback_prompt = (
                 f"You are ForensiQ Copilot, an enterprise audit and financial data reconciliation system.\n"
                 f"Summarize the macro syndicate risks across the current audit:\n\n"
                 f"Total Indexed Entities: {metrics.get('total_entities', 0)}\n"
@@ -854,6 +883,18 @@ class ForensicCopilotAgent:
                 f"Recent Syndicate Alerts:\n{alert_str}\n\n"
                 f"User Inquiry: {query}\n\n"
                 f"Provide an executive briefing detailing high-risk syndicates, primary focal targets, and recommended reconciliation actions:"
+            )
+
+            prompt = render_prompt(
+                "q_link",
+                "syndicate_overview.txt",
+                fallback=fallback_prompt,
+                total_entities=metrics.get("total_entities", 0),
+                total_relationships=metrics.get("total_relationships", 0),
+                unack_alerts=metrics.get("unack_alerts", 0),
+                risk_str=risk_str,
+                alert_str=alert_str,
+                query=query,
             )
 
             return self._call_model_host(prompt)

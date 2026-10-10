@@ -1682,3 +1682,84 @@ class CoreAuditTests(TestCase):
         p3, name3 = resolve_or_create_profile_from_request(req3)
         self.assertIsNotNone(p3)
         self.assertEqual(name3, "Fallback Custodian")
+
+
+class CorePromptsEngineTests(TestCase):
+    """Verifies decoupled prompt loading, rendering, caching, and fallback handling."""
+
+    def setUp(self):
+        from core.prompts import clear_prompt_cache
+
+        clear_prompt_cache()
+
+    def test_load_q_trail_prompts(self):
+        from core.prompts import load_prompt
+
+        sys_prompt = load_prompt("q_trail", "loop_narrative_system.txt")
+        self.assertIn("forensic financial intelligence auditor", sys_prompt)
+
+        user_prompt = load_prompt("q_trail", "loop_narrative_user.txt")
+        self.assertIn("Closed circular round-tripping loop", user_prompt)
+        self.assertIn("{cycle_str}", user_prompt)
+
+    def test_load_q_link_prompts(self):
+        from core.prompts import load_prompt
+
+        single_prompt = load_prompt("q_link", "single_entity_dossier.txt")
+        self.assertIn("ForensiQ Copilot", single_prompt)
+        self.assertIn("{target_name}", single_prompt)
+
+        dual_prompt = load_prompt("q_link", "dual_entity_pathways.txt")
+        self.assertIn("{source_name}", dual_prompt)
+        self.assertIn("{target_name}", dual_prompt)
+
+        overview_prompt = load_prompt("q_link", "syndicate_overview.txt")
+        self.assertIn("{total_entities}", overview_prompt)
+
+    def test_render_prompt_with_context(self):
+        from core.prompts import render_prompt
+
+        rendered = render_prompt(
+            "q_trail",
+            "loop_narrative_user.txt",
+            cycle_str="A -> B -> A",
+            initial_amt="10,000.00",
+            return_amt="9,500.00",
+            retained_amt="500.00",
+            conduits_str="Bank B",
+        )
+        self.assertIn("Path: A -> B -> A", rendered)
+        self.assertIn("Initial Dispatched Outflow: ₹10,000.00", rendered)
+        self.assertIn("Return Inflow: ₹9,500.00", rendered)
+        self.assertIn("Conduits Withheld Fee: ₹500.00", rendered)
+
+    def test_missing_prompt_uses_fallback(self):
+        from core.prompts import load_prompt, render_prompt
+
+        fallback = "Custom fallback prompt content."
+        loaded = load_prompt("unknown_app", "nonexistent.txt", fallback=fallback)
+        self.assertEqual(loaded, fallback)
+
+        rendered = render_prompt("unknown_app", "nonexistent.txt", fallback=fallback)
+        self.assertEqual(rendered, fallback)
+
+    def test_render_missing_keys_safe_behavior(self):
+        from core.prompts import render_prompt
+
+        # Missing one placeholder should not crash, leaves other placeholders formatted or safe
+        rendered = render_prompt(
+            "q_trail",
+            "loop_narrative_user.txt",
+            cycle_str="Node1 -> Node2",
+            # deliberately omitting other placeholders
+        )
+        self.assertIn("Node1 -> Node2", rendered)
+
+    def test_prompt_path_resolves_to_apps_dir(self):
+        from core.prompts import get_prompt_path
+
+        p = get_prompt_path("q_trail", "loop_narrative_system.txt")
+        self.assertTrue(p.exists())
+        self.assertIn("apps", str(p).lower())
+        self.assertIn("q_trail", str(p).lower())
+        self.assertIn("prompts", str(p).lower())

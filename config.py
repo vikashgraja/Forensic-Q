@@ -12,6 +12,7 @@ predictability, centralized calibration, and audit defensibility.
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Any
 
 # =============================================================================
@@ -947,6 +948,12 @@ Maximum allowable file size (10 MB in bytes) for uploaded keyword triage files.
 DEFAULT_AUDIT_PREFIX: str = "2026-WB-"
 """
 Auto-sequential naming prefix applied to freshly registered forensic audit engagements.
+"""
+
+PROMPTS_DIR: Path = Path(__file__).resolve().parent / "apps"
+"""
+Master apps filesystem directory storing localized natural language prompt templates
+under each individual application directory (`apps/<q_app>/prompts/`).
 """
 
 DEFAULT_MODULE_SPECS: dict[str, dict[str, Any]] = {

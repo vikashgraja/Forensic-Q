@@ -13,6 +13,8 @@ from typing import Any
 from django.conf import settings
 from loguru import logger
 
+from core.prompts import load_prompt, render_prompt
+
 
 def generate_loop_forensic_narrative(loop_data: dict[str, Any]) -> str:
     """
@@ -46,14 +48,29 @@ def generate_loop_forensic_narrative(loop_data: dict[str, Any]) -> str:
     )
     timeout = float(getattr(settings, "LLM_API_TIMEOUT", 8.0))
 
-    prompt = (
-        f"Closed circular round-tripping loop detected in audit:\n"
-        f"Path: {cycle_str}\n"
-        f"Initial Dispatched Outflow: ₹{initial_amt:,.2f}\n"
-        f"Return Inflow: ₹{return_amt:,.2f}\n"
-        f"Conduits Withheld Fee: ₹{retained_amt:,.2f}\n"
-        f"Intermediaries: {conduits_str}\n\n"
-        f"Provide exactly two complete, factual, professional sentences summarizing this round-tripping flow and how beneficial control returned to the originator. State only the exact figures provided above."
+    system_prompt = load_prompt(
+        "q_trail",
+        "loop_narrative_system.txt",
+        fallback="You are a senior forensic financial intelligence auditor. Respond with exactly two complete, professional sentences.",
+    )
+
+    prompt = render_prompt(
+        "q_trail",
+        "loop_narrative_user.txt",
+        fallback=(
+            f"Closed circular round-tripping loop detected in audit:\n"
+            f"Path: {cycle_str}\n"
+            f"Initial Dispatched Outflow: ₹{initial_amt:,.2f}\n"
+            f"Return Inflow: ₹{return_amt:,.2f}\n"
+            f"Conduits Withheld Fee: ₹{retained_amt:,.2f}\n"
+            f"Intermediaries: {conduits_str}\n\n"
+            f"Provide exactly two complete, factual, professional sentences summarizing this round-tripping flow and how beneficial control returned to the originator. State only the exact figures provided above."
+        ),
+        cycle_str=cycle_str,
+        initial_amt=f"{initial_amt:,.2f}",
+        return_amt=f"{return_amt:,.2f}",
+        retained_amt=f"{retained_amt:,.2f}",
+        conduits_str=conduits_str,
     )
 
     payload = {
@@ -61,7 +78,7 @@ def generate_loop_forensic_narrative(loop_data: dict[str, Any]) -> str:
         "messages": [
             {
                 "role": "system",
-                "content": "You are a senior forensic financial intelligence auditor. Respond with exactly two complete, professional sentences.",
+                "content": system_prompt,
             },
             {
                 "role": "user",
