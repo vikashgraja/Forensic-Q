@@ -4,8 +4,10 @@ Routes requests, validates parameters, and coordinates selectors & services.
 """
 
 import csv
+import io
 import json
 import uuid
+import zipfile
 from pathlib import Path
 
 from django.conf import settings
@@ -290,10 +292,36 @@ def export_hits_csv_view(request: HttpRequest) -> HttpResponse:
     return response
 
 
+def _get_merged_q_scan_config_dict(request: HttpRequest) -> dict:
+    from core.profiles import get_profile_keywords
+
+    config_path = settings.BASE_DIR / "tools" / "q_scan" / "config.json"
+    base_cfg: dict = {}
+    if config_path.exists():
+        try:
+            base_cfg = json.loads(config_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            base_cfg = {}
+
+    profile_kws = get_profile_keywords(request=request)
+    if profile_kws:
+        existing_kws = base_cfg.get("keywords", [])
+        seen_kws = {k.lower() for k in existing_kws}
+        merged = list(existing_kws)
+        for pkw in profile_kws:
+            if pkw.lower() not in seen_kws:
+                seen_kws.add(pkw.lower())
+                merged.append(pkw)
+        base_cfg["keywords"] = merged
+
+    return base_cfg
+
+
 @require_GET
 def download_tool_file_view(request: HttpRequest, filename: str) -> HttpResponse:
     """
     Serves portable scanner scripts (q_scan.py, config.json, build_exe.bat) to field auditors.
+    Dynamically injects investigation profile keywords into config.json and q_scan_package.zip.
     """
     allowed_files = {
         "q_scan.exe": settings.BASE_DIR / "tools" / "q_scan" / "q_scan.exe",
@@ -309,30 +337,42 @@ def download_tool_file_view(request: HttpRequest, filename: str) -> HttpResponse
         raise Http404("Requested tool file not found")
 
     if filename == "config.json":
-        import json
-
-        from core.profiles import get_profile_keywords
-
-        base_cfg = {}
-        try:
-            base_cfg = json.loads(target_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            base_cfg = {}
-
-        profile_kws = get_profile_keywords(request=request)
-        if profile_kws:
-            existing_kws = base_cfg.get("keywords", [])
-            seen_kws = {k.lower() for k in existing_kws}
-            merged = list(existing_kws)
-            for pkw in profile_kws:
-                if pkw.lower() not in seen_kws:
-                    seen_kws.add(pkw.lower())
-                    merged.append(pkw)
-            base_cfg["keywords"] = merged
-
-        json_bytes = json.dumps(base_cfg, indent=4).encode("utf-8")
+        merged_cfg = _get_merged_q_scan_config_dict(request)
+        json_bytes = json.dumps(merged_cfg, indent=4).encode("utf-8")
         resp = HttpResponse(json_bytes, content_type="application/json")
         resp["Content-Disposition"] = 'attachment; filename="config.json"'
+        return resp
+
+    if filename == "q_scan_package.zip":
+        merged_cfg = _get_merged_q_scan_config_dict(request)
+        merged_cfg_bytes = json.dumps(merged_cfg, indent=4).encode("utf-8")
+
+        zip_buffer = io.BytesIO()
+        base_zip_path = settings.BASE_DIR / "tools" / "q_scan" / "q_scan_package.zip"
+
+        if base_zip_path.exists():
+            with (
+                zipfile.ZipFile(base_zip_path, "r") as zin,
+                zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zout,
+            ):
+                for item in zin.infolist():
+                    if item.filename == "config.json":
+                        zout.writestr("config.json", merged_cfg_bytes)
+                    else:
+                        zout.writestr(item, zin.read(item.filename))
+        else:
+            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zout:
+                exe_path = settings.BASE_DIR / "tools" / "q_scan" / "q_scan.exe"
+                if exe_path.exists():
+                    zout.write(exe_path, arcname="q_scan.exe")
+                py_path = settings.BASE_DIR / "tools" / "q_scan" / "q_scan.py"
+                if py_path.exists():
+                    zout.write(py_path, arcname="q_scan.py")
+                zout.writestr("config.json", merged_cfg_bytes)
+
+        zip_bytes = zip_buffer.getvalue()
+        resp = HttpResponse(zip_bytes, content_type="application/zip")
+        resp["Content-Disposition"] = 'attachment; filename="q_scan_package.zip"'
         return resp
 
     return FileResponse(open(target_path, "rb"), as_attachment=True, filename=filename)

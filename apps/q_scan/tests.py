@@ -509,13 +509,47 @@ class QScanDjangoServiceAndViewsTests(TestCase):
         self.assertTrue(hit.is_reviewed)
 
     def test_download_tool_file_view(self):
-        # Valid tool file download
+        import io
+        import zipfile
+
+        from core.models import Audit, InvestigationProfile
+
+        # Setup test profile with custom keywords and audit
+        profile = InvestigationProfile.objects.create(
+            full_name="Target Suspect",
+            keywords=["OFFSHORE_BVI", "SHELL_CORP_99"],
+        )
+        audit = Audit.objects.create(name="2026-WB-99", title="Test Audit Scope")
+        audit.profiles.add(profile)
+
+        # 1. Valid python script download
         res = self.client.get(reverse("q_scan:download_tool", kwargs={"filename": "q_scan.py"}))
         self.assertEqual(res.status_code, 200)
         self.assertIn("attachment", res["Content-Disposition"])
         res.close()
 
-        # Invalid tool file download -> 404
+        # 2. config.json download merges profile keywords
+        session = self.client.session
+        session["active_audit_id"] = str(audit.id)
+        session.save()
+
+        res_cfg = self.client.get(reverse("q_scan:download_tool", kwargs={"filename": "config.json"}))
+        self.assertEqual(res_cfg.status_code, 200)
+        cfg_data = json.loads(res_cfg.content.decode("utf-8"))
+        self.assertIn("OFFSHORE_BVI", cfg_data["keywords"])
+        self.assertIn("SHELL_CORP_99", cfg_data["keywords"])
+
+        # 3. q_scan_package.zip download dynamically injects profile keywords into config.json
+        res_zip = self.client.get(reverse("q_scan:download_tool", kwargs={"filename": "q_scan_package.zip"}))
+        self.assertEqual(res_zip.status_code, 200)
+        self.assertIn("attachment; filename=\"q_scan_package.zip\"", res_zip["Content-Disposition"])
+        with zipfile.ZipFile(io.BytesIO(res_zip.content), "r") as z:
+            self.assertIn("config.json", z.namelist())
+            zip_cfg = json.loads(z.read("config.json").decode("utf-8"))
+            self.assertIn("OFFSHORE_BVI", zip_cfg["keywords"])
+            self.assertIn("SHELL_CORP_99", zip_cfg["keywords"])
+
+        # 4. Invalid tool file download -> 404
         res_404 = self.client.get(
             reverse("q_scan:download_tool", kwargs={"filename": "non_existent.py"})
         )

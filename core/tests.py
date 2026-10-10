@@ -1095,6 +1095,37 @@ class ProfileKeywordRegistryIntegrationTests(TestCase):
         self.assertIn("PROJECT_TITAN_SECRET", cfg_data["keywords"])
         self.assertIn("SWISS_ACCOUNT", cfg_data["keywords"])
 
+    def test_get_profile_keywords_scopes_and_fallbacks(self):
+        from core.audits import create_audit
+        from core.profiles import create_investigation_profile, get_profile_keywords
+
+        p1 = create_investigation_profile(full_name="Agent Alpha", keywords=["KW_ALPHA_1", "KW_ALPHA_2"])
+        p2 = create_investigation_profile(full_name="Agent Beta", keywords=["KW_BETA_1"])
+        audit = create_audit(title="Scope Audit", profile_ids=[str(p1.id)])
+
+        # 1. Direct profile_id
+        self.assertEqual(get_profile_keywords(profile_id=p1.id), ["KW_ALPHA_1", "KW_ALPHA_2"])
+
+        # 2. Direct custodian_name & profile_id for p2
+        self.assertEqual(get_profile_keywords(custodian_name="Agent Beta"), ["KW_BETA_1"])
+        self.assertEqual(get_profile_keywords(profile_id=p2.id), ["KW_BETA_1"])
+
+        # 3. Direct audit_id
+        self.assertEqual(get_profile_keywords(audit_id=audit.id), ["KW_ALPHA_1", "KW_ALPHA_2"])
+
+        # 4. Request with active audit in session
+        factory = RequestFactory()
+        req = factory.get("/scan/")
+        req.session = {"active_audit_id": str(audit.id)}
+        self.assertEqual(get_profile_keywords(request=req), ["KW_ALPHA_1", "KW_ALPHA_2"])
+
+        # 5. Global fallback when no session keys
+        req_empty = factory.get("/scan/")
+        req_empty.session = {}
+        all_kws = get_profile_keywords(request=req_empty)
+        self.assertIn("KW_ALPHA_1", all_kws)
+        self.assertIn("KW_BETA_1", all_kws)
+
 
 class CoreFuzzyEngineTests(TestCase):
     def test_extract_keywords_from_string(self):

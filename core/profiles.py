@@ -286,28 +286,78 @@ def get_profile_keywords(
     *,
     profile_id: str | uuid.UUID | None = None,
     custodian_name: str | None = None,
+    audit_id: str | uuid.UUID | None = None,
     request: HttpRequest | None = None,
 ) -> list[str]:
     """
     Resolves registered investigation keywords for a profile, custodian name,
-    or the current active investigator session.
+    audit, or the current active investigator session.
     Returns a normalized, deduplicated list of keyword strings.
     """
     profile: InvestigationProfile | None = None
 
     if profile_id:
         profile = get_profile_by_id(profile_id)
+        if profile and profile.keywords:
+            return _normalize_keywords(profile.keywords)
 
-    if not profile and custodian_name:
+    if custodian_name:
         clean = custodian_name.replace("(Auditee)", "").strip()
         if clean:
             profile = InvestigationProfile.objects.filter(full_name__iexact=clean).first()
+            if profile and profile.keywords:
+                return _normalize_keywords(profile.keywords)
 
-    if not profile and request:
+    if audit_id:
+        from .audits import get_audit_by_id
+
+        audit = get_audit_by_id(audit_id)
+        if audit:
+            collected: list[str] = []
+            for p in audit.profiles.all():
+                if p.keywords:
+                    collected.extend(_normalize_keywords(p.keywords))
+            if collected:
+                return _normalize_keywords(collected)
+
+    if request:
+        # Check query parameters
+        req_profile_id = request.GET.get("profile_id")
+        if req_profile_id:
+            p = get_profile_by_id(req_profile_id)
+            if p and p.keywords:
+                return _normalize_keywords(p.keywords)
+
+        req_custodian = request.GET.get("custodian")
+        if req_custodian:
+            p = InvestigationProfile.objects.filter(full_name__iexact=req_custodian.strip()).first()
+            if p and p.keywords:
+                return _normalize_keywords(p.keywords)
+
+        # Check active profile in session
         profile = get_active_profile(request)
+        if profile and profile.keywords:
+            return _normalize_keywords(profile.keywords)
 
-    if profile and profile.keywords:
-        return _normalize_keywords(profile.keywords)
+        # Check active audit in session
+        from .audits import get_active_audit
+
+        active_audit = get_active_audit(request)
+        if active_audit:
+            audit_kws: list[str] = []
+            for p in active_audit.profiles.all():
+                if p.keywords:
+                    audit_kws.extend(_normalize_keywords(p.keywords))
+            if audit_kws:
+                return _normalize_keywords(audit_kws)
+
+    # Fallback: collect registered keywords across all investigation profiles
+    all_kws: list[str] = []
+    for p in InvestigationProfile.objects.all():
+        if p.keywords:
+            all_kws.extend(_normalize_keywords(p.keywords))
+    if all_kws:
+        return _normalize_keywords(all_kws)
 
     return []
 
