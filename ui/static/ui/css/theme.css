@@ -4,23 +4,23 @@
  */
 
 :root {
-    /* Color Tokens - Light Mode (Custom Image Palette) */
-    --fq-bg-app: #FFF1E7;          
-    --fq-bg-surface: #B5D2E6;      
-    --fq-bg-surface-elevated: #B5D2E6; 
-    --fq-bg-subtle: #FFF1E7;       
-    --fq-border-subtle: #805232;   
-    --fq-border-strong: #805232;   
+    /* Color Tokens - Light Mode (Stripe / Warm Tech Palette) */
+    --fq-bg-app: #F9FAFB;          
+    --fq-bg-surface: #FFFFFF;      
+    --fq-bg-surface-elevated: #FFFFFF; 
+    --fq-bg-subtle: #F3F4F6;       
+    --fq-border-subtle: #E5E7EB;   
+    --fq-border-strong: #D1D5DB;   
     
-    --fq-text-main: #805232;       
-    --fq-text-muted: #805232;      
-    --fq-text-subtle: #805232;     
+    --fq-text-main: #111827;       
+    --fq-text-muted: #4B5563;      
+    --fq-text-subtle: #9CA3AF;     
 
-    --fq-brand-violet: #326080;    
-    --fq-brand-violet-hover: #805232; 
-    --fq-brand-violet-light: #B5D2E6; 
+    --fq-brand-violet: #502D55;    
+    --fq-brand-violet-hover: #6c3d73; 
+    --fq-brand-violet-light: #F3EDF5; 
 
-    --fq-accent-amber: #805232;    
+    --fq-accent-amber: #D97706;    
 }
 
 .dark {
