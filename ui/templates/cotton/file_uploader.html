@@ -48,7 +48,7 @@ Props:
 }">
     {% if label %}
     <div class="flex items-center justify-between mb-1">
-        <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
+        <label class="block text-xs font-semibold text-theme-text">
             {{ label }}{% if required %} <span class="text-rose-500">*</span>{% endif %}
         </label>
         {% if badge %}
@@ -102,14 +102,14 @@ Props:
                         <i class="fa-solid fa-file-circle-check text-sm"></i>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate" x-text="fileName"></p>
+                        <p class="text-xs font-bold text-theme-text truncate" x-text="fileName"></p>
                         <p class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold" x-text="fileSize"></p>
                     </div>
                 </div>
                 <button type="button"
                         @click.stop="clear()"
                         title="Remove file"
-                        class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-950/60 dark:hover:text-rose-400 text-slate-400 transition flex items-center justify-center cursor-pointer flex-shrink-0">
+                        class="w-7 h-7 rounded-lg bg-theme-subtle hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-950/60 dark:hover:text-rose-400 text-theme-muted transition flex items-center justify-center cursor-pointer flex-shrink-0">
                     <i class="fa-solid fa-xmark text-xs"></i>
                 </button>
             </div>

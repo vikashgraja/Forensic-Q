@@ -83,7 +83,7 @@
                          return a ? a : this.defaultStats;
                      }
                  }"
-                 class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/40 transition-all flex flex-col justify-between">
+                 class="bg-theme-surface rounded-2xl border border-theme-border p-5 shadow-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/40 transition-all flex flex-col justify-between">
                 <div>
                     <!-- Person Header -->
                     <div class="flex items-start justify-between gap-3 mb-3">
@@ -92,21 +92,21 @@
                                 <i class="fa-solid fa-user-tie"></i>
                             </div>
                             <div class="truncate">
-                                <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate hover:text-emerald-400 transition cursor-pointer" onclick="window.location.href='{% url 'q_bank:person_detail' p.id %}'">
+                                <h4 class="font-bold text-theme-text text-sm truncate hover:text-emerald-400 transition cursor-pointer" onclick="window.location.href='{% url 'q_bank:person_detail' p.id %}'">
                                     {{ p.full_name }}
                                 </h4>
-                                <div class="text-[11px] text-slate-400 font-mono truncate">
+                                <div class="text-[11px] text-theme-muted font-mono truncate">
                                     {{ p.department|default:"General Auditee" }}{% if p.employee_id %} • {{ p.employee_id }}{% endif %}
                                 </div>
                             </div>
                         </div>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 shrink-0">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-theme-subtle text-theme-muted border border-theme-border shrink-0">
                             {{ p.accounts_count }} Bank(s)
                         </span>
                     </div>
 
                     <!-- Stats Grid (In, Out, Balance, Period) -->
-                    <div class="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-zinc-800/40 rounded-xl p-3 border border-slate-100 dark:border-zinc-800 text-xs font-mono mb-3">
+                    <div class="grid grid-cols-2 gap-2 bg-theme-subtle/50 rounded-xl p-3 border border-theme-border text-xs font-mono mb-3">
                         <div>
                             <span class="text-[10px] uppercase text-slate-400 block font-sans">Total Inflows</span>
                             <span class="font-bold text-emerald-500 text-xs" x-text="'₹' + currentStats.inflow">₹{{ p.total_credit_formatted }}</span>
@@ -181,17 +181,17 @@
         </div>
         {% else %}
         <div
-            class="p-12 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-slate-300 dark:border-zinc-800">
+            class="p-12 text-center bg-theme-surface rounded-2xl border border-dashed border-theme-border">
             <div
                 class="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 mx-auto flex items-center justify-center text-2xl mb-4">
                 <i class="fa-solid fa-user-plus"></i>
             </div>
-            <h4 class="text-base font-bold text-slate-900 dark:text-white mb-1">No Auditee Profiles Yet</h4>
-            <p class="text-xs text-slate-400 max-w-md mx-auto mb-6">Create a target auditee profile or upload a bank
+            <h4 class="text-base font-bold text-theme-text mb-1">No Auditee Profiles Yet</h4>
+            <p class="text-xs text-theme-muted max-w-md mx-auto mb-6">Create a target auditee profile or upload a bank
                 statement to immediately initiate multi-bank forensic analysis.</p>
             <div class="flex items-center justify-center gap-3">
                 <button onclick="openNewPersonModal()"
-                    class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold cursor-pointer">
+                    class="px-4 py-2 rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text text-xs font-semibold border border-theme-border cursor-pointer">
                     Add New Auditee
                 </button>
                 <button onclick="openUploadModal()"
@@ -207,17 +207,17 @@
     <div id="upload-modal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
         <div
-            class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 relative">
+            class="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 relative">
             <button onclick="closeUploadModal()"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer">
+                class="absolute top-4 right-4 text-theme-muted hover:text-theme-text cursor-pointer">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+            <h3 class="text-base font-bold text-theme-text mb-1 flex items-center gap-2">
                 <i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i>
                 <span>Import Bank Statement File</span>
             </h3>
-            <p class="text-xs text-slate-400 mb-5">Supports Excel (.xlsx, .xls), CSV, Word (.docx tables), or PDF.</p>
+            <p class="text-xs text-theme-muted mb-5">Supports Excel (.xlsx, .xls), CSV, Word (.docx tables), or PDF.</p>
 
             <form method="POST" action="{% url 'q_bank:upload_statement' %}" enctype="multipart/form-data"
                 class="space-y-4">
@@ -265,17 +265,17 @@
     <div id="person-modal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
         <div
-            class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-6 relative">
+            class="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-6 relative">
             <button onclick="closeNewPersonModal()"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer">
+                class="absolute top-4 right-4 text-theme-muted hover:text-theme-text cursor-pointer">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+            <h3 class="text-base font-bold text-theme-text mb-1 flex items-center gap-2">
                 <i class="fa-solid fa-user-plus text-emerald-400"></i>
                 <span>Add Auditee / Target Person Profile</span>
             </h3>
-            <p class="text-xs text-slate-400 mb-5">Create an auditee profile to group multiple bank statements and
+            <p class="text-xs text-theme-muted mb-5">Create an auditee profile to group multiple bank statements and
                 institutional accounts.</p>
 
             <form method="POST" action="{% url 'q_bank:create_person' %}" class="space-y-4">

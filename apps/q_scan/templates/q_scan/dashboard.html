@@ -10,14 +10,14 @@
         
         <div class="flex flex-wrap items-center gap-2">
             {% if active_audit %}
-            <div class="inline-flex p-0.5 rounded-xl bg-slate-800/80 border border-slate-700/80 text-xs mr-1">
+            <div class="inline-flex p-0.5 rounded-xl bg-theme-surface border border-theme-border text-xs mr-1">
                 <a href="?scope=audit"
-                   class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 {% if scope == 'audit' %}bg-teal-500 text-slate-950 font-bold shadow-xs{% else %}text-slate-400 hover:text-white{% endif %}">
+                   class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 {% if scope == 'audit' %}bg-teal-500 text-slate-950 font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %}">
                     <i class="fa-solid fa-folder-tree text-[10px]"></i>
                     <span>Audit: {{ active_audit.name }}</span>
                 </a>
                 <a href="?scope=all"
-                   class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 {% if scope != 'audit' %}bg-teal-500 text-slate-950 font-bold shadow-xs{% else %}text-slate-400 hover:text-white{% endif %}">
+                   class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 {% if scope != 'audit' %}bg-teal-500 text-slate-950 font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %}">
                     <i class="fa-solid fa-globe text-[10px]"></i>
                     <span>All Custodians</span>
                 </a>
@@ -25,14 +25,14 @@
             {% endif %}
 
             <a href="{% url 'q_scan:download_tool' 'q_scan.exe' %}" 
-               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-600/20 hover:bg-teal-600/30 text-teal-300 text-xs font-bold border border-teal-500/40 shadow-sm transition-all transform hover:-translate-y-0.5 cursor-pointer">
-                <i class="fa-solid fa-download text-teal-400"></i>
+               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-600/20 hover:bg-teal-600/30 text-teal-700 dark:text-teal-300 text-xs font-bold border border-teal-500/40 shadow-sm transition-all transform hover:-translate-y-0.5 cursor-pointer">
+                <i class="fa-solid fa-download text-teal-500 dark:text-teal-400"></i>
                 <span>Download q_scan.exe</span>
             </a>
 
             <a href="{% url 'q_scan:download_tool' 'q_scan_package.zip' %}" 
-               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer">
-                <i class="fa-solid fa-file-zipper text-amber-400"></i>
+               class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text text-xs font-semibold border border-theme-border transition-all cursor-pointer">
+                <i class="fa-solid fa-file-zipper text-amber-500"></i>
                 <span>Download Bundle (ZIP)</span>
             </a>
 
@@ -122,12 +122,12 @@
                     <i class="fa-solid fa-bullseye text-xs"></i> Active Profile Keywords ({{ active_profile_keywords|length }}):
                 </span>
                 {% for kw in active_profile_keywords %}
-                <span class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded-md bg-white dark:bg-zinc-800 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 shadow-xs">
+                <span class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded-md bg-theme-surface text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 shadow-xs">
                     {{ kw }}
                 </span>
                 {% endfor %}
             </div>
-            <span class="text-[11px] font-medium text-slate-400 italic">
+            <span class="text-[11px] font-medium text-theme-muted italic">
                 Auto-merged into downloaded scanner configuration
             </span>
         </div>
@@ -137,7 +137,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {% for p in custodian_profiles %}
                 <div x-show="matches('{{ p.custodian_name|escapejs }}', '{{ p.custodian_department|escapejs }}', '{{ p.custodian_email|escapejs }}')"
-                     class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm hover:border-teal-500/50 dark:hover:border-teal-500/40 transition-all flex flex-col justify-between">
+                     class="bg-theme-surface rounded-2xl border border-theme-border p-5 shadow-sm hover:border-teal-500/50 dark:hover:border-teal-500/40 transition-all flex flex-col justify-between">
                     <div>
                         <!-- Custodian Header -->
                         <div class="flex items-start justify-between gap-3 mb-3">
@@ -146,10 +146,10 @@
                                     <i class="fa-solid fa-user-shield"></i>
                                 </div>
                                 <div class="truncate">
-                                    <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">
+                                    <h4 class="font-bold text-theme-text text-sm truncate">
                                         {{ p.custodian_name }}
                                     </h4>
-                                    <div class="text-[11px] text-slate-400 font-mono truncate">
+                                    <div class="text-[11px] text-theme-muted font-mono truncate">
                                         {{ p.custodian_department|default:"General Auditee" }}{% if p.custodian_email %} &bull; {{ p.custodian_email }}{% endif %}
                                     </div>
                                 </div>
@@ -213,12 +213,12 @@
                 </div>
             </div>
         {% else %}
-            <div class="p-12 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-slate-300 dark:border-zinc-800">
+            <div class="p-12 text-center bg-theme-surface rounded-2xl border border-dashed border-theme-border">
                 <div class="w-16 h-16 rounded-2xl bg-teal-500/10 text-teal-400 mx-auto flex items-center justify-center text-2xl mb-4">
                     <i class="fa-solid fa-user-plus"></i>
                 </div>
-                <h4 class="text-base font-bold text-slate-900 dark:text-white mb-1">No Custodian Profiles Yet</h4>
-                <p class="text-xs text-slate-400 max-w-md mx-auto mb-6">Import a Q-Scan endpoint scan result CSV to start building custodian profiles for endpoint forensic analysis.</p>
+                <h4 class="text-base font-bold text-theme-text mb-1">No Custodian Profiles Yet</h4>
+                <p class="text-xs text-theme-muted max-w-md mx-auto mb-6">Import a Q-Scan endpoint scan result CSV to start building custodian profiles for endpoint forensic analysis.</p>
                 <div class="flex items-center justify-center gap-3">
                     <button onclick="openUploadModal()" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow-lg shadow-teal-600/20 cursor-pointer">
                         <i class="fa-solid fa-file-arrow-up mr-1.5"></i> Import Scan Findings
@@ -298,19 +298,19 @@
     {% endif %}
 
     <!-- Upload Evidence CSV Modal -->
-    <div id="upload-modal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
-            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-lg">
+    <div id="upload-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-theme-surface border border-theme-border rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-theme-muted hover:text-theme-text text-lg cursor-pointer">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+                <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-500 dark:text-teal-400">
                     <i class="fa-solid fa-file-arrow-up text-lg"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-white">Import Q-Scan Evidence Report</h3>
-                    <p class="text-xs text-zinc-400">Upload a <code class="text-teal-300 font-mono text-[11px]">scan_results.csv</code> file generated by the scanner.</p>
+                    <h3 class="text-base font-bold text-theme-text">Import Q-Scan Evidence Report</h3>
+                    <p class="text-xs text-theme-muted">Upload a <code class="text-teal-600 dark:text-teal-300 font-mono text-[11px]">scan_results.csv</code> file generated by the scanner.</p>
                 </div>
             </div>
 
@@ -318,15 +318,15 @@
                 {% csrf_token %}
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Target Host / Computer Name</label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Target Host / Computer Name</label>
                     <input type="text" name="hostname" placeholder="e.g., CFO-LAPTOP-01" required
-                           class="w-full px-3 py-2 text-xs rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-teal-500">
+                           class="w-full px-3 py-2 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text focus:outline-none focus:border-teal-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Audit Campaign Label</label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Audit Campaign Label</label>
                     <input type="text" name="scan_title" placeholder="e.g., Q3 Financial Audit"
-                           class="w-full px-3 py-2 text-xs rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-teal-500">
+                           class="w-full px-3 py-2 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text focus:outline-none focus:border-teal-500">
                 </div>
 
                 <div>
@@ -334,9 +334,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Drive / Root Path</label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Drive / Root Path</label>
                     <input type="text" name="drive_letter" value="C:\"
-                           class="w-full px-3 py-2 text-xs rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-teal-500 font-mono">
+                           class="w-full px-3 py-2 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text focus:outline-none focus:border-teal-500 font-mono">
                 </div>
 
                 <c-file_uploader 
@@ -348,7 +348,7 @@
                     required />
 
                 <div class="pt-2 flex justify-end gap-2">
-                    <button type="button" onclick="closeUploadModal()" class="px-4 py-2 text-xs rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold cursor-pointer">
+                    <button type="button" onclick="closeUploadModal()" class="px-4 py-2 text-xs rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text font-semibold cursor-pointer">
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 text-xs rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold shadow-md cursor-pointer">
@@ -360,19 +360,19 @@
     </div>
 
     <!-- Live Directory Scan Modal -->
-    <div id="folder-scan-modal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
-            <button onclick="closeFolderScanModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-lg">
+    <div id="folder-scan-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-theme-surface border border-theme-border rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="closeFolderScanModal()" class="absolute top-4 right-4 text-theme-muted hover:text-theme-text text-lg cursor-pointer">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
                     <i class="fa-solid fa-bolt-lightning text-lg"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-white">Live Endpoint Directory Scan</h3>
-                    <p class="text-xs text-zinc-400">Execute native disk scanner on target machine directory with active investigation keywords.</p>
+                    <h3 class="text-base font-bold text-theme-text">Live Endpoint Directory Scan</h3>
+                    <p class="text-xs text-theme-muted">Execute native disk scanner on target machine directory with active investigation keywords.</p>
                 </div>
             </div>
 
@@ -380,22 +380,22 @@
                 {% csrf_token %}
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Target Directory Path <span class="text-rose-500">*</span></label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Target Directory Path <span class="text-rose-500">*</span></label>
                     <input type="text" name="target_dir" placeholder="e.g., C:\Users\VikashG\Downloads\Testing\case 1" required
-                           class="w-full px-3 py-2 text-xs rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-emerald-500 font-mono">
-                    <p class="text-[10px] text-zinc-500 mt-1">Full path to local folder containing evidence, deeds, or schedules.</p>
+                           class="w-full px-3 py-2 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text focus:outline-none focus:border-emerald-500 font-mono">
+                    <p class="text-[10px] text-theme-muted mt-1">Full path to local folder containing evidence, deeds, or schedules.</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-300 mb-1">Device / Hostname</label>
+                        <label class="block text-xs font-semibold text-theme-text mb-1">Device / Hostname</label>
                         <input type="text" name="hostname" placeholder="e.g., WORKSTATION-01"
-                               class="w-full px-3 py-2 text-xs rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-emerald-500">
+                               class="w-full px-3 py-2 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-300 mb-1">Audit Label</label>
+                        <label class="block text-xs font-semibold text-theme-text mb-1">Audit Label</label>
                         <input type="text" name="scan_title" placeholder="e.g., Case 1 Sweep"
-                               class="w-full px-3 py-2 text-xs rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-emerald-500">
+                               class="w-full px-3 py-2 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
 
@@ -404,13 +404,13 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-300 mb-1">Additional Keywords (Comma-separated)</label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Additional Keywords (Comma-separated)</label>
                     <input type="text" name="keywords" placeholder="Silviya, Shanthi, Palani, kickback, confidential..."
-                           class="w-full px-3 py-2 text-xs rounded-xl bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-emerald-500">
+                           class="w-full px-3 py-2 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text focus:outline-none focus:border-emerald-500">
                 </div>
 
                 <div class="pt-2 flex justify-end gap-2">
-                    <button type="button" onclick="closeFolderScanModal()" class="px-4 py-2 text-xs rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold cursor-pointer">
+                    <button type="button" onclick="closeFolderScanModal()" class="px-4 py-2 text-xs rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text font-semibold cursor-pointer">
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md cursor-pointer flex items-center gap-1.5">

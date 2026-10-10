@@ -3,7 +3,7 @@
     subtitle="Third parties who received money from one person and forwarded it to another."
 />
 
-<div class="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-slate-200 dark:border-zinc-800 shadow-sm mb-8"
+<div class="bg-theme-surface rounded-xl p-5 border border-theme-border shadow-sm mb-8"
      x-data="{
          priorityModel: 'composite',
          expandedConduit: null,
@@ -22,38 +22,38 @@
      }">
 
     <!-- Header & Model Switcher Bar -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-zinc-800 pb-4 mb-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-theme-border pb-4 mb-4">
         <div>
             <div class="flex items-center gap-2">
                 <span class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center text-xs">
                     <i class="fa-solid fa-user-secret"></i>
                 </span>
-                <h3 class="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
+                <h3 class="font-bold text-sm sm:text-base text-theme-text">
                     {{ title }}
                 </h3>
-                <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
+                <span class="text-xs font-mono px-2 py-0.5 rounded bg-theme-subtle text-theme-muted"
                       x-text="(window.conduitDeckData || []).length + ' Middlemen'"></span>
             </div>
-            <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1">
+            <p class="text-xs text-theme-muted mt-1">
                 {{ subtitle }}
             </p>
         </div>
 
         <!-- Priority Model Segmented Switcher -->
-        <div class="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-zinc-800 rounded-xl border border-slate-200 dark:border-zinc-700/60 self-start md:self-auto text-xs font-semibold">
-            <span class="text-[11px] text-slate-400 dark:text-zinc-500 px-2 select-none">Sort By:</span>
+        <div class="flex items-center gap-1.5 p-1 bg-theme-subtle rounded-xl border border-theme-border self-start md:self-auto text-xs font-semibold">
+            <span class="text-[11px] text-theme-muted px-2 select-none">Sort By:</span>
             <button type="button" @click="priorityModel = 'composite'"
-                    :class="priorityModel === 'composite' ? 'bg-white dark:bg-zinc-900 text-amber-500 shadow-sm' : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'"
+                    :class="priorityModel === 'composite' ? 'bg-theme-surface text-amber-500 shadow-sm' : 'text-theme-muted hover:text-theme-text'"
                     class="px-2.5 py-1 rounded-lg transition cursor-pointer">
                 Overall Risk
             </button>
             <button type="button" @click="priorityModel = 'value'"
-                    :class="priorityModel === 'value' ? 'bg-white dark:bg-zinc-900 text-amber-500 shadow-sm' : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'"
+                    :class="priorityModel === 'value' ? 'bg-theme-surface text-amber-500 shadow-sm' : 'text-theme-muted hover:text-theme-text'"
                     class="px-2.5 py-1 rounded-lg transition cursor-pointer">
                 Highest Cut Kept
             </button>
             <button type="button" @click="priorityModel = 'velocity'"
-                    :class="priorityModel === 'velocity' ? 'bg-white dark:bg-zinc-900 text-amber-500 shadow-sm' : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'"
+                    :class="priorityModel === 'velocity' ? 'bg-theme-surface text-amber-500 shadow-sm' : 'text-theme-muted hover:text-theme-text'"
                     class="px-2.5 py-1 rounded-lg transition cursor-pointer">
                 Fastest Hand-off
             </button>
@@ -61,7 +61,7 @@
     </div>
 
     <!-- Triage Explanation Callout -->
-    <div class="mb-4 p-3 rounded-lg bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800 text-xs text-slate-600 dark:text-zinc-400 flex items-start gap-2.5">
+    <div class="mb-4 p-3 rounded-lg bg-theme-subtle/50 border border-theme-border text-xs text-theme-muted flex items-start gap-2.5">
         <i class="fa-solid fa-scale-balanced text-amber-500 mt-0.5"></i>
         <span>
             <strong>Model-driven priority ranking:</strong> Switching models dynamically re-ranks candidate conduits.
@@ -73,25 +73,25 @@
     <div class="space-y-3">
         <template x-for="(c, idx) in sortedConduits" :key="c.id">
             <div class="border rounded-xl transition-all overflow-hidden"
-                 :class="expandedConduit === c.id ? 'border-amber-500/60 bg-amber-500/5 dark:bg-amber-500/5 shadow-sm' : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-950/40'">
+                 :class="expandedConduit === c.id ? 'border-amber-500/60 bg-amber-500/5 shadow-sm' : 'border-theme-border hover:border-theme-border-strong bg-theme-surface'">
 
                 <!-- Card Header Button -->
                 <button type="button" @click="toggle(c.id)"
                         class="w-full text-left p-3.5 flex flex-wrap items-center justify-between gap-3 cursor-pointer select-none">
                     <!-- Left: Rank & Conduit Identity -->
                     <div class="flex items-center gap-3 min-w-[200px]">
-                        <span class="w-6 h-6 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-mono text-xs font-bold flex items-center justify-center"
+                        <span class="w-6 h-6 rounded-lg bg-theme-subtle text-theme-text font-mono text-xs font-bold flex items-center justify-center"
                               x-text="idx + 1"></span>
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white" x-text="c.name"></span>
+                                <span class="font-bold text-xs sm:text-sm text-theme-text" x-text="c.name"></span>
                                 <template x-if="c.is_loop">
                                     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20 font-mono">
                                         <i class="fa-solid fa-arrows-spin text-[9px]"></i> Loop Closer
                                     </span>
                                 </template>
                             </div>
-                            <div class="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 font-mono">
+                            <div class="text-[11px] text-theme-muted mt-0.5 font-mono">
                                 <span x-text="c.sender"></span> &rarr; <span class="text-amber-500 font-bold" x-text="c.name"></span> &rarr; <span x-text="c.recipient"></span>
                             </div>
                         </div>
@@ -101,9 +101,9 @@
                     <div class="flex items-center gap-3">
                         <div class="text-right">
                             <div class="text-xs font-bold font-mono"
-                                 :class="c.scores.composite >= 70 ? 'text-rose-400' : (c.scores.composite >= 40 ? 'text-amber-400' : 'text-slate-300')"
+                                 :class="c.scores.composite >= 70 ? 'text-rose-400' : (c.scores.composite >= 40 ? 'text-amber-400' : 'text-theme-muted')"
                                  x-text="c.scores[priorityModel] + ' pts'"></div>
-                            <div class="w-20 bg-slate-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-1">
+                            <div class="w-20 bg-theme-subtle h-1.5 rounded-full overflow-hidden mt-1">
                                 <div class="h-full rounded-full transition-all"
                                      :class="c.scores.composite >= 70 ? 'bg-rose-500' : 'bg-amber-500'"
                                      :style="'width: ' + c.scores[priorityModel] + '%'"></div>
@@ -115,13 +115,13 @@
                     <div class="flex items-center gap-4 text-xs font-mono">
                         <div class="text-right">
                             <div class="font-bold text-amber-500 dark:text-amber-400" x-text="c.retained_short"></div>
-                            <div class="text-[10px] text-slate-400 font-sans" x-text="'retained · ' + c.retention_pct + '%'"></div>
+                            <div class="text-[10px] text-theme-muted font-sans" x-text="'retained · ' + c.retention_pct + '%'"></div>
                         </div>
                         <div class="text-right">
-                            <div class="font-bold text-slate-700 dark:text-zinc-300" x-text="c.delta_days === 0 ? 'same day' : c.delta_days + 'd'"></div>
-                            <div class="text-[10px] text-slate-400 font-sans">&Delta; transit time</div>
+                            <div class="font-bold text-theme-text" x-text="c.delta_days === 0 ? 'same day' : c.delta_days + 'd'"></div>
+                            <div class="text-[10px] text-theme-muted font-sans">&Delta; transit time</div>
                         </div>
-                        <span class="text-slate-400 transition-transform duration-200"
+                        <span class="text-theme-muted transition-transform duration-200"
                               :class="expandedConduit === c.id ? 'rotate-90' : ''">
                             <i class="fa-solid fa-chevron-right text-xs"></i>
                         </span>
@@ -130,20 +130,20 @@
 
                 <!-- Expanded Body -->
                 <div x-show="expandedConduit === c.id" x-collapse x-cloak
-                     class="px-4 pb-4 pt-2 border-t border-slate-100 dark:border-zinc-800/80 bg-slate-50/50 dark:bg-zinc-950/20 text-xs">
+                     class="px-4 pb-4 pt-2 border-t border-theme-border bg-theme-subtle/20 text-xs">
 
                     <!-- Visual Hop Map Lane -->
-                    <div class="flex items-center justify-between p-3 my-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 font-mono text-xs overflow-x-auto">
+                    <div class="flex items-center justify-between p-3 my-2 rounded-xl bg-theme-surface border border-theme-border font-mono text-xs overflow-x-auto">
                         <div class="text-center min-w-[100px]">
-                            <span class="font-bold text-slate-900 dark:text-white" x-text="c.sender"></span>
-                            <div class="text-[10px] text-slate-400">Origin Auditee</div>
+                            <span class="font-bold text-theme-text" x-text="c.sender"></span>
+                            <div class="text-[10px] text-theme-muted">Origin Auditee</div>
                         </div>
                         <div class="flex flex-col items-center px-4">
                             <span class="text-[11px] font-bold text-emerald-400" x-text="c.outflow_short + ' out'"></span>
                             <div class="w-24 sm:w-32 h-0.5 bg-emerald-500/60 relative my-1">
                                 <i class="fa-solid fa-caret-right text-emerald-400 absolute -right-1.5 -top-2 text-xs"></i>
                             </div>
-                            <span class="text-[10px] text-slate-400" x-text="c.outflow_date"></span>
+                            <span class="text-[10px] text-theme-muted" x-text="c.outflow_date"></span>
                         </div>
                         <div class="text-center min-w-[120px] px-2 py-1 rounded bg-amber-500/10 border border-amber-500/30">
                             <span class="font-bold text-amber-500" x-text="c.name"></span>
@@ -157,35 +157,35 @@
                             <span class="text-[10px] text-amber-400/90" x-text="c.retained_short + ' kept (' + c.retention_pct + '%)'"></span>
                         </div>
                         <div class="text-center min-w-[120px]">
-                            <span class="font-bold text-slate-900 dark:text-white" x-text="c.recipient"></span>
-                            <div class="text-[10px] text-slate-400">Recipient Sink(s)</div>
+                            <span class="font-bold text-theme-text" x-text="c.recipient"></span>
+                            <div class="text-[10px] text-theme-muted">Recipient Sink(s)</div>
                         </div>
                     </div>
 
                     <!-- 4-Column Metric Summary -->
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-3">
-                        <div class="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                            <span class="text-[10px] text-slate-400 block">Total Dispatched</span>
-                            <strong class="text-xs font-mono text-slate-900 dark:text-white" x-text="c.outflow_short"></strong>
+                        <div class="p-2.5 rounded-lg bg-theme-surface border border-theme-border">
+                            <span class="text-[10px] text-theme-muted block">Total Dispatched</span>
+                            <strong class="text-xs font-mono text-theme-text" x-text="c.outflow_short"></strong>
                         </div>
-                        <div class="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                            <span class="text-[10px] text-slate-400 block">Total Forwarded</span>
-                            <strong class="text-xs font-mono text-slate-900 dark:text-white" x-text="c.inflow_short"></strong>
+                        <div class="p-2.5 rounded-lg bg-theme-surface border border-theme-border">
+                            <span class="text-[10px] text-theme-muted block">Total Forwarded</span>
+                            <strong class="text-xs font-mono text-theme-text" x-text="c.inflow_short"></strong>
                         </div>
                         <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
                             <span class="text-[10px] text-amber-500 block">Retained Margin</span>
                             <strong class="text-xs font-mono text-amber-500 dark:text-amber-400" x-text="c.retained_short + ' (' + c.retention_pct + '%)'"></strong>
                         </div>
-                        <div class="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                            <span class="text-[10px] text-slate-400 block">Transit Dwell</span>
-                            <strong class="text-xs font-mono text-slate-900 dark:text-white" x-text="c.delta_days + ' Days'"></strong>
+                        <div class="p-2.5 rounded-lg bg-theme-surface border border-theme-border">
+                            <span class="text-[10px] text-theme-muted block">Transit Dwell</span>
+                            <strong class="text-xs font-mono text-theme-text" x-text="c.delta_days + ' Days'"></strong>
                         </div>
                     </div>
 
                     <!-- Flags & Tags -->
                     <div class="flex flex-wrap items-center gap-1.5 my-3">
                         <template x-for="(flag, f_idx) in c.flags" :key="f_idx">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-theme-subtle text-theme-text border border-theme-border">
                                 <i class="fa-solid fa-flag text-[9px] text-amber-500"></i>
                                 <span x-text="flag"></span>
                             </span>
@@ -193,14 +193,14 @@
                     </div>
 
                     <!-- Action Bar -->
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800">
+                    <div class="flex items-center justify-between pt-2 border-t border-theme-border">
                         <button type="button"
                                 @click="$dispatch('trace-conduit', { name: c.name })"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition cursor-pointer">
                             <i class="fa-solid fa-play text-[10px]"></i>
                             <span>Trace this conduit on timeline</span>
                         </button>
-                        <span class="text-[11px] font-mono text-slate-400">Rule 2 Intermediate Transit</span>
+                        <span class="text-[11px] font-mono text-theme-muted">Rule 2 Intermediate Transit</span>
                     </div>
                 </div>
             </div>

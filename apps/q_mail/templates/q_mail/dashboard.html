@@ -26,25 +26,25 @@
     }">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 class="text-base font-bold text-theme-text flex items-center gap-2">
                     <i class="fa-solid fa-id-card-clip text-purple-400"></i>
                     <span>Target Custodians Directory</span>
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                <p class="text-xs text-theme-muted mt-0.5">
                     Click any target person's name to explore all their linked mailbox cases, extracted emails, and relationship maps.
                 </p>
             </div>
 
             <div class="flex items-center gap-3">
                 <div class="relative w-full sm:w-64">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-theme-muted text-xs"></i>
                     <input type="text" x-model="searchQuery" placeholder="Search custodians directory..."
-                        class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-purple-500">
-                    <button type="button" x-show="searchQuery" @click="searchQuery = ''" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+                        class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text placeholder-theme-muted focus:outline-none focus:border-purple-500">
+                    <button type="button" x-show="searchQuery" @click="searchQuery = ''" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-theme-muted hover:text-theme-text">
                         <i class="fa-solid fa-xmark text-xs"></i>
                     </button>
                 </div>
-                <span class="text-xs font-mono text-slate-400 font-semibold whitespace-nowrap">{{ custodian_profiles|length }} Custodian(s) Configured</span>
+                <span class="text-xs font-mono text-theme-muted font-semibold whitespace-nowrap">{{ custodian_profiles|length }} Custodian(s) Configured</span>
             </div>
         </div>
 
@@ -52,7 +52,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {% for p in custodian_profiles %}
                 <div x-show="matches('{{ p.custodian_name|escapejs }}', '{{ p.custodian_department|escapejs }}', '{{ p.custodian_email|escapejs }}')"
-                     class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm hover:border-purple-500/50 dark:hover:border-purple-500/40 transition-all flex flex-col justify-between">
+                     class="bg-theme-surface rounded-2xl border border-theme-border p-5 shadow-sm hover:border-purple-500/50 transition-all flex flex-col justify-between">
                     <div>
                         <!-- Custodian Header -->
                         <div class="flex items-start justify-between gap-3 mb-3">
@@ -61,10 +61,10 @@
                                     <i class="fa-solid fa-user-tie"></i>
                                 </div>
                                 <div class="truncate">
-                                    <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">
+                                    <h4 class="font-bold text-theme-text text-sm truncate">
                                         {{ p.custodian_name }}
                                     </h4>
-                                    <div class="text-[11px] text-slate-400 font-mono truncate">
+                                    <div class="text-[11px] text-theme-muted font-mono truncate">
                                         {{ p.custodian_department|default:"General Auditee" }}{% if p.custodian_email %} &bull; {{ p.custodian_email }}{% endif %}
                                     </div>
                                 </div>
@@ -72,17 +72,17 @@
                         </div>
 
                         <!-- Aggregate Forensic Stats Grid -->
-                        <div class="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-zinc-800/40 rounded-xl p-3 border border-slate-100 dark:border-zinc-800 text-xs font-mono mb-3">
+                        <div class="grid grid-cols-2 gap-2 bg-theme-app rounded-xl p-3 border border-theme-border text-xs font-mono mb-3">
                             <div>
-                                <span class="text-[10px] uppercase text-slate-400 block">Emails</span>
-                                <span class="font-bold text-slate-800 dark:text-zinc-200">{{ p.total_emails }} messages</span>
+                                <span class="text-[10px] uppercase text-theme-muted block">Emails</span>
+                                <span class="font-bold text-theme-text">{{ p.total_emails }} messages</span>
                             </div>
                             <div>
-                                <span class="text-[10px] uppercase text-slate-400 block">Attachments</span>
-                                <span class="font-bold text-slate-800 dark:text-zinc-200">{{ p.total_attachments }} files</span>
+                                <span class="text-[10px] uppercase text-theme-muted block">Attachments</span>
+                                <span class="font-bold text-theme-text">{{ p.total_attachments }} files</span>
                             </div>
-                            <div class="pt-1 border-t border-slate-200/50 dark:border-zinc-700/50 col-span-2 flex justify-between">
-                                <span class="text-[10px] uppercase text-slate-400">Suspicious / Flagged</span>
+                            <div class="pt-1 border-t border-theme-border col-span-2 flex justify-between">
+                                <span class="text-[10px] uppercase text-theme-muted">Suspicious / Flagged</span>
                                 <span class="font-bold {% if p.flagged_emails > 0 %}text-rose-500{% else %}text-emerald-500{% endif %}">
                                     {{ p.flagged_emails }} hits
                                 </span>
@@ -91,10 +91,10 @@
 
                         <!-- Linked Cases Badges Preview -->
                         <div class="mb-4">
-                            <span class="text-[10px] uppercase tracking-wider text-slate-400 block mb-1 font-semibold">Linked Cases:</span>
+                            <span class="text-[10px] uppercase tracking-wider text-theme-muted block mb-1 font-semibold">Linked Cases:</span>
                             <div class="flex flex-wrap gap-1.5">
                                 {% for c in p.cases %}
-                                <a href="{% url 'q_mail:detail' c.id %}" class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200/50 dark:border-zinc-700 hover:border-purple-400 transition-colors">
+                                <a href="{% url 'q_mail:detail' c.id %}" class="px-2 py-0.5 rounded text-[10px] font-mono bg-theme-subtle text-theme-muted border border-theme-border hover:border-purple-400 transition-colors">
                                     {{ c.ref }}
                                 </a>
                                 {% endfor %}
@@ -110,11 +110,11 @@
                 {% endfor %}
             </div>
         {% else %}
-            <div class="bg-slate-50 dark:bg-zinc-800/40 rounded-2xl border border-dashed border-slate-300 dark:border-zinc-700 p-12 text-center">
-                <i class="fa-solid fa-id-card-clip text-4xl text-slate-300 dark:text-zinc-600 mb-4 block"></i>
-                <h3 class="text-sm font-bold text-slate-700 dark:text-zinc-300 mb-1">No Custodians Found</h3>
-                <p class="text-xs text-slate-500 dark:text-zinc-400 mb-4">Import a PST mailbox to automatically profile the custodian.</p>
-                <button onclick="openUploadModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-200 dark:bg-zinc-700 hover:bg-slate-300 dark:hover:bg-zinc-600 text-slate-700 dark:text-zinc-200 text-xs font-bold transition-all cursor-pointer">
+            <div class="bg-theme-surface rounded-2xl border border-dashed border-theme-border p-12 text-center">
+                <i class="fa-solid fa-id-card-clip text-4xl text-theme-muted mb-4 block"></i>
+                <h3 class="text-sm font-bold text-theme-text mb-1">No Custodians Found</h3>
+                <p class="text-xs text-theme-muted mb-4">Import a PST mailbox to automatically profile the custodian.</p>
+                <button onclick="openUploadModal()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text text-xs font-bold transition-all cursor-pointer">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
                     Import PST Mailbox
                 </button>
@@ -130,15 +130,15 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Audit / Case Reference *</label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Audit / Case Reference *</label>
                     <input type="text" id="modal-audit-ref" required placeholder="e.g. AUD-FIN-2026-091" 
-                           class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500">
+                           class="w-full px-3 py-2 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Investigation Title *</label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Investigation Title *</label>
                     <input type="text" id="modal-audit-name" required placeholder="e.g. FY26 Procurement Vendor Review" 
-                           class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500">
+                           class="w-full px-3 py-2 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500">
                 </div>
             </div>
 
@@ -153,50 +153,50 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Auditee Corporate Email *</label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Auditee Corporate Email *</label>
                     <input type="email" id="modal-auditee-email" required placeholder="e.g. rajiv.menon@corp.internal" 
-                           class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500">
+                           class="w-full px-3 py-2 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Auditee Designation</label>
+                    <label class="block text-xs font-semibold text-theme-text mb-1">Auditee Designation</label>
                     <input type="text" id="modal-auditee-desig" placeholder="e.g. Senior VP Operations" 
-                           class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500">
+                           class="w-full px-3 py-2 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500">
                 </div>
             </div>
 
             <!-- File Picker / Drag & Drop -->
             <div class="pt-2">
-                <label class="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">PST Evidence File (.pst) *</label>
-                <div id="drop-zone" class="border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-purple-500 dark:hover:border-purple-500 rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-50/50 dark:bg-zinc-800/30"
+                <label class="block text-xs font-semibold text-theme-text mb-1">PST Evidence File (.pst) *</label>
+                <div id="drop-zone" class="border-2 border-dashed border-theme-border hover:border-purple-500 rounded-xl p-6 text-center cursor-pointer transition-colors bg-theme-subtle/50"
                      onclick="document.getElementById('file-input').click()">
                     <input type="file" id="file-input" accept=".pst" class="hidden" onchange="handleFileSelected(event)">
                     <i class="fa-solid fa-file-zipper text-3xl text-purple-400 mb-2 block"></i>
-                    <p id="file-name-display" class="text-xs font-bold text-slate-700 dark:text-zinc-200">Click or Drag & Drop .pst file here</p>
-                    <p id="file-size-display" class="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Supports massive files (~50 GB) via stream chunking</p>
+                    <p id="file-name-display" class="text-xs font-bold text-theme-text">Click or Drag & Drop .pst file here</p>
+                    <p id="file-size-display" class="text-[11px] text-theme-muted mt-0.5">Supports massive files (~50 GB) via stream chunking</p>
                 </div>
             </div>
 
             <!-- Live Upload Progress Bar Container (Hidden by default) -->
-            <div id="upload-progress-container" class="hidden space-y-2 pt-2 border-t border-slate-200 dark:border-zinc-800">
-                <div class="flex items-center justify-between text-xs font-mono text-slate-700 dark:text-zinc-300">
+            <div id="upload-progress-container" class="hidden space-y-2 pt-2 border-t border-theme-border">
+                <div class="flex items-center justify-between text-xs font-mono text-theme-text">
                     <span id="upload-status-text" class="flex items-center gap-1.5 text-purple-400 font-bold">
                         <i class="fa-solid fa-spinner fa-spin"></i> Uploading chunk 1 of 50...
                     </span>
                     <span id="upload-percent-text" class="font-black">0%</span>
                 </div>
-                <div class="w-full h-2.5 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div class="w-full h-2.5 bg-theme-subtle rounded-full overflow-hidden">
                     <div id="upload-progress-bar" class="h-full bg-purple-600 rounded-full transition-all duration-200" style="width: 0%;"></div>
                 </div>
-                <div class="flex justify-between text-[11px] font-mono text-slate-400 dark:text-zinc-500">
+                <div class="flex justify-between text-[11px] font-mono text-theme-muted">
                     <span id="upload-speed-text">0.0 MB/s</span>
                     <span id="upload-bytes-text">0 MB / 0 MB</span>
                 </div>
             </div>
 
-            <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-zinc-800">
+            <div class="flex justify-end gap-3 pt-4 border-t border-theme-border">
                 <button type="button" onclick="closeModal('upload-modal')" 
-                        class="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+                        class="px-4 py-2 text-xs font-semibold rounded-lg text-theme-muted hover:bg-theme-subtle transition">
                     Cancel
                 </button>
                 <button type="submit" id="start-upload-btn" 

@@ -11,18 +11,18 @@
         <div class="flex items-center gap-2">
             {% if custodian_cases|length > 1 %}
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" @click.away="open = false" class="relative flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-1.5 shadow-sm text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:border-purple-500/50 transition cursor-pointer w-56">
+                <button @click="open = !open" @click.away="open = false" class="relative flex items-center bg-theme-surface border border-theme-border rounded-xl px-3 py-1.5 shadow-sm text-xs font-semibold text-theme-text hover:border-purple-500/50 transition cursor-pointer w-56">
                     <i class="fa-solid fa-folder-open text-purple-400 mr-2 text-[11px]"></i>
                     <span class="truncate pr-4 flex-1 text-left">{{ investigation.audit_ref }} &bull; {{ investigation.audit_name }}</span>
-                    <i class="fa-solid fa-chevron-down absolute right-3 text-[10px] text-slate-400 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                    <i class="fa-solid fa-chevron-down absolute right-3 text-[10px] text-theme-muted transition-transform" :class="open ? 'rotate-180' : ''"></i>
                 </button>
                 
-                <div x-show="open" x-transition.opacity.duration.200ms style="display: none;" class="absolute right-0 mt-1.5 w-64 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                <div x-show="open" x-transition.opacity.duration.200ms style="display: none;" class="absolute right-0 mt-1.5 w-64 bg-theme-surface border border-theme-border rounded-xl shadow-xl z-50 overflow-hidden">
                     <div class="max-h-60 overflow-y-auto py-1">
                         {% for case in custodian_cases %}
                         <a href="{% url 'q_mail:detail' case.id %}" class="block px-3 py-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 {% if case.id == investigation.id %}bg-purple-50 dark:bg-purple-900/10 border-l-2 border-purple-500{% else %}border-l-2 border-transparent{% endif %} transition">
-                            <div class="text-xs font-semibold {% if case.id == investigation.id %}text-purple-700 dark:text-purple-400{% else %}text-slate-700 dark:text-zinc-300{% endif %} truncate">{{ case.audit_ref }}</div>
-                            <div class="text-[10px] text-slate-500 dark:text-zinc-500 truncate mt-0.5">{{ case.audit_name }}</div>
+                            <div class="text-xs font-semibold {% if case.id == investigation.id %}text-purple-700 dark:text-purple-400{% else %}text-theme-text{% endif %} truncate">{{ case.audit_ref }}</div>
+                            <div class="text-[10px] text-theme-muted truncate mt-0.5">{{ case.audit_name }}</div>
                         </a>
                         {% endfor %}
                     </div>
@@ -38,16 +38,16 @@
     </c-page_header>
 
     <!-- Custodian & Chain of Custody Evidence Banner -->
-    <div class="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="mb-6 p-4 rounded-2xl bg-theme-surface border border-theme-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/50 border border-purple-100 dark:border-purple-800/50 flex items-center justify-center text-purple-600 dark:text-purple-400 text-xl font-bold flex-shrink-0">
                 <i class="fa-solid fa-envelope"></i>
             </div>
             <div>
                 <div class="flex items-center gap-2 flex-wrap">
-                    <h2 class="text-base font-bold text-slate-900 dark:text-white">{{ investigation.auditee_email }}</h2>
+                    <h2 class="text-base font-bold text-theme-text">{{ investigation.auditee_email }}</h2>
                     {% if investigation.auditee_department %}
-                    <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-theme-subtle text-theme-muted">
                         {{ investigation.auditee_department }}
                     </span>
                     {% endif %}
@@ -124,18 +124,18 @@
     {% endif %}
 
     <!-- Real-time Progress Bar Card (Active during extraction) -->
-    <div id="live-progress-card" class="{% if investigation.status != 'PROCESSING' and investigation.status != 'UPLOADING' %}hidden{% endif %} mb-6 p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-purple-500/30 shadow-lg shadow-purple-500/5 space-y-3">
+    <div id="live-progress-card" class="{% if investigation.status != 'PROCESSING' and investigation.status != 'UPLOADING' %}hidden{% endif %} mb-6 p-5 rounded-2xl bg-theme-surface border border-purple-500/30 shadow-lg shadow-purple-500/5 space-y-3">
         <div class="flex items-center justify-between text-xs font-mono">
             <span id="live-folder-text" class="text-purple-600 dark:text-purple-400 font-bold flex items-center gap-2">
                 <i class="fa-solid fa-folder-open"></i>
                 <span>Processing Folder: {{ investigation.current_folder|default:"Root" }}</span>
             </span>
-            <span id="live-percent-text" class="text-slate-800 dark:text-zinc-200 font-black">{{ investigation.progress_percent|floatformat:1 }}%</span>
+            <span id="live-percent-text" class="text-theme-text font-black">{{ investigation.progress_percent|floatformat:1 }}%</span>
         </div>
-        <div class="w-full h-2.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+        <div class="w-full h-2.5 bg-theme-subtle rounded-full overflow-hidden">
             <div id="live-progress-bar" class="h-full bg-gradient-to-r from-purple-600 to-indigo-500 rounded-full transition-all duration-300" style="width: {{ investigation.progress_percent }}%;"></div>
         </div>
-        <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 dark:text-zinc-500">
+        <div class="flex items-center justify-between text-[11px] font-mono text-theme-muted">
             <span id="live-count-text">{{ investigation.processed_messages_count }} Messages Ingested</span>
             <span>Background Streaming Active</span>
         </div>
@@ -145,10 +145,10 @@
     <div x-data="{ activeWorkspaceTab: 'checkpoints' }" class="space-y-6">
 
         <!-- Top Workstation Tab Bar -->
-        <div class="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-2">
+        <div class="flex items-center justify-between border-b border-theme-border pb-2">
             <div class="flex items-center gap-3">
                 <button @click="activeWorkspaceTab = 'checkpoints'; setTimeout(applyFilters, 50)"
-                        :class="activeWorkspaceTab === 'checkpoints' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20 border-purple-500' : 'bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-800 hover:border-purple-500/40'"
+                        :class="activeWorkspaceTab === 'checkpoints' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20 border-purple-500' : 'bg-theme-surface text-theme-muted border border-theme-border hover:border-purple-500/40'"
                         class="px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-shield-halved text-xs"></i>
                     <span>Forensic Checkpoints</span>
@@ -159,18 +159,18 @@
                 </button>
 
                 <button @click="activeWorkspaceTab = 'all_ledger'; setTimeout(applyFilters, 50)"
-                        :class="activeWorkspaceTab === 'all_ledger' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20 border-purple-500' : 'bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-800 hover:border-purple-500/40'"
+                        :class="activeWorkspaceTab === 'all_ledger' ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20 border-purple-500' : 'bg-theme-surface text-theme-muted border border-theme-border hover:border-purple-500/40'"
                         class="px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-list-check text-xs"></i>
                     <span>All Messages Ledger</span>
                     <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono"
-                          :class="activeWorkspaceTab === 'all_ledger' ? 'bg-purple-700 text-purple-100' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400'">
+                          :class="activeWorkspaceTab === 'all_ledger' ? 'bg-purple-700 text-purple-100' : 'bg-theme-subtle text-theme-muted'">
                         {{ summary.total_emails }}
                     </span>
                 </button>
             </div>
 
-            <div class="text-xs font-mono text-slate-400 hidden sm:block">
+            <div class="text-xs font-mono text-theme-muted hidden sm:block">
                 {{ summary.total_attachments }} Attachments &bull; {{ summary.with_attachments }} Emails with Files
             </div>
         </div>
@@ -202,75 +202,75 @@
                     
                     <!-- 1. Currency Mentions -->
                     <button type="button" onclick="selectCheckpoint('currency', 'Currency Mentions')" 
-                            class="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-amber-500/60 dark:hover:border-amber-500/50 text-left transition shadow-sm group cursor-pointer">
+                            class="p-3.5 rounded-xl bg-theme-surface border border-theme-border hover:border-amber-500/60 dark:hover:border-amber-500/50 text-left transition shadow-sm group cursor-pointer">
                         <div class="flex items-center justify-between text-amber-500 mb-2">
                             <i class="fa-solid fa-coins text-base"></i>
                             <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/20">₹ / $ / INR</span>
                         </div>
-                        <div class="text-xl font-black text-slate-900 dark:text-white font-mono">{{ summary.checkpoints.currency_count }}</div>
-                        <div class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 group-hover:text-amber-400 transition truncate">Currency Mentions</div>
+                        <div class="text-xl font-black text-theme-text font-mono">{{ summary.checkpoints.currency_count }}</div>
+                        <div class="text-[11px] font-semibold text-theme-muted group-hover:text-amber-400 transition truncate">Currency Mentions</div>
                     </button>
 
                     <!-- 2. Direct 1-on-1 (Without CC/BCC) -->
                     <button type="button" onclick="selectCheckpoint('no_cc_bcc', '1-on-1 Direct (No CC/BCC)')" 
-                            class="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-sky-500/60 dark:hover:border-sky-500/50 text-left transition shadow-sm group cursor-pointer">
+                            class="p-3.5 rounded-xl bg-theme-surface border border-theme-border hover:border-sky-500/60 dark:hover:border-sky-500/50 text-left transition shadow-sm group cursor-pointer">
                         <div class="flex items-center justify-between text-sky-500 mb-2">
                             <i class="fa-solid fa-lock text-base"></i>
                             <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-500/10 border border-sky-500/20">No CC/BCC</span>
                         </div>
-                        <div class="text-xl font-black text-slate-900 dark:text-white font-mono">{{ summary.checkpoints.no_cc_bcc_count }}</div>
-                        <div class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 group-hover:text-sky-400 transition truncate">Direct Covert</div>
+                        <div class="text-xl font-black text-theme-text font-mono">{{ summary.checkpoints.no_cc_bcc_count }}</div>
+                        <div class="text-[11px] font-semibold text-theme-muted group-hover:text-sky-400 transition truncate">Direct Covert</div>
                     </button>
 
                     <!-- 3. Personal Webmail Senders -->
                     <button type="button" onclick="selectCheckpoint('personal_mail', 'Personal Webmail Senders')" 
-                            class="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-purple-500/60 dark:hover:border-purple-500/50 text-left transition shadow-sm group cursor-pointer">
+                            class="p-3.5 rounded-xl bg-theme-surface border border-theme-border hover:border-purple-500/60 dark:hover:border-purple-500/50 text-left transition shadow-sm group cursor-pointer">
                         <div class="flex items-center justify-between text-purple-500 mb-2">
                             <i class="fa-solid fa-envelope text-base"></i>
                             <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-500/10 border border-purple-500/20">Gmail/Yahoo</span>
                         </div>
-                        <div class="text-xl font-black text-slate-900 dark:text-white font-mono">{{ summary.checkpoints.personal_sender_count }}</div>
-                        <div class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 group-hover:text-purple-400 transition truncate">Personal Mail ID</div>
+                        <div class="text-xl font-black text-theme-text font-mono">{{ summary.checkpoints.personal_sender_count }}</div>
+                        <div class="text-[11px] font-semibold text-theme-muted group-hover:text-purple-400 transition truncate">Personal Mail ID</div>
                     </button>
 
                     <!-- 4. Apart from HMIL (Non-HMIL) -->
                     <button type="button" onclick="selectCheckpoint('non_hmil', 'External (Non-HMIL)')" 
-                            class="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-500 text-left transition shadow-sm group cursor-pointer">
-                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            class="p-3.5 rounded-xl bg-theme-surface border border-theme-border hover:border-slate-400 dark:hover:border-zinc-500 text-left transition shadow-sm group cursor-pointer">
+                        <div class="flex items-center justify-between text-theme-muted mb-2">
                             <i class="fa-solid fa-building-slash text-base"></i>
                             <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-500/10 border border-slate-500/20">External</span>
                         </div>
-                        <div class="text-xl font-black text-slate-900 dark:text-white font-mono">{{ summary.checkpoints.non_hmil_count }}</div>
-                        <div class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 group-hover:text-slate-300 transition truncate">Apart from HMIL</div>
+                        <div class="text-xl font-black text-theme-text font-mono">{{ summary.checkpoints.non_hmil_count }}</div>
+                        <div class="text-[11px] font-semibold text-theme-muted group-hover:text-slate-300 transition truncate">Apart from HMIL</div>
                     </button>
 
                     <!-- 5. Primary Bank Statements & Alerts -->
                     <button type="button" onclick="selectCheckpoint('primary_bank', 'Primary Bank Alerts')" 
-                            class="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-emerald-500/60 dark:hover:border-emerald-500/50 text-left transition shadow-sm group cursor-pointer">
+                            class="p-3.5 rounded-xl bg-theme-surface border border-theme-border hover:border-emerald-500/60 dark:hover:border-emerald-500/50 text-left transition shadow-sm group cursor-pointer">
                         <div class="flex items-center justify-between text-emerald-500 mb-2">
                             <i class="fa-solid fa-building-columns text-base"></i>
                             <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20">HDFC/SBI</span>
                         </div>
-                        <div class="text-xl font-black text-slate-900 dark:text-white font-mono">{{ summary.checkpoints.primary_bank_count }}</div>
-                        <div class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 group-hover:text-emerald-400 transition truncate">Primary Banks</div>
+                        <div class="text-xl font-black text-theme-text font-mono">{{ summary.checkpoints.primary_bank_count }}</div>
+                        <div class="text-[11px] font-semibold text-theme-muted group-hover:text-emerald-400 transition truncate">Primary Banks</div>
                     </button>
 
                     <!-- 6. UPI Payments & Receipts -->
                     <button type="button" onclick="selectCheckpoint('upi_payments', 'UPI Payment Alerts')" 
-                            class="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-indigo-500/60 dark:hover:border-indigo-500/50 text-left transition shadow-sm group cursor-pointer">
+                            class="p-3.5 rounded-xl bg-theme-surface border border-theme-border hover:border-indigo-500/60 dark:hover:border-indigo-500/50 text-left transition shadow-sm group cursor-pointer">
                         <div class="flex items-center justify-between text-indigo-500 mb-2">
                             <i class="fa-solid fa-mobile-screen text-base"></i>
                             <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-indigo-500/10 border border-indigo-500/20">PhonePe/GPay</span>
                         </div>
-                        <div class="text-xl font-black text-slate-900 dark:text-white font-mono">{{ summary.checkpoints.upi_payment_count }}</div>
-                        <div class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 group-hover:text-indigo-400 transition truncate">UPI Payments</div>
+                        <div class="text-xl font-black text-theme-text font-mono">{{ summary.checkpoints.upi_payment_count }}</div>
+                        <div class="text-[11px] font-semibold text-theme-muted group-hover:text-indigo-400 transition truncate">UPI Payments</div>
                     </button>
 
                 </div>
             </div>
 
             <!-- Default Keywords Filter Pill Bar -->
-            <div class="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-sm space-y-2">
+            <div class="bg-theme-surface p-4 rounded-xl border border-theme-border shadow-sm space-y-2">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
                         <i class="fa-solid fa-tags text-rose-400"></i>
@@ -315,7 +315,7 @@
                     </button>
                     {% for kw, count in summary.checkpoints.profile_keywords.items %}
                     <button type="button" onclick="selectCheckpoint('{{ kw }}', 'Profile Keyword: {{ kw }}')" 
-                            class="px-3 py-1 rounded-lg text-xs font-mono font-semibold bg-white dark:bg-zinc-800 hover:bg-purple-50 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 border border-purple-200 dark:border-purple-900/50 transition cursor-pointer">
+                            class="px-3 py-1 rounded-lg text-xs font-mono font-semibold bg-theme-surface hover:bg-theme-subtle text-theme-text border border-purple-200 dark:border-purple-900/50 transition cursor-pointer">
                         {{ kw }} <span class="text-purple-500 dark:text-purple-400 font-bold">({{ count }})</span>
                     </button>
                     {% endfor %}
@@ -324,54 +324,54 @@
             {% endif %}
 
             <!-- Advanced Investigator Search & Filter Toolbar -->
-            <div class="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-3">
+            <div class="p-4 rounded-xl bg-theme-surface border border-theme-border shadow-sm space-y-3">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                     
                     <!-- 1. Participant {name} filter -->
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                        <label class="block text-[11px] font-semibold text-theme-text mb-1">
                             Sent / Received by {Name or Email}
                         </label>
                         <div class="relative">
-                            <i class="fa-solid fa-user absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <i class="fa-solid fa-user absolute left-3 top-2.5 text-theme-muted text-xs"></i>
                             <input type="text" id="filter-participant" placeholder="e.g. Rajesh, vendor@domain" 
-                                   class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-mono">
+                                   class="w-full pl-8 pr-3 py-1.5 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500 font-mono">
                         </div>
                     </div>
 
                     <!-- 2. Date Range: Start Date -->
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                        <label class="block text-[11px] font-semibold text-theme-text mb-1">
                             Date From {date}
                         </label>
                         <input type="date" id="filter-start-date"
-                               class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-mono">
+                               class="w-full px-3 py-1.5 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500 font-mono">
                     </div>
 
                     <!-- 3. Date Range: End Date -->
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                        <label class="block text-[11px] font-semibold text-theme-text mb-1">
                             Date To {date}
                         </label>
                         <input type="date" id="filter-end-date"
-                               class="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-mono">
+                               class="w-full px-3 py-1.5 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500 font-mono">
                     </div>
 
                     <!-- 4. Custom User Specified Keyword -->
                     <div>
-                        <label class="block text-[11px] font-semibold text-slate-700 dark:text-zinc-300 mb-1">
+                        <label class="block text-[11px] font-semibold text-theme-text mb-1">
                             Custom Keyword (User Specified)
                         </label>
                         <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-theme-muted text-xs"></i>
                             <input type="text" id="filter-custom-keyword" placeholder="e.g. tender, offshore, cash" 
-                                   class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 font-mono">
+                                   class="w-full pl-8 pr-3 py-1.5 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500 font-mono">
                         </div>
                     </div>
 
                 </div>
 
-                <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800">
+                <div class="flex items-center justify-between pt-2 border-t border-theme-border">
                     <div class="flex items-center gap-2">
                         <button type="button" onclick="applyFilters()" 
                                 class="px-4 py-1.5 text-xs font-bold rounded-lg bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/20 transition cursor-pointer flex items-center gap-1.5">
@@ -429,7 +429,7 @@
             </div>
 
             <!-- Quick Filter Toolbar for Standard Ledger -->
-            <div class="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+            <div class="p-4 rounded-xl bg-theme-surface border border-theme-border flex flex-wrap items-center justify-between gap-3">
                 <div class="flex flex-wrap items-center gap-3 flex-1">
                     <c-search_bar 
                         id="search-input" 
@@ -440,7 +440,7 @@
 
                     {% if summary.folders %}
                     <select id="folder-select"
-                            class="px-3 py-1.5 text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 transition">
+                            class="px-3 py-1.5 text-xs bg-theme-app border border-theme-border rounded-lg text-theme-text focus:outline-none focus:border-purple-500 transition">
                         <option value="">All Mail Folders ({{ summary.folders|length }})</option>
                         {% for f in summary.folders %}
                         <option value="{{ f }}">{{ f }}</option>
@@ -448,7 +448,7 @@
                     </select>
                     {% endif %}
 
-                    <button type="button" onclick="resetFilters()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition cursor-pointer">
+                    <button type="button" onclick="resetFilters()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-theme-subtle hover:bg-theme-border text-theme-text transition cursor-pointer">
                         Reset
                     </button>
                 </div>
@@ -459,17 +459,17 @@
         <!-- ============================================================ -->
         <!-- SHARED: TABULATOR.JS EVIDENCE DATA GRID                       -->
         <!-- ============================================================ -->
-        <div class="bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm">
+        <div class="bg-theme-surface rounded-2xl border border-theme-border p-5 shadow-sm">
             <div class="flex items-center justify-between mb-3">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h4 class="text-sm font-bold text-theme-text flex items-center gap-2">
                     <i class="fa-solid fa-table-list text-purple-400"></i>
                     <span>Evidence Emails Ledger</span>
                 </h4>
-                <span class="text-xs font-mono text-slate-400">Interactive Forensic Grid</span>
+                <span class="text-xs font-mono text-theme-muted">Interactive Forensic Grid</span>
             </div>
 
 
-            <div id="emails-table" class="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-sm text-xs"></div>
+            <div id="emails-table" class="rounded-xl overflow-hidden border border-theme-border shadow-sm text-xs"></div>
         </div>
 
     </div>
@@ -478,12 +478,12 @@
     <div id="email-reader-drawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-theme-surface border-l border-theme-border shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
         
         <!-- Drawer Header -->
-        <div class="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+        <div class="p-5 border-b border-theme-border flex items-center justify-between">
             <div>
                 <span class="text-[10px] font-mono uppercase tracking-widest text-purple-400 font-bold">Email Forensic Inspector</span>
-                <h3 id="drawer-subject" class="text-base font-bold text-slate-900 dark:text-white mt-0.5 line-clamp-1">Subject</h3>
+                <h3 id="drawer-subject" class="text-base font-bold text-theme-text mt-0.5 line-clamp-1">Subject</h3>
             </div>
-            <button onclick="closeEmailDrawer()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer">
+            <button onclick="closeEmailDrawer()" class="w-8 h-8 rounded-lg flex items-center justify-center text-theme-muted hover:text-theme-text hover:bg-theme-subtle transition cursor-pointer">
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
         </div>
@@ -491,17 +491,17 @@
         <!-- Drawer Content Body -->
         <div class="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
             <!-- Headers Info Box -->
-            <div class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 space-y-2 font-mono">
-                <div class="flex justify-between"><span class="text-slate-400 dark:text-zinc-500">From:</span><span id="drawer-from" class="text-slate-800 dark:text-zinc-200 font-bold"></span></div>
-                <div class="flex justify-between"><span class="text-slate-400 dark:text-zinc-500">To:</span><span id="drawer-to" class="text-slate-700 dark:text-zinc-300"></span></div>
-                <div id="drawer-cc-row" class="flex justify-between hidden"><span class="text-slate-400 dark:text-zinc-500">Cc:</span><span id="drawer-cc" class="text-slate-700 dark:text-zinc-300"></span></div>
-                <div class="flex justify-between"><span class="text-slate-400 dark:text-zinc-500">Sent Date:</span><span id="drawer-date" class="text-slate-700 dark:text-zinc-300"></span></div>
-                <div class="flex justify-between"><span class="text-slate-400 dark:text-zinc-500">Folder:</span><span id="drawer-folder" class="text-purple-400 font-bold"></span></div>
+            <div class="p-4 rounded-xl bg-theme-app border border-theme-border space-y-2 font-mono">
+                <div class="flex justify-between"><span class="text-theme-muted">From:</span><span id="drawer-from" class="text-theme-text font-bold"></span></div>
+                <div class="flex justify-between"><span class="text-theme-muted">To:</span><span id="drawer-to" class="text-theme-text"></span></div>
+                <div id="drawer-cc-row" class="flex justify-between hidden"><span class="text-theme-muted">Cc:</span><span id="drawer-cc" class="text-theme-text"></span></div>
+                <div class="flex justify-between"><span class="text-theme-muted">Sent Date:</span><span id="drawer-date" class="text-theme-text"></span></div>
+                <div class="flex justify-between"><span class="text-theme-muted">Folder:</span><span id="drawer-folder" class="text-purple-400 font-bold"></span></div>
             </div>
 
             <!-- Attachments List -->
             <div id="drawer-attachments-section" class="hidden space-y-2">
-                <h4 class="font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                <h4 class="font-bold text-theme-text flex items-center gap-1.5">
                     <i class="fa-solid fa-paperclip text-purple-400"></i>
                     <span>Attachments (<span id="drawer-att-count">0</span>)</span>
                 </h4>
@@ -511,9 +511,9 @@
             <!-- Email Body -->
             <div class="space-y-2">
                 <div class="flex items-center justify-between">
-                    <h4 class="font-bold text-slate-800 dark:text-zinc-200">Message Body</h4>
+                    <h4 class="font-bold text-theme-text">Message Body</h4>
                 </div>
-                <div id="drawer-body" class="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 whitespace-pre-wrap font-sans leading-relaxed text-xs max-h-[400px] overflow-y-auto">
+                <div id="drawer-body" class="p-4 rounded-xl bg-theme-app border border-theme-border text-theme-text whitespace-pre-wrap font-sans leading-relaxed text-xs max-h-[400px] overflow-y-auto">
                 </div>
             </div>
         </div>
@@ -774,11 +774,11 @@
 
                 data.attachments.forEach(att => {
                     const item = document.createElement('div');
-                    item.className = "p-3 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 flex items-center justify-between gap-3";
+                    item.className = "p-3 rounded-xl bg-theme-surface border border-theme-border flex items-center justify-between gap-3";
                     item.innerHTML = `
                         <div class="min-w-0 flex-1">
-                            <div class="font-bold text-slate-800 dark:text-zinc-200 truncate">${att.filename}</div>
-                            <div class="text-[10px] font-mono text-slate-400 dark:text-zinc-500 mt-0.5">
+                            <div class="font-bold text-theme-text truncate">${att.filename}</div>
+                            <div class="text-[10px] font-mono text-theme-muted mt-0.5">
                                 <span>${att.formatted_size}</span> &bull; 
                                 <span class="truncate" title="${att.sha256_hash}">SHA256: ${att.sha256_hash.substring(0, 16)}...</span>
                             </div>

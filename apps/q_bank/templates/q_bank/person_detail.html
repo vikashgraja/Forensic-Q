@@ -7,8 +7,8 @@
 
         <div class="flex items-center gap-2">
             <button onclick="openUploadModalForPerson('{{ person.id }}', '{{ person.full_name }}')"
-                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer">
-                <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i>
+                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text text-xs font-semibold border border-theme-border transition-all cursor-pointer">
+                <i class="fa-solid fa-cloud-arrow-up text-amber-500"></i>
                 <span>Add Bank Statement</span>
             </button>
 
@@ -39,11 +39,11 @@
 
     <!-- Multi-Bank & Multi-Statement Selection Bar -->
     <div
-        class="bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4 mb-6 shadow-sm">
+        class="bg-theme-surface rounded-2xl border border-theme-border p-4 mb-6 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-building-columns text-emerald-400 text-sm"></i>
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-theme-text">
                     Linked Bank Statements ({{ accounts|length }})
                 </h4>
             </div>
@@ -53,11 +53,11 @@
             <!-- Combined View Pill -->
             <a href="{% url 'q_bank:person_detail' person.id %}"
                 class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2
-               {% if not selected_account_id %}bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/20{% else %}bg-slate-100 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600{% endif %}">
+               {% if not selected_account_id %}bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/20{% else %}bg-theme-subtle text-theme-text border-theme-border hover:bg-theme-surface{% endif %}">
                 <i class="fa-solid fa-layer-group"></i>
                 <span>All Statements Combined</span>
                 <span
-                    class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {% if not selected_account_id %}bg-emerald-700 text-emerald-100{% else %}bg-zinc-700 text-zinc-300{% endif %}">
+                    class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {% if not selected_account_id %}bg-emerald-700 text-emerald-100{% else %}bg-theme-surface text-theme-muted border border-theme-border{% endif %}">
                     {{ accounts|length }} banks
                 </span>
             </a>
@@ -66,7 +66,7 @@
             {% for acc in accounts %}
             <a href="{% url 'q_bank:person_detail' person.id %}?account_id={{ acc.id }}"
                 class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2
-               {% if selected_account_id == acc.id|stringformat:'s' %}bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/20{% else %}bg-slate-100 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-slate-300 dark:hover:border-zinc-600{% endif %}"
+               {% if selected_account_id == acc.id|stringformat:'s' %}bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/20{% else %}bg-theme-subtle text-theme-text border-theme-border hover:bg-theme-surface{% endif %}"
                 title="{{ acc.bank_name }}{% if acc.account_number %} ({{ acc.account_number }}){% endif %}{% if acc.statement_label %} • {{ acc.statement_label }}{% endif %}">
                 <i class="fa-solid fa-vault text-[11px]"></i>
                 <span>{{ acc.bank_name }}</span>
@@ -74,12 +74,12 @@
                 <span class="font-mono text-[11px] opacity-80">• {{ acc.account_number }}</span>
                 {% endif %}
                 {% if acc.statement_label %}
-                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded {% if selected_account_id == acc.id|stringformat:'s' %}bg-emerald-700/60 text-emerald-100{% else %}bg-slate-200/80 dark:bg-zinc-700/80 text-slate-700 dark:text-zinc-300{% endif %}">
+                <span class="font-mono text-[10px] px-1.5 py-0.5 rounded {% if selected_account_id == acc.id|stringformat:'s' %}bg-emerald-700/60 text-emerald-100{% else %}bg-theme-surface text-theme-muted border border-theme-border{% endif %}">
                     {{ acc.statement_label }}
                 </span>
                 {% endif %}
                 <span
-                    class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {% if selected_account_id == acc.id|stringformat:'s' %}bg-emerald-700 text-emerald-100{% else %}bg-zinc-700 text-zinc-300{% endif %}">
+                    class="px-1.5 py-0.2 rounded-full text-[10px] font-mono {% if selected_account_id == acc.id|stringformat:'s' %}bg-emerald-700 text-emerald-100{% else %}bg-theme-surface text-theme-muted border border-theme-border{% endif %}">
                     {{ acc.total_transactions }} txns
                 </span>
             </a>
@@ -89,10 +89,10 @@
 
     <!-- Forensic Analysis Tabs (st.tab Component) -->
     <div x-data="bankAnalysisTabs()"
-        class="bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden mb-8">
+        class="bg-theme-surface rounded-2xl border border-theme-border shadow-sm overflow-hidden mb-8">
 
         <!-- Streamlit Tab Header Navigation Bar -->
-        <div class="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/50 px-5 pt-3">
+        <div class="border-b border-theme-border bg-theme-subtle/50 px-5 pt-3">
             <nav class="flex space-x-1 sm:space-x-4 overflow-x-auto scrollbar-none" aria-label="Tabs">
                 <!-- Tab 1: Cash Deposit -->
                 <button @click="activeTab = 'cash'"
@@ -403,7 +403,7 @@
                                             <td class="p-3 text-slate-400" x-text="r.value_date"></td>
                                             <td class="p-3 text-center">
                                                 <span
-                                                    class="px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700"
+                                                    class="px-2 py-0.5 rounded text-[11px] font-bold bg-theme-subtle text-theme-muted border border-theme-border"
                                                     x-text="r.days_diff"></span>
                                             </td>
                                             <td class="p-3 text-right text-rose-400" x-text="'₹' + r.debit_formatted">
@@ -475,7 +475,7 @@
                                             <td class="p-3 text-slate-400" x-text="r.value_date"></td>
                                             <td class="p-3 text-center">
                                                 <span
-                                                    class="px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-800 text-zinc-300 border border-zinc-700"
+                                                    class="px-2 py-0.5 rounded text-[11px] font-bold bg-theme-subtle text-theme-muted border border-theme-border"
                                                     x-text="r.days_diff"></span>
                                             </td>
                                             <td class="p-3 text-right text-rose-400 font-bold"
@@ -634,13 +634,13 @@
                                 {% endif %}
                             </div>
                             <textarea x-model="fuzzyKeywords" rows="3" placeholder="e.g. trust, sarla, sharma, auto, hawala, cash settlement"
-                                class="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white font-mono focus:outline-none focus:border-rose-500 transition-colors resize-none"></textarea>
+                                class="w-full px-3 py-2 text-xs rounded-xl bg-theme-surface border border-theme-border text-theme-text font-mono focus:outline-none focus:border-rose-500 transition-colors resize-none"></textarea>
                         </div>
 
                         <!-- Right: File Upload (Excel .xlsx, Plain Text .txt, CSV) -->
                         <div>
                             <div class="flex items-center justify-between mb-1.5">
-                                <label class="text-xs font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                                <label class="text-xs font-semibold text-theme-text flex items-center gap-1.5">
                                     <i class="fa-solid fa-file-arrow-up text-rose-500"></i>
                                     <span>Upload Keywords File (.xlsx or .txt)</span>
                                 </label>
@@ -648,8 +648,8 @@
                             </div>
 
                             <!-- Dropzone / File Picker Container -->
-                            <div class="relative border-2 border-dashed rounded-xl p-3 text-center transition-all bg-white dark:bg-zinc-900/60"
-                                :class="attachedFile ? 'border-rose-500/60 bg-rose-50/20 dark:bg-rose-950/10' : 'border-slate-300 dark:border-zinc-700 hover:border-slate-400 dark:hover:border-zinc-600'">
+                            <div class="relative border-2 border-dashed rounded-xl p-3 text-center transition-all bg-theme-surface"
+                                :class="attachedFile ? 'border-rose-500/60 bg-rose-50/20 dark:bg-rose-950/10' : 'border-theme-border hover:border-theme-muted'">
                                 <input type="file" id="fuzzy-file-input" @change="handleKeywordsFileUpload($event)"
                                     accept=".xlsx,.xls,.txt,.csv"
                                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
@@ -657,10 +657,10 @@
                                 <template x-if="!attachedFile && !fileParsing">
                                     <div class="py-1 pointer-events-none">
                                         <i class="fa-solid fa-file-excel text-emerald-500 text-xl mb-1 block"></i>
-                                        <div class="text-xs font-semibold text-slate-700 dark:text-zinc-200">
+                                        <div class="text-xs font-semibold text-theme-text">
                                             Drop keyword file or <span class="text-rose-500 underline">browse</span>
                                         </div>
-                                        <div class="text-[10px] text-slate-400 mt-0.5 font-mono">
+                                        <div class="text-[10px] text-theme-muted mt-0.5 font-mono">
                                             Supports .xlsx (reads keyword column) &amp; .txt (one per line)
                                         </div>
                                     </div>
@@ -777,7 +777,7 @@
                                                         class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30"
                                                         x-text="item.fuzzy_score + '%'"></span>
                                                     <template x-if="item.matched_keyword">
-                                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-zinc-800 text-rose-300 border border-rose-500/20 truncate max-w-[90px]"
+                                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-theme-subtle text-rose-600 dark:text-rose-300 border border-rose-500/20 truncate max-w-[90px]"
                                                             :title="'Matched keyword: ' + item.matched_keyword"
                                                             x-text="item.matched_keyword"></span>
                                                     </template>
@@ -828,32 +828,32 @@
                 }
             }
          }"
-        class="mb-10 bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden transition-all">
+        class="mb-10 bg-theme-surface rounded-2xl border border-theme-border shadow-sm overflow-hidden transition-all">
 
         <!-- Header Bar: Click to Expand / Collapse -->
         <button type="button" @click="toggle()"
-            class="w-full flex items-center justify-between p-5 text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition select-none">
+            class="w-full flex items-center justify-between p-5 text-left cursor-pointer hover:bg-theme-subtle transition select-none">
             <div class="flex items-center gap-3">
                 <div
                     class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm">
                     <i class="fa-solid fa-table-list"></i>
                 </div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 class="text-base font-bold text-theme-text flex items-center gap-2">
                     <span>Data Overview ({{ view_metrics.total_transactions }} Transactions)</span>
                 </h3>
             </div>
 
             <!-- Dropdown / Caret Icon -->
-            <div class="flex items-center gap-2 text-slate-400">
+            <div class="flex items-center gap-2 text-theme-muted">
                 <i class="fa-solid fa-chevron-down text-sm transition-transform duration-200"
                     :class="{ 'rotate-180': isExpanded }"></i>
             </div>
         </button>
 
         <!-- Collapsible Content Body -->
-        <div x-show="isExpanded" x-cloak class="p-5 pt-0 border-t border-slate-200 dark:border-zinc-800 space-y-4">
+        <div x-show="isExpanded" x-cloak class="p-5 pt-0 border-t border-theme-border space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-4 pt-4">
-                <p class="text-xs text-slate-500 dark:text-zinc-400">
+                <p class="text-xs text-theme-muted">
                     {% if selected_account %}
                     Displaying records for <strong>{{ selected_account.bank_name }}</strong> (Acc: {{ selected_account.account_number|default:"N/A" }}).
                     {% else %}
@@ -869,7 +869,7 @@
                         placeholder="Search transactions, entities, UTR..." 
                         threshold="75" />
                     <button id="overview-reset"
-                        class="px-3 py-1.5 text-xs rounded-xl bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 transition cursor-pointer">
+                        class="px-3 py-1.5 text-xs rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text border border-theme-border transition cursor-pointer">
                         Reset
                     </button>
                 </div>
@@ -877,7 +877,7 @@
 
             <!-- Tabulator Main Table -->
             <div id="overview-grid"
-                class="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 text-xs"></div>
+                class="rounded-xl overflow-hidden border border-theme-border text-xs"></div>
         </div>
     </div>
 
@@ -885,17 +885,17 @@
     <div id="upload-modal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
         <div
-            class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 relative">
+            class="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl p-6 relative">
             <button onclick="closeUploadModal()"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer">
+                class="absolute top-4 right-4 text-theme-muted hover:text-theme-text cursor-pointer">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+            <h3 class="text-base font-bold text-theme-text mb-1 flex items-center gap-2">
                 <i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i>
                 <span>Attach Bank Statement to Person</span>
             </h3>
-            <p class="text-xs text-slate-400 mb-5">Upload another bank statement for <strong>{{ person.full_name }}</strong> (Excel, CSV, Word, or PDF).</p>
+            <p class="text-xs text-theme-muted mb-5">Upload another bank statement for <strong>{{ person.full_name }}</strong> (Excel, CSV, Word, or PDF).</p>
 
             <form method="POST" action="{% url 'q_bank:upload_statement' %}" enctype="multipart/form-data"
                 class="space-y-4">

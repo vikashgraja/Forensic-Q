@@ -22,8 +22,8 @@
 
             <!-- Export Excel Button -->
             <a href="{% url 'q_ledger:export_current_view' %}"
-               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer whitespace-nowrap">
-                <i class="fa-solid fa-file-excel text-amber-400"></i>
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-theme-surface hover:bg-theme-subtle text-theme-text text-xs font-semibold border border-theme-border shadow-sm transition-all cursor-pointer whitespace-nowrap">
+                <i class="fa-solid fa-file-excel text-amber-500"></i>
                 <span>Export Excel</span>
             </a>
 
@@ -491,17 +491,17 @@
     <!-- 1. MODAL: GL ACCOUNT & SLOC MASTER DATA (STORED IN BACKGROUND) -->
     <!-- ============================================================ -->
     <div id="masters-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
-        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl p-6 relative">
+        <div class="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl p-6 relative">
             
-            <button onclick="closeMastersModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer">
+            <button onclick="closeMastersModal()" class="absolute top-4 right-4 text-theme-muted hover:text-theme-text cursor-pointer">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+            <h3 class="text-base font-bold text-theme-text mb-1 flex items-center gap-2">
                 <i class="fa-solid fa-database text-purple-400"></i>
                 <span>G/L Account & SLoc Master Configuration</span>
             </h3>
-            <p class="text-xs text-slate-400 mb-5">
+            <p class="text-xs text-theme-muted mb-5">
                 Upload these 2 Excel reference files once. They are stored in the background to automatically resolve G/L account names and Storage Location descriptions for all forensic audits.
             </p>
 
@@ -527,14 +527,14 @@
                     hint="Upload storage location workbook (Plnt, S/Loc, Description)"
                     badge="Background Store" />
 
-                <div class="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-zinc-800">
-                    <span class="text-[11px] font-mono text-slate-400">
+                <div class="flex items-center justify-between pt-3 border-t border-theme-border">
+                    <span class="text-[11px] font-mono text-theme-muted">
                         Current: <strong class="text-purple-400">{{ gl_account_count|default:"18,329" }}</strong> GLs, <strong class="text-purple-400">{{ sloc_count|default:"500" }}</strong> SLocs
                     </span>
 
                     <div class="flex items-center gap-2">
                         <button type="button" onclick="closeMastersModal()" 
-                                class="px-4 py-2 text-xs rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 cursor-pointer transition">
+                                class="px-4 py-2 text-xs rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text cursor-pointer transition">
                             Cancel
                         </button>
                         <button type="submit" 
@@ -551,17 +551,17 @@
     <!-- 2. MODAL: TRANSACTIONAL EVIDENCE (PR/PO & MARA) -->
     <!-- ============================================================ -->
     <div id="upload-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden">
-        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl p-6 relative">
+        <div class="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl p-6 relative">
             
-            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 cursor-pointer">
+            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-theme-muted hover:text-theme-text cursor-pointer">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
 
-            <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
+            <h3 class="text-base font-bold text-theme-text mb-1 flex items-center gap-2">
                 <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i>
                 <span>Import SAP ERP Evidence</span>
             </h3>
-            <p class="text-xs text-slate-400 mb-5">
+            <p class="text-xs text-theme-muted mb-5">
                 Ingest SAP PR/PO extracts and optional MARA material master files. Data is cross-referenced with the background G/L and SLoc masters.
             </p>
 
@@ -588,9 +588,9 @@
                     hint="Optional: Drag & drop MARA material classification workbook"
                     badge="Optional Master" />
 
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-zinc-800">
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-theme-border">
                     <button type="button" onclick="closeUploadModal()" 
-                            class="px-4 py-2 text-xs rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 cursor-pointer transition">
+                            class="px-4 py-2 text-xs rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text cursor-pointer transition">
                         Cancel
                     </button>
                     <button type="submit" 

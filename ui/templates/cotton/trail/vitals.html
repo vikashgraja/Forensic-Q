@@ -11,37 +11,37 @@
 
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5 mb-6">
     <!-- 1. Direct Volume -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-sm hover:border-emerald-500/40 transition">
-        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 mb-1">
-            <span class="font-semibold text-slate-700 dark:text-zinc-300">Direct Payments</span>
+    <div class="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-sm hover:border-emerald-500/40 transition">
+        <div class="flex items-center justify-between text-xs text-theme-muted mb-1">
+            <span class="font-semibold text-theme-text">Direct Payments</span>
             <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-mono">Direct</span>
         </div>
-        <div class="text-lg font-bold font-mono text-slate-900 dark:text-white">
+        <div class="text-lg font-bold font-mono text-theme-text">
             ₹{{ direct_volume }}
         </div>
-        <div class="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 truncate">
+        <div class="text-[11px] text-theme-muted mt-1 truncate">
             {{ direct_count }} direct payments
         </div>
     </div>
 
     <!-- 2. Direct Transfers Count -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-sm hover:border-teal-500/40 transition">
-        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 mb-1">
-            <span class="font-semibold text-slate-700 dark:text-zinc-300">Direct Transfers</span>
+    <div class="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-sm hover:border-teal-500/40 transition">
+        <div class="flex items-center justify-between text-xs text-theme-muted mb-1">
+            <span class="font-semibold text-theme-text">Direct Transfers</span>
             <i class="fa-solid fa-link text-teal-400 text-xs"></i>
         </div>
-        <div class="text-lg font-bold font-mono text-slate-900 dark:text-white">
+        <div class="text-lg font-bold font-mono text-theme-text">
             {{ direct_count }}
         </div>
-        <div class="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 truncate">
-            Matching bank transactions
+        <div class="text-[11px] text-theme-muted mt-1 truncate">
+            {{ direct_count }} matching bank transfers
         </div>
     </div>
 
     <!-- 3. Through Middlemen -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-sm hover:border-sky-500/40 transition group relative">
-        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 mb-1">
-            <span class="font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-1">
+    <div class="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-sm hover:border-sky-500/40 transition group relative">
+        <div class="flex items-center justify-between text-xs text-theme-muted mb-1">
+            <span class="font-semibold text-theme-text flex items-center gap-1">
                 Through Middlemen
                 <i class="fa-solid fa-circle-info text-[10px] text-sky-400 cursor-help" title="Total money passed through third-party middlemen."></i>
             </span>
@@ -50,14 +50,14 @@
         <div class="text-lg font-bold font-mono text-sky-400">
             ₹{{ outflow_volume }}
         </div>
-        <div class="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 truncate">
+        <div class="text-[11px] text-theme-muted mt-1 truncate">
             {{ hops_count }} passes via middlemen
         </div>
     </div>
 
     <!-- 4. Kept by Middlemen -->
-    <div class="bg-white dark:bg-zinc-900 border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 rounded-xl p-3.5 shadow-sm hover:border-amber-500 transition">
-        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 mb-1">
+    <div class="bg-theme-surface border border-amber-500/30 rounded-xl p-3.5 shadow-sm hover:border-amber-500 transition">
+        <div class="flex items-center justify-between text-xs text-theme-muted mb-1">
             <span class="font-semibold text-amber-500 dark:text-amber-400 flex items-center gap-1">
                 Kept by Middlemen
                 <i class="fa-solid fa-triangle-exclamation text-[10px] text-amber-400"></i>
@@ -73,29 +73,29 @@
     </div>
 
     <!-- 5. Middlemen Found -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-sm hover:border-rose-500/40 transition">
-        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 mb-1">
-            <span class="font-semibold text-slate-700 dark:text-zinc-300">Middlemen Found</span>
+    <div class="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-sm hover:border-rose-500/40 transition">
+        <div class="flex items-center justify-between text-xs text-theme-muted mb-1">
+            <span class="font-semibold text-theme-text">Middlemen Found</span>
             <i class="fa-solid fa-user-secret text-rose-400 text-xs"></i>
         </div>
-        <div class="text-lg font-bold font-mono text-slate-900 dark:text-white">
+        <div class="text-lg font-bold font-mono text-theme-text">
             {{ conduits_count }}
         </div>
-        <div class="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 truncate">
+        <div class="text-[11px] text-theme-muted mt-1 truncate">
             People or third parties passing money
         </div>
     </div>
 
     <!-- 6. Money Looped Back -->
-    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-sm hover:border-indigo-500/40 transition">
-        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 mb-1">
-            <span class="font-semibold text-slate-700 dark:text-zinc-300">Money Looped Back</span>
+    <div class="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-sm hover:border-indigo-500/40 transition">
+        <div class="flex items-center justify-between text-xs text-theme-muted mb-1">
+            <span class="font-semibold text-theme-text">Money Looped Back</span>
             <i class="fa-solid fa-arrows-spin text-indigo-400 text-xs"></i>
         </div>
         <div class="text-lg font-bold font-mono text-indigo-400">
             {{ loop_count }} Loops
         </div>
-        <div class="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 truncate">
+        <div class="text-[11px] text-theme-muted mt-1 truncate">
             Funds returned to sender
         </div>
     </div>

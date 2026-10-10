@@ -25,13 +25,13 @@
             name="{{ name }}" 
             value="{{ value }}" 
             placeholder="{{ placeholder }}" 
-            class="w-full pl-8 pr-4 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 transition {{ input_class }}">
+            class="w-full pl-8 pr-4 py-1.5 text-xs rounded-xl bg-theme-subtle border border-theme-border text-theme-text placeholder-theme-muted focus:outline-none focus:border-sky-500 transition {{ input_class }}">
     </div>
 
     <!-- Small Fuzzy Threshold Slider Widget -->
     {% if show_threshold != 'false' and show_threshold != False %}
-    <div class="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-xs select-none shadow-2xs {{ slider_class }}">
-        <span class="text-[11px] font-medium text-slate-500 dark:text-zinc-400 whitespace-nowrap">Fuzzy:</span>
+    <div class="flex items-center gap-2 px-3 py-1 rounded-xl bg-theme-subtle border border-theme-border text-xs select-none shadow-2xs {{ slider_class }}">
+        <span class="text-[11px] font-medium text-theme-muted whitespace-nowrap">Fuzzy:</span>
         <input 
             type="range" 
             {% if threshold_id %}id="{{ threshold_id }}"{% endif %}

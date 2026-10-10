@@ -4,21 +4,21 @@
  */
 
 :root {
-    /* Color Tokens - Light Mode (Stripe / Warm Tech Palette) */
-    --fq-bg-app: #F9FAFB;          
-    --fq-bg-surface: #FFFFFF;      
-    --fq-bg-surface-elevated: #FFFFFF; 
-    --fq-bg-subtle: #F3F4F6;       
-    --fq-border-subtle: #E5E7EB;   
-    --fq-border-strong: #D1D5DB;   
+    /* Color Tokens - Light Mode (Off-White with Subtle Violet Undertone) */
+    --fq-bg-app: #F5F2F7;          
+    --fq-bg-surface: #FAF7FB;      
+    --fq-bg-surface-elevated: #FCFAFD; 
+    --fq-bg-subtle: #EDE7F0;       
+    --fq-border-subtle: #E0D5E4;   
+    --fq-border-strong: #CBB9D0;   
     
-    --fq-text-main: #111827;       
-    --fq-text-muted: #4B5563;      
-    --fq-text-subtle: #9CA3AF;     
+    --fq-text-main: #1B1221;       
+    --fq-text-muted: #594961;      
+    --fq-text-subtle: #8D7C95;     
 
     --fq-brand-violet: #502D55;    
     --fq-brand-violet-hover: #6c3d73; 
-    --fq-brand-violet-light: #F3EDF5; 
+    --fq-brand-violet-light: #EAE0EE; 
 
     --fq-accent-amber: #D97706;    
 }
@@ -158,7 +158,7 @@ input[type="checkbox"] {
     padding: 3px 9px !important;
     margin: 0 2px !important;
     background: var(--fq-bg-surface) !important;
-    color: #334155 !important;
+    color: var(--fq-text-main) !important;
     font-size: 0.75rem !important;
     font-weight: 500 !important;
 }
@@ -179,7 +179,7 @@ input[type="checkbox"] {
 
 .tabulator .tabulator-calcs-holder .tabulator-row {
     background-color: var(--fq-bg-app) !important;
-    color: #1e293b !important;
+    color: var(--fq-text-main) !important;
     font-weight: 600 !important;
 }
 

@@ -47,7 +47,7 @@
         <div class="lg:col-span-3 space-y-4">
             
             <!-- Filter Bar -->
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div class="bg-theme-surface rounded-2xl border border-theme-border p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
                 <form method="GET" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                     <c-search_bar 
                         name="q" 
@@ -57,7 +57,7 @@
 
 
                     <!-- Sender Filter -->
-                    <select name="sender" onchange="this.form.submit()" class="px-3 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-sky-500">
+                    <select name="sender" onchange="this.form.submit()" class="px-3 py-1.5 text-xs rounded-xl bg-theme-app border border-theme-border text-theme-text focus:outline-none focus:border-sky-500">
                         <option value="">-- All Senders --</option>
                         {% for p in participants %}
                         <option value="{{ p.sender_name }}" {% if selected_sender == p.sender_name %}selected{% endif %}>{{ p.sender_name }} ({{ p.total_msgs }})</option>
@@ -65,12 +65,12 @@
                     </select>
 
                     <!-- Filter Checkbox Pills -->
-                    <label class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-300 cursor-pointer">
+                    <label class="inline-flex items-center gap-1.5 text-xs text-theme-muted cursor-pointer">
                         <input type="checkbox" name="flagged" value="1" {% if flagged_only %}checked{% endif %} onchange="this.form.submit()" class="rounded">
                         <span class="font-medium text-rose-500">Flagged Only</span>
                     </label>
 
-                    <label class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-300 cursor-pointer">
+                    <label class="inline-flex items-center gap-1.5 text-xs text-theme-muted cursor-pointer">
                         <input type="checkbox" name="deleted" value="1" {% if deleted_only %}checked{% endif %} onchange="this.form.submit()" class="rounded">
                         <span class="font-medium text-amber-500">Deleted Only</span>
                     </label>
@@ -79,30 +79,30 @@
                         Filter
                     </button>
                     {% if search_query or selected_sender or flagged_only or deleted_only or threshold != 75 %}
-                    <a href="{% url 'q_chat:channel_detail' channel.id %}" class="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs font-semibold hover:bg-slate-300">
+                    <a href="{% url 'q_chat:channel_detail' channel.id %}" class="px-3 py-1.5 rounded-xl bg-theme-subtle text-theme-muted text-xs font-semibold hover:bg-theme-border">
                         Reset
                     </a>
                     {% endif %}
                 </form>
 
-                <span class="text-xs font-mono text-slate-400 font-semibold">
+                <span class="text-xs font-mono text-theme-muted font-semibold">
                     {% if messages_data.last_page > 1 %}Page {{ messages_data.current_page }} of {{ messages_data.last_page }} • {% endif %}{{ messages_data.total_count }} Message(s) Found
                 </span>
             </div>
 
 
             <!-- Chat Bubble Message Stream Container -->
-            <div class="bg-slate-50 dark:bg-zinc-950/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6 min-h-[500px] max-h-[700px] overflow-y-auto space-y-4 shadow-inner">
+            <div class="bg-theme-app rounded-2xl border border-theme-border p-6 min-h-[500px] max-h-[700px] overflow-y-auto space-y-4 shadow-inner">
                 {% if messages_data.data %}
                     {% for msg in messages_data.data %}
                     {% if msg.is_system %}
                     <!-- Centered System Disclaimer / Notification Notice -->
                     <div class="flex justify-center my-3 w-full">
-                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-200/80 dark:bg-zinc-800/80 border border-slate-300 dark:border-zinc-700/60 text-[11px] font-medium text-slate-600 dark:text-zinc-400 shadow-xs max-w-lg text-center">
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-theme-subtle border border-theme-border text-[11px] font-medium text-theme-muted shadow-xs max-w-lg text-center">
                             <i class="fa-solid fa-lock text-amber-500 text-[10px]"></i>
                             <span class="select-text">{{ msg.message_text }}</span>
                             {% if msg.sent_time and msg.sent_time != '-' %}
-                            <span class="text-[9px] font-mono text-slate-400 ml-1">({{ msg.sent_time }})</span>
+                            <span class="text-[9px] font-mono text-theme-muted ml-1">({{ msg.sent_time }})</span>
                             {% endif %}
                         </div>
                     </div>
@@ -111,8 +111,8 @@
                         
                         <!-- Sender & Timestamp Sub-header -->
                         <div class="flex items-center gap-2 mb-1 px-1 {% if msg.is_right_side %}flex-row-reverse{% endif %}">
-                            <span class="text-xs font-bold text-slate-700 dark:text-zinc-300">{{ msg.sender_name }}</span>
-                            <span class="text-[10px] font-mono text-slate-400">{{ msg.sent_at }}</span>
+                            <span class="text-xs font-bold text-theme-text">{{ msg.sender_name }}</span>
+                            <span class="text-[10px] font-mono text-theme-muted">{{ msg.sent_at }}</span>
                             {% if msg.is_deleted %}
                             <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
                                 DELETED ARTIFACT
@@ -128,13 +128,13 @@
                         <!-- Chat Message Bubble -->
                         <div class="max-w-xl rounded-2xl p-4 shadow-sm border text-xs leading-relaxed transition-all
                                     {% if msg.risk_score >= 50 %}
-                                        bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/50 text-slate-900 dark:text-zinc-100 {% if msg.is_right_side %}rounded-tr-none{% else %}rounded-tl-none{% endif %}
+                                        bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900/50 text-theme-text {% if msg.is_right_side %}rounded-tr-none{% else %}rounded-tl-none{% endif %}
                                     {% elif msg.is_deleted %}
-                                        bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/50 text-slate-600 dark:text-zinc-300 italic {% if msg.is_right_side %}rounded-tr-none{% else %}rounded-tl-none{% endif %}
+                                        bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900/50 text-theme-muted italic {% if msg.is_right_side %}rounded-tr-none{% else %}rounded-tl-none{% endif %}
                                     {% elif msg.is_right_side %}
                                         bg-sky-600 text-white border-sky-500 rounded-tr-none
                                     {% else %}
-                                        bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-100 rounded-tl-none
+                                        bg-theme-surface border-theme-border text-theme-text rounded-tl-none
                                     {% endif %}">
                             
                             <!-- Message Content -->
@@ -142,7 +142,7 @@
 
                             <!-- Media Attachment Preview Chip -->
                             {% if msg.has_media %}
-                            <div class="mt-2.5 pt-2 border-t {% if msg.is_right_side and msg.risk_score < 50 %}border-sky-500/50{% else %}border-slate-200 dark:border-zinc-800{% endif %} flex items-center gap-2">
+                            <div class="mt-2.5 pt-2 border-t {% if msg.is_right_side and msg.risk_score < 50 %}border-sky-500/50{% else %}border-theme-border{% endif %} flex items-center gap-2">
                                 <i class="fa-solid fa-paperclip text-xs"></i>
                                 <span class="font-mono text-[11px] font-semibold truncate">{{ msg.media_type }}: {{ msg.media_filename|default:"Attachment" }}</span>
                             </div>
@@ -165,8 +165,8 @@
                     {% endif %}
                     {% endfor %}
                 {% else %}
-                    <div class="py-16 text-center text-slate-400 text-xs font-mono">
-                        <i class="fa-solid fa-filter-circle-xmark text-2xl mb-2 block text-slate-500"></i>
+                    <div class="py-16 text-center text-theme-muted text-xs font-mono">
+                        <i class="fa-solid fa-filter-circle-xmark text-2xl mb-2 block text-theme-muted"></i>
                         No messages matched the current search or filter criteria.
                     </div>
                 {% endif %}
@@ -174,20 +174,20 @@
 
             <!-- Pagination Bar for Message Stream -->
             {% if messages_data.last_page > 1 %}
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-3.5 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div class="text-slate-500 dark:text-zinc-400 font-mono text-[11px]">
-                    Showing Page <strong class="text-slate-800 dark:text-zinc-200">{{ messages_data.current_page }}</strong> of <strong class="text-slate-800 dark:text-zinc-200">{{ messages_data.last_page }}</strong> ({{ messages_data.total_count }} total messages)
+            <div class="bg-theme-surface rounded-2xl border border-theme-border p-3.5 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="text-theme-muted font-mono text-[11px]">
+                    Showing Page <strong class="text-theme-text">{{ messages_data.current_page }}</strong> of <strong class="text-theme-text">{{ messages_data.last_page }}</strong> ({{ messages_data.total_count }} total messages)
                 </div>
 
                 <div class="flex items-center gap-1.5 font-mono">
                     {% if messages_data.has_previous %}
                     <a href="?page={{ messages_data.previous_page }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if threshold and threshold != 75 %}&threshold={{ threshold }}{% endif %}{% if selected_sender %}&sender={{ selected_sender|urlencode }}{% endif %}{% if flagged_only %}&flagged=1{% endif %}{% if deleted_only %}&deleted=1{% endif %}{% if right_sender %}&right={{ right_sender|urlencode }}{% endif %}"
-                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 font-semibold transition" title="Previous Messages">
+                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-muted font-semibold transition" title="Previous Messages">
                         <i class="fa-solid fa-chevron-left text-[10px]"></i>
                         <span>Prev</span>
                     </a>
                     {% else %}
-                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-zinc-800/40 text-slate-400 dark:text-zinc-600 cursor-not-allowed">
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-theme-subtle/50 text-theme-muted/50 cursor-not-allowed">
                         <i class="fa-solid fa-chevron-left text-[10px]"></i>
                         <span>Prev</span>
                     </span>
@@ -195,14 +195,14 @@
 
                     {% for p_num in messages_data.page_range %}
                         {% if p_num == "…" or p_num == "..." %}
-                        <span class="px-2 py-1.5 text-slate-400 dark:text-zinc-600">…</span>
+                        <span class="px-2 py-1.5 text-theme-muted">…</span>
                         {% elif p_num == messages_data.current_page %}
                         <span class="px-3 py-1.5 rounded-xl bg-sky-600 text-white font-bold shadow-sm shadow-sky-600/30">
                             {{ p_num }}
                         </span>
                         {% else %}
                         <a href="?page={{ p_num }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if threshold and threshold != 75 %}&threshold={{ threshold }}{% endif %}{% if selected_sender %}&sender={{ selected_sender|urlencode }}{% endif %}{% if flagged_only %}&flagged=1{% endif %}{% if deleted_only %}&deleted=1{% endif %}{% if right_sender %}&right={{ right_sender|urlencode }}{% endif %}"
-                           class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 font-semibold transition">
+                           class="px-3 py-1.5 rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-muted font-semibold transition">
                             {{ p_num }}
                         </a>
                         {% endif %}
@@ -210,12 +210,12 @@
 
                     {% if messages_data.has_next %}
                     <a href="?page={{ messages_data.next_page }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if threshold and threshold != 75 %}&threshold={{ threshold }}{% endif %}{% if selected_sender %}&sender={{ selected_sender|urlencode }}{% endif %}{% if flagged_only %}&flagged=1{% endif %}{% if deleted_only %}&deleted=1{% endif %}{% if right_sender %}&right={{ right_sender|urlencode }}{% endif %}"
-                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 font-semibold transition" title="Next Messages">
+                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-muted font-semibold transition" title="Next Messages">
                         <span>Next</span>
                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     </a>
                     {% else %}
-                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-zinc-800/40 text-slate-400 dark:text-zinc-600 cursor-not-allowed">
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-theme-subtle/50 text-theme-muted/50 cursor-not-allowed">
                         <span>Next</span>
                         <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     </span>
@@ -229,9 +229,9 @@
         <!-- Right 1 Column: Participants Breakdown Sidebar -->
         <div class="space-y-6">
             
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 shadow-sm space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 flex items-center gap-2">
+            <div class="bg-theme-surface rounded-2xl border border-theme-border p-5 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-theme-border pb-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-theme-text flex items-center gap-2">
                         <i class="fa-solid fa-users text-sky-400"></i>
                         <span>Participants ({{ participants|length }})</span>
                     </h4>
@@ -240,21 +240,21 @@
                 <div class="space-y-3">
                     {% for p in participants %}
                     <a href="?sender={{ p.sender_name|urlencode }}{% if right_sender %}&right={{ right_sender|urlencode }}{% endif %}" 
-                       class="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-800 hover:border-sky-500/50 transition block {% if selected_sender == p.sender_name %}ring-2 ring-sky-500{% endif %}">
+                       class="p-3 rounded-xl bg-theme-app border border-theme-border hover:border-sky-500/50 transition block {% if selected_sender == p.sender_name %}ring-2 ring-sky-500{% endif %}">
                         <div class="flex items-center justify-between mb-1">
-                            <span class="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[130px]">{{ p.sender_name }}</span>
+                            <span class="font-bold text-xs text-theme-text truncate max-w-[130px]">{{ p.sender_name }}</span>
                             <div class="flex items-center gap-1.5">
                                 {% if right_sender == p.sender_name %}
                                 <span class="text-[9px] font-mono font-bold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">Right</span>
                                 {% else %}
-                                <span class="text-[9px] font-mono font-bold text-slate-400 bg-slate-500/10 px-1.5 py-0.5 rounded border border-slate-500/20">Left</span>
+                                <span class="text-[9px] font-mono font-bold text-theme-muted bg-theme-subtle px-1.5 py-0.5 rounded border border-theme-border">Left</span>
                                 {% endif %}
                                 <span class="text-[10px] font-mono font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">{{ p.total_msgs }} msgs</span>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                        <div class="flex items-center justify-between text-[10px] text-theme-muted font-mono">
                             <span>Flagged: <strong class="{% if p.flagged_msgs > 0 %}text-rose-400{% else %}text-emerald-400{% endif %}">{{ p.flagged_msgs }}</strong></span>
-                            <span>Deleted: <strong class="{% if p.deleted_msgs > 0 %}text-amber-400{% else %}text-slate-400{% endif %}">{{ p.deleted_msgs }}</strong></span>
+                            <span>Deleted: <strong class="{% if p.deleted_msgs > 0 %}text-amber-400{% else %}text-theme-muted{% endif %}">{{ p.deleted_msgs }}</strong></span>
                         </div>
                     </a>
                     {% endfor %}
@@ -262,12 +262,12 @@
             </div>
 
             <!-- Platform Investigation Metadata Box -->
-            <div class="bg-slate-50 dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 text-xs text-slate-500 dark:text-zinc-400 space-y-2">
-                <h5 class="font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider text-[10px]">Forensic Hash & Source:</h5>
-                <div class="font-mono text-[11px] text-slate-400 break-all">
+            <div class="bg-theme-surface rounded-2xl border border-theme-border p-5 text-xs text-theme-muted space-y-2">
+                <h5 class="font-bold text-theme-text uppercase tracking-wider text-[10px]">Forensic Hash & Source:</h5>
+                <div class="font-mono text-[11px] text-theme-muted break-all">
                     File: {{ channel.source_filename|default:"Interactive Import" }}
                 </div>
-                <div class="font-mono text-[11px] text-slate-400">
+                <div class="font-mono text-[11px] text-theme-muted">
                     Channel ID: {{ channel.id }}
                 </div>
             </div>

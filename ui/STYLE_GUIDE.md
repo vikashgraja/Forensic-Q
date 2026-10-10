@@ -20,15 +20,15 @@ ForensiQ implements a **modern dark-violet design system** tailored for high-den
 
 | Surface / Element | Semantic Tailwind Class | CSS Custom Property | Hex Code (Light / Dark) |
 | :--- | :--- | :--- | :--- |
-| **Canvas Background** | `bg-theme-app` | `--fq-bg-app` | `#f4ecf5` / `#140a17` |
-| **Card / Container Surface** | `bg-theme-surface` | `--fq-bg-surface` | `#ffffff` / `#201024` |
-| **Elevated Surface** | `bg-theme-elevated` | `--fq-bg-surface-elevated` | `#faf5fb` / `#28152e` |
-| **Subtle Hover / Input** | `bg-theme-subtle` | `--fq-bg-subtle` | `#efe4f1` / `#190d1d` |
-| **Borders & Dividers** | `border-theme-border` | `--fq-border-subtle` | `#e4d5e6` / `#351c3a` |
-| **Strong Borders** | `border-theme-border-strong`| `--fq-border-strong` | `#cdb3d0` / `#502D55` |
-| **Primary Text** | `text-theme-text` | `--fq-text-main` | `#2b122f` / `#f4f4f5` |
-| **Muted / Subtitle Text** | `text-theme-muted` | `--fq-text-muted` | `#6e5472` / `#d7c4d9` |
-| **Brand Accent (Amber)** | `bg-amber-500` / `text-amber-500` | `--fq-accent-amber` | `#f59e0b` |
+| **Canvas Background** | `bg-theme-app` | `--fq-bg-app` | `#F5F2F7` / `#140a17` |
+| **Card / Container Surface** | `bg-theme-surface` | `--fq-bg-surface` | `#FAF7FB` / `#201024` |
+| **Elevated Surface** | `bg-theme-elevated` | `--fq-bg-surface-elevated` | `#FCFAFD` / `#28152e` |
+| **Subtle Hover / Input** | `bg-theme-subtle` | `--fq-bg-subtle` | `#EDE7F0` / `#190d1d` |
+| **Borders & Dividers** | `border-theme-border` | `--fq-border-subtle` | `#E0D5E4` / `#351c3a` |
+| **Strong Borders** | `border-theme-border-strong`| `--fq-border-strong` | `#CBB9D0` / `#502D55` |
+| **Primary Text** | `text-theme-text` | `--fq-text-main` | `#1B1221` / `#f4f4f5` |
+| **Muted / Subtitle Text** | `text-theme-muted` | `--fq-text-muted` | `#594961` / `#d7c4d9` |
+| **Brand Accent (Amber)** | `bg-amber-500` / `text-amber-500` | `--fq-accent-amber` | `#D97706` / `#f59e0b` |
 
 ---
 

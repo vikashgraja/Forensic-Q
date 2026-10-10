@@ -34,10 +34,10 @@
         <!-- Unified Audits & Investigation Profiles Management Modal -->
         <div x-show="showProfileModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-3 sm:p-4">
             <div @click.outside="showProfileModal = false"
-                class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
+                class="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
                 
                 <!-- Modal Header -->
-                <div class="p-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-950/40">
+                <div class="p-5 border-b border-theme-border flex items-center justify-between bg-theme-subtle/50">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center text-lg">
                             <i class="fa-solid fa-folder-tree" x-show="activeTab === 'audits' || activeTab === 'create_audit'"></i>
@@ -45,16 +45,16 @@
                         </div>
                         <div>
                             <h3 class="text-base font-bold text-theme-text dark:text-white">Forensic Audits &amp; Target Profiles</h3>
-                            <p class="text-xs text-slate-500 dark:text-zinc-400">Sequential audit references (YYYY-WB-XX), mapped subject profiles, and keyword tracking.</p>
+                            <p class="text-xs text-theme-muted">Sequential audit references (YYYY-WB-XX), mapped subject profiles, and keyword tracking.</p>
                         </div>
                     </div>
-                    <button type="button" @click="showProfileModal = false" class="text-slate-400 hover:text-theme-text dark:hover:text-zinc-200 cursor-pointer p-1">
+                    <button type="button" @click="showProfileModal = false" class="text-theme-muted hover:text-theme-text cursor-pointer p-1">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
 
                 <!-- Navigation Tabs (Audits vs New Audit vs Profiles vs Add Profile) -->
-                <div class="flex items-center gap-2 px-5 pt-3 border-b border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-x-auto">
+                <div class="flex items-center gap-2 px-5 pt-3 border-b border-theme-border bg-theme-surface overflow-x-auto">
                     <button type="button" 
                             @click="activeTab = 'audits'"
                             :class="activeTab === 'audits' ? 'border-amber-500 text-amber-500 bg-amber-500/5 dark:bg-amber-500/10' : 'border-transparent text-slate-500 hover:text-theme-text dark:text-zinc-400 dark:hover:text-zinc-200'"
@@ -182,19 +182,19 @@
                                     <!-- Profiles Chips -->
                                     <div x-show="editingAuditId !== audit.id" class="flex flex-wrap items-center gap-1.5">
                                         <template x-for="p in (audit.profiles || [])" :key="p.id">
-                                            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-theme-text dark:text-zinc-200">
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] bg-theme-surface border border-theme-border text-theme-text">
                                                 <span class="w-4 h-4 rounded bg-amber-500/20 text-amber-500 flex items-center justify-center text-[9px] font-mono font-bold" x-text="p.initials || 'Q'"></span>
                                                 <span class="font-medium" x-text="p.full_name"></span>
-                                                <span class="text-[9px] text-slate-400 dark:text-zinc-500" x-show="p.department" x-text="'(' + p.department + ')'"></span>
+                                                <span class="text-[9px] text-theme-muted" x-show="p.department" x-text="'(' + p.department + ')'"></span>
                                             </span>
                                         </template>
-                                        <span x-show="!audit.profiles || audit.profiles.length === 0" class="text-[11px] text-slate-400 dark:text-zinc-500 italic">
+                                        <span x-show="!audit.profiles || audit.profiles.length === 0" class="text-[11px] text-theme-muted italic">
                                             No subject profiles mapped under this audit yet.
                                         </span>
                                     </div>
 
                                     <!-- Inline Profile Mapping Checkbox Editor -->
-                                    <div x-show="editingAuditId === audit.id" class="mt-2 p-3 rounded-xl bg-white dark:bg-zinc-900 border border-amber-500/30 space-y-2.5" x-cloak>
+                                    <div x-show="editingAuditId === audit.id" class="mt-2 p-3 rounded-xl bg-theme-surface border border-amber-500/30 space-y-2.5" x-cloak>
                                         <div class="flex items-center justify-between">
                                             <span class="text-[11px] font-bold text-theme-text dark:text-zinc-200">
                                                 Select profiles to map under <span class="font-mono text-amber-500" x-text="audit.name"></span>:
@@ -340,9 +340,9 @@
                             </div>
 
                             <!-- Checkbox List -->
-                            <div class="max-h-52 overflow-y-auto space-y-1.5 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-950/30">
+                            <div class="max-h-52 overflow-y-auto space-y-1.5 p-1 rounded-xl border border-theme-border bg-theme-app">
                                 <template x-for="p in filteredProfilesForAudit()" :key="p.id">
-                                    <label class="flex items-center justify-between p-2 rounded-lg border border-slate-200/60 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 hover:border-amber-500/50 cursor-pointer transition text-xs">
+                                    <label class="flex items-center justify-between p-2 rounded-lg border border-theme-border bg-theme-surface hover:border-amber-500/50 cursor-pointer transition text-xs">
                                         <div class="flex items-center gap-2.5 min-w-0">
                                             <input type="checkbox" :value="p.id" x-model="newAuditSelectedProfiles"
                                                    class="rounded border-slate-300 text-amber-500 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer shrink-0">
@@ -538,7 +538,7 @@
                                                    x-model="appendKeywordInput" 
                                                    @keydown.enter.prevent="submitAppendKeyword(prof.id)"
                                                    placeholder="Enter keyword(s), e.g. kickback, bonus..."
-                                                   class="flex-1 px-2.5 py-1 text-xs rounded-lg bg-white dark:bg-zinc-900 border border-amber-500/60 text-theme-text dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                                                   class="flex-1 px-2.5 py-1 text-xs rounded-lg bg-theme-app border border-amber-500/60 text-theme-text placeholder-theme-muted focus:outline-none focus:ring-1 focus:ring-amber-500">
                                             <button type="button" 
                                                     @click="submitAppendKeyword(prof.id)"
                                                     :disabled="isSubmittingAppend || !appendKeywordInput.trim()"
@@ -606,7 +606,7 @@
                                 <i class="fa-solid fa-people-arrows mr-1"></i>Related Employee / Relationship Details
                             </label>
                             <input type="text" name="related_employee" x-model="newRelatedEmployee" placeholder="e.g. Spouse of Ramesh Chandra (EMP-102), Brother-in-law"
-                                class="w-full px-3 py-2 text-xs rounded-lg bg-white dark:bg-zinc-950/80 border border-purple-400/40 text-theme-text dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-purple-500">
+                                class="w-full px-3 py-2 text-xs rounded-lg bg-theme-surface border border-purple-400/40 text-theme-text placeholder-theme-muted focus:outline-none focus:border-purple-500">
                             <p class="text-[10px] text-purple-600/80 dark:text-purple-400/80 mt-1">Specify which employee this auditee is related to, or note familial relationship details for conflict of interest tracing.</p>
                         </div>
 
@@ -774,7 +774,7 @@
                                 <i class="fa-solid fa-people-arrows mr-1"></i>Related Employee / Relationship Details
                             </label>
                             <input type="text" x-model="editingProfile.related_employee" placeholder="e.g. Spouse of Ramesh Chandra (EMP-102), Brother-in-law"
-                                class="w-full px-3 py-2 text-xs rounded-lg bg-white dark:bg-zinc-950/80 border border-purple-400/40 text-theme-text dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-purple-500">
+                                class="w-full px-3 py-2 text-xs rounded-lg bg-theme-surface border border-purple-400/40 text-theme-text placeholder-theme-muted focus:outline-none focus:border-purple-500">
                             <p class="text-[10px] text-purple-600/80 dark:text-purple-400/80 mt-1">Specify which employee this auditee is related to, or note familial relationship details for conflict of interest tracing.</p>
                         </div>
 
@@ -894,10 +894,10 @@
         <!-- App Launch Audit Intercept Modal -->
         <div x-show="showLaunchModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-3 sm:p-4 text-left">
             <div @click.outside="showLaunchModal = false"
-                class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden relative flex flex-col max-h-[88vh]">
+                class="bg-theme-surface border border-theme-border rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden relative flex flex-col max-h-[88vh]">
                 
                 <!-- Header -->
-                <div class="p-5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between bg-slate-50/70 dark:bg-zinc-950/60">
+                <div class="p-5 border-b border-theme-border flex items-center justify-between bg-theme-subtle/50">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center text-lg font-bold">
                             <i class="fa-solid fa-rocket"></i>
@@ -970,11 +970,11 @@
                     </div>
 
                     <!-- Alternative Option: Open with All Profiles (Global) -->
-                    <div class="pt-2 border-t border-slate-100 dark:border-zinc-800">
+                    <div class="pt-2 border-t border-theme-border">
                         <button type="button" @click="launchWithoutAudit()"
-                            class="w-full p-3 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 text-left transition flex items-center justify-between cursor-pointer group">
+                            class="w-full p-3 rounded-xl border border-theme-border hover:border-theme-border-strong bg-theme-surface text-left transition flex items-center justify-between cursor-pointer group">
                             <div class="flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 flex items-center justify-center text-xs">
+                                <div class="w-8 h-8 rounded-lg bg-theme-subtle text-theme-muted flex items-center justify-center text-xs">
                                     <i class="fa-solid fa-globe"></i>
                                 </div>
                                 <div>
@@ -1059,9 +1059,9 @@
                 </div>
                 {% empty %}
                 <div
-                    class="col-span-full p-12 text-center text-slate-500 dark:text-zinc-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+                    class="col-span-full p-12 text-center text-theme-muted bg-theme-surface rounded-2xl border border-theme-border">
                     <i class="fa-solid fa-folder-open text-4xl text-amber-500 mb-3 block"></i>
-                    <h3 class="text-base font-bold text-theme-text dark:text-white mb-1">No Active Modules</h3>
+                    <h3 class="text-base font-bold text-theme-text mb-1">No Active Modules</h3>
                     <p class="text-xs">No investigation modules are currently configured for this session.</p>
                 </div>
                 {% endfor %}

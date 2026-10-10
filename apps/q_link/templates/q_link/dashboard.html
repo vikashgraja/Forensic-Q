@@ -13,19 +13,19 @@
         <c-slot name="actions">
             <div class="flex flex-wrap items-center gap-2.5">
                 <!-- 3 Operational Modes Switcher Bar -->
-                <div class="inline-flex p-0.5 rounded-xl bg-[#FFF1E7]/80 dark:bg-slate-800/80 border border-[#805232]/80 dark:border-slate-700/80 text-xs">
+                <div class="inline-flex p-0.5 rounded-xl bg-theme-surface border border-theme-border text-xs">
                     <button type="button" onclick="switchOperationalMode('keyword')" id="mode-btn-keyword"
-                        class="px-2.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 {% if mode == 'keyword' %}bg-amber-500 text-slate-950 font-bold shadow-xs{% else %}text-slate-800 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white{% endif %} cursor-pointer">
+                        class="px-2.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 {% if mode == 'keyword' %}bg-amber-500 text-slate-950 font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %} cursor-pointer">
                         <i class="fa-solid fa-link text-[10px]"></i>
                         <span>Mode 1: Interlinks based on keywords</span>
                     </button>
                     <button type="button" onclick="switchOperationalMode('audit')" id="mode-btn-audit"
-                        class="px-2.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 {% if mode == 'audit' %}bg-amber-500 text-slate-950 font-bold shadow-xs{% else %}text-slate-800 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white{% endif %} cursor-pointer">
+                        class="px-2.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 {% if mode == 'audit' %}bg-amber-500 text-slate-950 font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %} cursor-pointer">
                         <i class="fa-solid fa-folder-tree text-[10px]"></i>
                         <span>Mode 2: Full Audit Topology</span>
                     </button>
                     <button type="button" onclick="switchOperationalMode('global')" id="mode-btn-global"
-                        class="px-2.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 {% if mode == 'global' %}bg-amber-500 text-slate-950 font-bold shadow-xs{% else %}text-slate-800 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white{% endif %} cursor-pointer">
+                        class="px-2.5 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 {% if mode == 'global' %}bg-amber-500 text-slate-950 font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %} cursor-pointer">
                         <i class="fa-solid fa-vault text-[10px]"></i>
                         <span>Mode 3: Global Vault Match</span>
                     </button>
@@ -33,14 +33,14 @@
 
                 {% if active_audit %}
                 <!-- Audit vs All Profiles Toggle Switch -->
-                <div class="inline-flex p-0.5 rounded-xl bg-[#FFF1E7]/80 dark:bg-slate-800/80 border border-[#805232]/80 dark:border-slate-700/80 text-xs">
+                <div class="inline-flex p-0.5 rounded-xl bg-theme-surface border border-theme-border text-xs">
                     <a href="?mode={{ mode }}&scope=audit{% if keyword %}&keyword={{ keyword }}{% endif %}"
-                       class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 {% if scope != 'all' %}bg-[#805232] dark:bg-slate-700 text-white dark:text-slate-100 font-bold shadow-xs{% else %}text-slate-800 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white{% endif %}">
+                       class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 {% if scope != 'all' %}bg-theme-border text-theme-text font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %}">
                         <i class="fa-solid fa-folder-tree text-[10px]"></i>
                         <span>Audit: {{ active_audit.name }} ({{ audit_profiles_count }})</span>
                     </a>
                     <a href="?mode={{ mode }}&scope=all{% if keyword %}&keyword={{ keyword }}{% endif %}"
-                       class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 {% if scope == 'all' %}bg-[#805232] dark:bg-slate-700 text-white dark:text-slate-100 font-bold shadow-xs{% else %}text-slate-800 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white{% endif %}">
+                       class="px-2.5 py-1 rounded-lg font-semibold transition flex items-center gap-1.5 {% if scope == 'all' %}bg-theme-border text-theme-text font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %}">
                         <i class="fa-solid fa-globe text-[10px]"></i>
                         <span>All Profiles ({{ total_entities }})</span>
                     </a>
@@ -53,7 +53,7 @@
                     <span id="text-sync">Sync All Tools</span>
                 </button>
                 <button type="button" onclick="resetGraphView()"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#B5D2E6] dark:bg-slate-800 hover:bg-[#805232] dark:hover:bg-slate-700 text-slate-900 dark:text-slate-200 text-xs font-semibold border border-[#805232] dark:border-slate-700 transition cursor-pointer">
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-theme-subtle hover:bg-theme-border text-theme-text text-xs font-semibold border border-theme-border transition cursor-pointer">
                     <i class="fa-solid fa-compress text-xs"></i>
                     <span>Fit Canvas</span>
                 </button>
@@ -78,10 +78,10 @@
 
         <!-- Left/Center: Knowledge Graph Canvas (8 Cols) -->
         <div class="lg:col-span-8 space-y-4">
-            <div class="bg-[#FFF1E7] dark:bg-slate-900 border border-[#B5D2E6] dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden relative">
+            <div class="bg-theme-surface border border-theme-border rounded-2xl shadow-xl overflow-hidden relative">
                 
                 <!-- Canvas Top Bar Controls -->
-                <div class="p-3.5 bg-[#B5D2E6]/70 dark:bg-slate-950/70 border-b border-[#B5D2E6]/80 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+                <div class="p-3.5 bg-theme-subtle border-b border-theme-border flex flex-wrap items-center justify-between gap-3">
                     <div class="flex flex-wrap items-center gap-2.5">
                         <!-- Active Mode Badge -->
                         <span id="active-mode-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-mono font-bold">
@@ -91,10 +91,10 @@
 
                         <!-- Mode 1 / General Keyword Search Input -->
                         <div class="relative flex items-center" id="keyword-search-container">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-700 dark:text-slate-400"></i>
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-theme-muted"></i>
                             <input type="text" id="mode1-keyword-search" value="{{ keyword }}" placeholder="Search keyword (e.g. Metec, Palani, Substantiated)..."
                                 onkeydown="if(event.key==='Enter'){ executeKeywordSearch(); }"
-                                class="bg-[#FFF1E7] dark:bg-slate-900 border border-[#805232] dark:border-slate-700 text-xs text-slate-900 dark:text-slate-200 pl-8 pr-16 py-1.5 rounded-lg focus:outline-none focus:border-amber-400 transition w-56 sm:w-72" />
+                                class="bg-theme-surface border border-theme-border text-xs text-theme-text pl-8 pr-16 py-1.5 rounded-lg focus:outline-none focus:border-amber-400 transition w-56 sm:w-72" />
                             <button type="button" onclick="executeKeywordSearch()"
                                 class="absolute right-1 top-1 px-2.5 py-0.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-bold transition cursor-pointer">
                                 Search
@@ -103,68 +103,68 @@
 
                         <!-- Canvas In-View Quick Filter -->
                         <div class="relative hidden xl:block">
-                            <i class="fa-solid fa-filter absolute left-2.5 top-2.5 text-xs text-slate-700 dark:text-slate-400"></i>
+                            <i class="fa-solid fa-filter absolute left-2.5 top-2.5 text-xs text-theme-muted"></i>
                             <input type="text" id="entity-search-input" placeholder="Find node in view..."
 
                                 oninput="filterGraphNodes(this.value)"
-                                class="bg-[#FFF1E7] dark:bg-slate-900 border border-[#B5D2E6] dark:border-slate-800 text-xs text-slate-800 dark:text-slate-300 pl-7 pr-2.5 py-1.5 rounded-lg focus:outline-none focus:border-amber-400 transition w-36" />
+                                class="bg-theme-surface border border-theme-border text-xs text-theme-text pl-7 pr-2.5 py-1.5 rounded-lg focus:outline-none focus:border-amber-400 transition w-36" />
                         </div>
                     </div>
 
                     <!-- Canvas Quick Filters -->
                     <div class="flex items-center gap-1.5 text-xs">
                         <button type="button" onclick="setEntityFilter('ALL', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold transition">All</button>
-                        <button type="button" onclick="setEntityFilter('EMPLOYEE', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Employees</button>
-                        <button type="button" onclick="setEntityFilter('VENDOR', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Vendors</button>
-                        <button type="button" onclick="setEntityFilter('BANK_ACCOUNT', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Accounts</button>
-                        <button type="button" onclick="setEntityFilter('DOCUMENT', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition">Documents</button>
-                        <button type="button" onclick="togglePhysics()" id="btn-physics" class="px-2.5 py-1 rounded-lg bg-[#B5D2E6] dark:bg-slate-800 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white border border-[#805232] dark:border-slate-700 transition" title="Toggle Graph Physics">
+                        <button type="button" onclick="setEntityFilter('EMPLOYEE', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-theme-subtle text-theme-muted hover:text-theme-text transition">Employees</button>
+                        <button type="button" onclick="setEntityFilter('VENDOR', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-theme-subtle text-theme-muted hover:text-theme-text transition">Vendors</button>
+                        <button type="button" onclick="setEntityFilter('BANK_ACCOUNT', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-theme-subtle text-theme-muted hover:text-theme-text transition">Accounts</button>
+                        <button type="button" onclick="setEntityFilter('DOCUMENT', this)" class="filter-chip px-2.5 py-1 rounded-lg bg-theme-subtle text-theme-muted hover:text-theme-text transition">Documents</button>
+                        <button type="button" onclick="togglePhysics()" id="btn-physics" class="px-2.5 py-1 rounded-lg bg-theme-subtle text-theme-muted hover:text-theme-text border border-theme-border transition" title="Toggle Graph Physics">
                             <i class="fa-solid fa-atom mr-1 text-cyan-400"></i><span id="text-physics">Freeze</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Active Mode Information & Interlinks Status Banner -->
-                <div id="mode-status-banner" class="px-3.5 py-2 bg-[#B5D2E6]/60 dark:bg-slate-950/90 border-b border-[#805232]/30 dark:border-slate-800/80 flex flex-wrap items-center justify-between text-xs text-slate-800 dark:text-slate-300 gap-2">
+                <div id="mode-status-banner" class="px-3.5 py-2 bg-theme-subtle border-b border-theme-border flex flex-wrap items-center justify-between text-xs text-theme-text gap-2">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-link text-amber-600 dark:text-amber-400 text-xs" id="mode-status-icon"></i>
                         <span class="font-bold text-amber-700 dark:text-amber-400 font-mono tracking-wide" id="mode-status-title">Interlinks based on keywords</span>
-                        <span class="text-slate-400 dark:text-slate-600 hidden sm:inline">•</span>
-                        <span class="text-slate-600 dark:text-slate-400 text-[11px] hidden sm:inline" id="mode-status-desc">Correlating cross-module entities and auditees sharing common forensic keywords</span>
+                        <span class="text-theme-muted hidden sm:inline">•</span>
+                        <span class="text-theme-muted text-[11px] hidden sm:inline" id="mode-status-desc">Correlating cross-module entities and auditees sharing common forensic keywords</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#FFF1E7] dark:bg-slate-800 text-slate-800 dark:text-slate-300 border border-[#805232]/30 dark:border-slate-700" id="mode-status-count">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-theme-surface text-theme-muted border border-theme-border" id="mode-status-count">
                         Discovering Interlinks...
                     </span>
                 </div>
 
                 <!-- Vis.js Graph Rendering Container -->
-                <div id="qlink-canvas" class="w-full h-[580px] bg-radial from-[#FFF1E7] to-[#B5D2E6] dark:from-slate-900 dark:to-slate-950 relative transition-colors duration-200"></div>
+                <div id="qlink-canvas" class="w-full h-[580px] bg-theme-surface relative transition-colors duration-200"></div>
 
                 <!-- Floating Canvas Legend -->
-                <div class="absolute bottom-3 left-3 bg-[#FFF1E7]/85 dark:bg-slate-950/85 backdrop-blur border border-[#B5D2E6] dark:border-slate-800 rounded-xl px-3 py-2 text-[11px] text-slate-700 dark:text-slate-400 flex flex-wrap items-center gap-3 pointer-events-none">
+                <div class="absolute bottom-3 left-3 bg-theme-surface/90 backdrop-blur border border-theme-border rounded-xl px-3 py-2 text-[11px] text-theme-muted flex flex-wrap items-center gap-3 pointer-events-none">
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#38bdf8]"></span> Employee</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rotate-45 border border-white dark:border-slate-300 bg-[#38bdf8]"></span> Target</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rotate-45 border border-theme-text bg-[#38bdf8]"></span> Target</span>
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></span> Vendor</span>
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#6366f1]"></span> Company</span>
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span> Bank Account</span>
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></span> Document</span>
                     <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rotate-45 bg-[#10b981] border border-emerald-300"></span> Substantiated</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-xs bg-[#B5D2E6] dark:bg-slate-800 border border-dashed border-[#805232]"></span> External Node</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-xs bg-theme-subtle border border-dashed border-theme-border"></span> External Node</span>
                     <span class="flex items-center gap-1.5"><span class="w-3.5 h-0.5 border-t-2 border-dashed border-[#ef4444]"></span> Rapid Layering</span>
                 </div>
             </div>
 
             <!-- Bottom: Reconstructed Timeline Rail -->
-            <div class="bg-[#FFF1E7] dark:bg-slate-900 border border-[#B5D2E6] dark:border-slate-800 rounded-2xl p-4">
-                <div class="flex items-center justify-between mb-3 border-b border-[#B5D2E6] dark:border-slate-800 pb-2.5">
+            <div class="bg-theme-surface border border-theme-border rounded-2xl p-4">
+                <div class="flex items-center justify-between mb-3 border-b border-theme-border pb-2.5">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-timeline text-amber-400 text-sm"></i>
-                        <h4 class="font-bold text-sm text-slate-900 dark:text-slate-200">Reconstructed Timeline Sequence</h4>
+                        <h4 class="font-bold text-sm text-theme-text">Reconstructed Timeline Sequence</h4>
                     </div>
-                    <span class="text-xs text-slate-700 dark:text-slate-400 font-mono" id="timeline-count-badge">Select a node or view recent</span>
+                    <span class="text-xs text-theme-muted font-mono" id="timeline-count-badge">Select a node or view recent</span>
                 </div>
                 <div id="timeline-stream-container" class="space-y-2 max-h-44 overflow-y-auto pr-2 text-xs">
-                    <div class="text-slate-700 dark:text-slate-400 italic py-3 text-center">Click on any entity or run a query in Copilot to inspect the event timeline.</div>
+                    <div class="text-theme-muted italic py-3 text-center">Click on any entity or run a query in Copilot to inspect the event timeline.</div>
                 </div>
             </div>
         </div>
@@ -172,26 +172,26 @@
         <!-- Right: Intelligence Workstation Panel (4 Cols) -->
         <div class="lg:col-span-4 space-y-4">
             
-            <div class="bg-[#FFF1E7] dark:bg-slate-900 border border-[#B5D2E6] dark:border-slate-800 rounded-2xl overflow-hidden shadow-xl"
+            <div class="bg-theme-surface border border-theme-border rounded-2xl overflow-hidden shadow-xl"
                 x-data="{ activeTab: 'copilot' }"
                 @switch-panel-tab.window="activeTab = $event.detail">
                 
                 <!-- Panel Tab Navigation -->
-                <div class="flex border-b border-[#B5D2E6] dark:border-slate-800 bg-[#B5D2E6]/70 dark:bg-slate-950/70 p-1.5 text-xs font-semibold">
+                <div class="flex border-b border-theme-border bg-theme-subtle p-1.5 text-xs font-semibold">
                     <button type="button" @click="activeTab = 'copilot'"
-                        :class="activeTab === 'copilot' ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20' : 'text-slate-700 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'"
+                        :class="activeTab === 'copilot' ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20' : 'text-theme-muted hover:text-theme-text'"
                         class="flex-1 py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-robot text-xs"></i>
                         <span>Copilot Agent</span>
                     </button>
                     <button type="button" @click="activeTab = 'inspector'"
-                        :class="activeTab === 'inspector' ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20' : 'text-slate-700 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'"
+                        :class="activeTab === 'inspector' ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20' : 'text-theme-muted hover:text-theme-text'"
                         class="flex-1 py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-address-card text-xs"></i>
                         <span>Inspector</span>
                     </button>
                     <button type="button" @click="activeTab = 'alerts'"
-                        :class="activeTab === 'alerts' ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20' : 'text-slate-700 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'"
+                        :class="activeTab === 'alerts' ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20' : 'text-theme-muted hover:text-theme-text'"
                         class="flex-1 py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer relative">
                         <i class="fa-solid fa-bell text-xs"></i>
                         <span>Alerts</span>
@@ -203,39 +203,36 @@
 
                 <!-- Tab 1: Forensic Copilot (Agentic Tool-Calling) -->
                 <div x-show="activeTab === 'copilot'" class="p-4 space-y-4">
-                    <div class="flex items-center justify-between text-xs text-slate-700 dark:text-slate-400 pb-2 border-b border-[#B5D2E6] dark:border-slate-800">
-                        <span class="flex items-center gap-1.5 text-cyan-400 font-mono">
+                    <div class="flex items-center justify-between text-xs text-theme-muted pb-2 border-b border-theme-border">
+                        <span class="flex items-center gap-1.5 text-cyan-500 font-mono">
                             <i class="fa-solid fa-microchip"></i> Tool Calling Engine
                         </span>
-                        <span class="text-[11px] text-slate-700 dark:text-slate-400">Autonomous Multi-Tool Agent</span>
+                        <span class="text-[11px] text-theme-muted">Autonomous Multi-Tool Agent</span>
                     </div>
 
                     <!-- Chat Message Stream -->
                     <div id="copilot-stream" class="space-y-3 max-h-[460px] overflow-y-auto pr-1 text-xs">
                         <!-- Welcome Message -->
-                        <div class="bg-[#FFF1E7]/80 dark:bg-slate-950/80 border border-[#B5D2E6]/80 dark:border-slate-800/80 rounded-xl p-3 text-slate-800 dark:text-slate-300 space-y-2">
+                        <div class="bg-theme-subtle border border-theme-border rounded-xl p-3 text-theme-text space-y-2">
                             <div class="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs">
                                 <i class="fa-solid fa-shield-halved"></i> ForensiQ Copilot Ready
                             </div>
-                            <p class="text-slate-700 dark:text-slate-400 leading-relaxed text-[11px]">
+                            <p class="text-theme-muted leading-relaxed text-[11px]">
                                 I autonomously connect evidence across Q-Bank, Q-Ledger, Q-Mail, Q-Trail, and Q-Verify using structured tool calls.
                             </p>
-                            <div class="pt-1.5 border-t border-[#B5D2E6]/60 dark:border-slate-800/60">
-                                <span class="text-[10px] uppercase font-mono text-slate-700 dark:text-slate-400 tracking-wider">Suggested Queries:</span>
+                            <div class="pt-1.5 border-t border-theme-border">
+                                <span class="text-[10px] uppercase font-mono text-theme-muted tracking-wider">Suggested Queries:</span>
                                 <div class="flex flex-col gap-1.5 mt-1.5">
                                     <button type="button" onclick="sendCopilotPrompt('Investigate Arun Kumar and detect all connected entities and fund flows.')"
-
-                                        class="text-left px-2 py-1 rounded bg-[#B5D2E6] dark:bg-slate-900 hover:bg-[#B5D2E6] dark:hover:bg-slate-800 text-amber-600 dark:text-amber-300 text-[11px] border border-[#B5D2E6] dark:border-slate-800 transition">
+                                        class="text-left px-2 py-1 rounded bg-theme-surface hover:bg-theme-subtle text-amber-600 dark:text-amber-300 text-[11px] border border-theme-border transition">
                                         👉 Investigate Arun Kumar's network & fund flows
                                     </button>
                                     <button type="button" onclick="sendCopilotPrompt('Detect conflicts of interest and vendor connections for active auditees.')"
-
-                                        class="text-left px-2 py-1 rounded bg-[#B5D2E6] dark:bg-slate-900 hover:bg-[#B5D2E6] dark:hover:bg-slate-800 text-amber-600 dark:text-amber-300 text-[11px] border border-[#B5D2E6] dark:border-slate-800 transition">
+                                        class="text-left px-2 py-1 rounded bg-theme-surface hover:bg-theme-subtle text-amber-600 dark:text-amber-300 text-[11px] border border-theme-border transition">
                                         👉 Detect employee-vendor nexus & PO transactions
                                     </button>
                                     <button type="button" onclick="sendCopilotPrompt('Identify any documents with PDF tampering or altered metadata.')"
-
-                                        class="text-left px-2 py-1 rounded bg-[#B5D2E6] dark:bg-slate-900 hover:bg-[#B5D2E6] dark:hover:bg-slate-800 text-amber-600 dark:text-amber-300 text-[11px] border border-[#B5D2E6] dark:border-slate-800 transition">
+                                        class="text-left px-2 py-1 rounded bg-theme-surface hover:bg-theme-subtle text-amber-600 dark:text-amber-300 text-[11px] border border-theme-border transition">
                                         👉 Trace tampered PDF documents and associated custodians
                                     </button>
                                 </div>
@@ -246,7 +243,7 @@
                     <!-- Agent Input Box -->
                     <form onsubmit="handleCopilotSubmit(event)" class="relative pt-2">
                         <input type="text" id="copilot-input" placeholder="Ask Copilot (e.g. 'Trace Vendor ABC hops')..."
-                            class="w-full bg-[#B5D2E6] dark:bg-slate-950 border border-[#805232] dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-950 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 pr-10" />
+                            class="w-full bg-theme-surface border border-theme-border rounded-xl px-3.5 py-2.5 text-xs text-theme-text placeholder-theme-muted focus:outline-none focus:border-amber-400 pr-10" />
                         <button type="submit" id="btn-copilot-send"
                             class="absolute right-2 top-4 p-1.5 text-amber-400 hover:text-amber-300 rounded-lg transition cursor-pointer">
                             <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -256,40 +253,40 @@
 
                 <!-- Tab 2: Entity Inspector & Traceability Drawer -->
                 <div x-show="activeTab === 'inspector'" class="p-4 space-y-4">
-                    <div id="inspector-placeholder" class="text-center py-12 text-slate-700 dark:text-slate-400 space-y-2">
-                        <i class="fa-solid fa-crosshairs text-2xl text-slate-600 dark:text-slate-500"></i>
+                    <div id="inspector-placeholder" class="text-center py-12 text-theme-muted space-y-2">
+                        <i class="fa-solid fa-crosshairs text-2xl text-theme-muted"></i>
                         <p class="text-xs">Click on any node in the canvas to inspect its complete forensic dossier and original evidence pointers.</p>
                     </div>
 
                     <div id="inspector-content" class="hidden space-y-4 text-xs">
                         <!-- Entity Header -->
-                        <div class="bg-[#B5D2E6]/60 dark:bg-slate-950/80 border border-[#805232]/30 dark:border-slate-800 rounded-xl p-3.5">
+                        <div class="bg-theme-subtle border border-theme-border rounded-xl p-3.5">
                             <div class="flex items-start justify-between gap-2">
                                 <div>
                                     <span id="inspect-type-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"></span>
-                                    <h3 id="inspect-name" class="font-bold text-sm text-slate-900 dark:text-white mt-1"></h3>
-                                    <p id="inspect-identifier" class="text-[11px] text-slate-600 dark:text-slate-400 font-mono mt-0.5"></p>
+                                    <h3 id="inspect-name" class="font-bold text-sm text-theme-text mt-1"></h3>
+                                    <p id="inspect-identifier" class="text-[11px] text-theme-muted font-mono mt-0.5"></p>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-mono block">Risk Rating</span>
+                                    <span class="text-[10px] text-theme-muted uppercase font-mono block">Risk Rating</span>
                                     <span id="inspect-risk" class="text-base font-extrabold text-amber-600 dark:text-amber-400 font-mono"></span>
                                 </div>
                             </div>
 
-                            <div id="inspect-aliases-box" class="mt-2.5 pt-2 border-t border-[#805232]/20 dark:border-slate-800/80 text-[11px]">
-                                <span class="text-slate-600 dark:text-slate-400 font-semibold">Aliases / Variants:</span>
+                            <div id="inspect-aliases-box" class="mt-2.5 pt-2 border-t border-theme-border text-[11px]">
+                                <span class="text-theme-muted font-semibold">Aliases / Variants:</span>
                                 <div id="inspect-aliases" class="flex flex-wrap gap-1 mt-1"></div>
                             </div>
 
-                            <div id="inspect-tags-box" class="mt-2 pt-2 border-t border-[#805232]/20 dark:border-slate-800/80 text-[11px]">
-                                <span class="text-slate-600 dark:text-slate-400 font-semibold block mb-1">Forensic Flags & Tags:</span>
+                            <div id="inspect-tags-box" class="mt-2 pt-2 border-t border-theme-border text-[11px]">
+                                <span class="text-theme-muted font-semibold block mb-1">Forensic Flags & Tags:</span>
                                 <div id="inspect-tags-list" class="flex flex-wrap gap-1 mt-1"></div>
                             </div>
                         </div>
 
                         <!-- Direct Connections -->
                         <div class="space-y-1.5">
-                            <span class="font-bold text-slate-900 dark:text-slate-300 text-xs flex items-center gap-1.5">
+                            <span class="font-bold text-theme-text text-xs flex items-center gap-1.5">
                                 <i class="fa-solid fa-diagram-next text-amber-500 dark:text-amber-400"></i> Direct Relationships
                             </span>
                             <div id="inspect-relations-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1"></div>
@@ -297,7 +294,7 @@
 
                         <!-- Underlying Evidence Citations -->
                         <div class="space-y-1.5">
-                            <span class="font-bold text-slate-900 dark:text-slate-300 text-xs flex items-center gap-1.5">
+                            <span class="font-bold text-theme-text text-xs flex items-center gap-1.5">
                                 <i class="fa-solid fa-file-shield text-emerald-500 dark:text-emerald-400"></i> Evidence Pointers (1-Click Drill Down)
                             </span>
                             <div id="inspect-evidence-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
@@ -307,30 +304,30 @@
 
                 <!-- Tab 3: Alerts & Notification Center -->
                 <div x-show="activeTab === 'alerts'" class="p-4 space-y-3">
-                    <div class="flex items-center justify-between text-xs text-slate-700 dark:text-slate-400 pb-2 border-b border-[#B5D2E6] dark:border-slate-800">
-                        <span class="font-bold text-slate-900 dark:text-slate-200">Continuous Monitoring Alerts</span>
-                        <span class="text-[11px] text-slate-700 dark:text-slate-400">{{ alerts.count }} Triggered</span>
+                    <div class="flex items-center justify-between text-xs text-theme-muted pb-2 border-b border-theme-border">
+                        <span class="font-bold text-theme-text">Continuous Monitoring Alerts</span>
+                        <span class="text-[11px] text-theme-muted">{{ alerts.count }} Triggered</span>
                     </div>
 
                     <div class="space-y-2.5 max-h-[480px] overflow-y-auto pr-1 text-xs">
                         {% for alert in alerts %}
-                            <div class="bg-[#FFF1E7]/80 dark:bg-slate-950/80 border {% if alert.alert_level == 'CRITICAL' %}border-rose-500/40{% elif alert.alert_level == 'HIGH' %}border-amber-500/40{% else %}border-[#B5D2E6] dark:border-slate-800{% endif %} rounded-xl p-3 space-y-2"
+                            <div class="bg-theme-subtle border {% if alert.alert_level == 'CRITICAL' %}border-rose-500/40{% elif alert.alert_level == 'HIGH' %}border-amber-500/40{% else %}border-theme-border{% endif %} rounded-xl p-3 space-y-2"
                                 id="alert-card-{{ alert.id }}">
                                 <div class="flex items-start justify-between gap-2">
                                     <span class="font-bold text-xs {% if alert.alert_level == 'CRITICAL' %}text-rose-400{% else %}text-amber-400{% endif %}">
                                         {{ alert.title }}
                                     </span>
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#B5D2E6] dark:bg-slate-900 border border-[#805232] dark:border-slate-700 text-slate-800 dark:text-slate-300">
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-theme-surface border border-theme-border text-theme-text">
                                         Risk {{ alert.risk_score }}
                                     </span>
                                 </div>
-                                <p class="text-[11px] text-slate-800 dark:text-slate-300 leading-snug">{{ alert.trigger_reason }}</p>
+                                <p class="text-[11px] text-theme-text leading-snug">{{ alert.trigger_reason }}</p>
                                 {% if alert.ai_summary %}
-                                    <p class="text-[11px] text-slate-700 dark:text-slate-400 bg-[#FFF1E7]/80 dark:bg-slate-900/80 p-2 rounded border border-[#B5D2E6]/80 dark:border-slate-800/80 italic">
+                                    <p class="text-[11px] text-theme-muted bg-theme-surface p-2 rounded border border-theme-border italic">
                                         "{{ alert.ai_summary }}"
                                     </p>
                                 {% endif %}
-                                <div class="flex items-center justify-between pt-1 border-t border-[#B5D2E6]/60 dark:border-slate-800/60 text-[10px] text-slate-700 dark:text-slate-400">
+                                <div class="flex items-center justify-between pt-1 border-t border-theme-border text-[10px] text-theme-muted">
                                     <span>{{ alert.created_at|date:"M d, Y H:i" }}</span>
                                     {% if not alert.is_acknowledged %}
                                         <button type="button" onclick="acknowledgeAlert('{{ alert.id }}')"
@@ -343,8 +340,8 @@
                                 </div>
                             </div>
                         {% empty %}
-                            <div class="text-center py-10 text-slate-700 dark:text-slate-500 text-xs">
-                                <i class="fa-solid fa-circle-check text-xl text-slate-800 dark:text-slate-600 mb-1"></i>
+                            <div class="text-center py-10 text-theme-muted text-xs">
+                                <i class="fa-solid fa-circle-check text-xl text-theme-muted mb-1"></i>
                                 <p>No active critical alerts. No suspicious items found.</p>
                             </div>
                         {% endfor %}
@@ -358,20 +355,20 @@
 
     <!-- Slide-out Side Drawer: Audit Evidence Trail -->
     <div id="evidence-trail-drawer"
-        class="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-[#FFF1E7] dark:bg-slate-950 border-l border-[#805232]/40 dark:border-slate-800 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+        class="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] bg-theme-surface border-l border-theme-border shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
         <!-- Drawer Header -->
-        <div class="p-4 border-b border-[#805232]/30 dark:border-slate-800 flex items-center justify-between bg-[#B5D2E6]/80 dark:bg-slate-900/90 backdrop-blur">
+        <div class="p-4 border-b border-theme-border flex items-center justify-between bg-theme-subtle backdrop-blur">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
                     <i class="fa-solid fa-fingerprint text-sm"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-sm text-slate-900 dark:text-white">Audit Evidence Trail</h3>
-                    <p class="text-[11px] text-slate-600 dark:text-slate-400 font-mono" id="drawer-edge-header">Connecting Edge Evidence</p>
+                    <h3 class="font-bold text-sm text-theme-text">Audit Evidence Trail</h3>
+                    <p class="text-[11px] text-theme-muted font-mono" id="drawer-edge-header">Connecting Edge Evidence</p>
                 </div>
             </div>
             <button type="button" onclick="closeEvidenceDrawer()"
-                class="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-[#FFF1E7] dark:hover:bg-slate-800 transition cursor-pointer">
+                class="p-1.5 rounded-lg text-theme-muted hover:text-theme-text hover:bg-theme-subtle transition cursor-pointer">
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
         </div>
@@ -384,7 +381,7 @@
 
     <!-- Backdrop for Drawer -->
     <div id="drawer-backdrop" onclick="closeEvidenceDrawer()"
-        class="fixed inset-0 bg-slate-950/50 dark:bg-slate-950/70 backdrop-blur-xs z-40 hidden transition-opacity"></div>
+        class="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-xs z-40 hidden transition-opacity"></div>
 
     <!-- Interactive Vis.js & Copilot Integration Script -->
     <script type="text/javascript">
@@ -406,25 +403,25 @@
             const dark = isDarkMode();
             return {
                 // Node font colors
-                nodeFontDefault: dark ? "#e2e8f0" : "#1e293b",
+                nodeFontDefault: dark ? "#e2e8f0" : "#1B1221",
                 nodeFontSubstantiated: dark ? "#34d399" : "#059669",
-                nodeFontExternal: dark ? "#94a3b8" : "#64748b",
+                nodeFontExternal: dark ? "#94a3b8" : "#594961",
                 // Target node border
-                targetBorder: dark ? "#ffffff" : "#1e293b",
+                targetBorder: dark ? "#ffffff" : "#1B1221",
                 // External node colors
-                externalBg: dark ? "#1e293b" : "#e2e8f0",
-                externalBorder: "#64748b",
+                externalBg: dark ? "#1e293b" : "#EDE7F0",
+                externalBorder: dark ? "#64748b" : "#CBB9D0",
                 // Edge colors
-                edgeDefault: dark ? "#475569" : "#94a3b8",
-                edgeFontDefault: dark ? "#94a3b8" : "#475569",
-                edgeStroke: dark ? "#0f172a" : "#e2e8f0",
+                edgeDefault: dark ? "#475569" : "#CBB9D0",
+                edgeFontDefault: dark ? "#94a3b8" : "#594961",
+                edgeStroke: dark ? "#0f172a" : "#F5F2F7",
                 // Highlight on edge
                 edgeHighlight: "#f59e0b",
                 // Dimming colors for non-highlighted nodes/edges
-                dimNodeBg: dark ? "rgba(30, 41, 59, 0.2)" : "rgba(203, 213, 225, 0.3)",
-                dimNodeBorder: dark ? "rgba(51, 65, 85, 0.2)" : "rgba(148, 163, 184, 0.2)",
-                dimNodeFont: dark ? "rgba(100, 116, 139, 0.25)" : "rgba(100, 116, 139, 0.3)",
-                dimEdge: dark ? "rgba(30, 41, 59, 0.15)" : "rgba(203, 213, 225, 0.3)",
+                dimNodeBg: dark ? "rgba(30, 41, 59, 0.2)" : "rgba(224, 213, 228, 0.3)",
+                dimNodeBorder: dark ? "rgba(51, 65, 85, 0.2)" : "rgba(203, 185, 208, 0.2)",
+                dimNodeFont: dark ? "rgba(100, 116, 139, 0.25)" : "rgba(89, 73, 97, 0.3)",
+                dimEdge: dark ? "rgba(30, 41, 59, 0.15)" : "rgba(203, 185, 208, 0.3)",
             };
         }
 
@@ -858,8 +855,8 @@
 
                 if (!edge) {
                     body.innerHTML = `
-                        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 text-center">
-                            <i class="fa-solid fa-circle-exclamation text-rose-400 text-lg mb-2"></i>
+                        <div class="p-4 rounded-xl bg-theme-surface border border-theme-border text-theme-muted text-center">
+                            <i class="fa-solid fa-circle-exclamation text-rose-500 text-lg mb-2"></i>
                             <p>${(data && data.message) || 'Evidence record not found.'}</p>
                         </div>
                     `;
@@ -887,53 +884,53 @@
                     ${rlBanner}
 
                     <!-- Edge Summary Card -->
-                    <div class="p-3.5 rounded-xl bg-[#B5D2E6]/60 dark:bg-slate-900 border border-[#805232]/30 dark:border-slate-800 space-y-2">
+                    <div class="p-3.5 rounded-xl bg-theme-subtle border border-theme-border space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                 ${edge.relation_type_display || edge.relation_type}
                             </span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#FFF1E7] dark:bg-slate-800 text-slate-700 dark:text-slate-400 border border-[#805232]/30 dark:border-slate-700">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-theme-surface text-theme-muted border border-theme-border">
                                 [${(edge.module || 'LINK').toUpperCase()}]
                             </span>
                         </div>
                         <div class="flex items-center justify-between text-xs pt-1">
-                            <span class="text-slate-600 dark:text-slate-400">Weight / Amount:</span>
+                            <span class="text-theme-muted">Weight / Amount:</span>
                             <span class="font-mono font-bold text-amber-600 dark:text-amber-400">₹${Number(edge.weight || 0).toLocaleString('en-IN')}</span>
                         </div>
                         <div class="flex items-center justify-between text-xs">
-                            <span class="text-slate-600 dark:text-slate-400">Confidence Score:</span>
+                            <span class="text-theme-muted">Confidence Score:</span>
                             <span class="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">${Math.round((edge.confidence || 1.0) * 100)}%</span>
                         </div>
                     </div>
 
                     <!-- Granular Evidence Records -->
                     <div class="space-y-3">
-                        <div class="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-300 border-b border-[#805232]/20 dark:border-slate-800 pb-1.5">
+                        <div class="flex items-center justify-between text-xs font-bold text-theme-text border-b border-theme-border pb-1.5">
                             <span class="flex items-center gap-1.5">
                                 <i class="fa-solid fa-fingerprint text-emerald-500 dark:text-emerald-400"></i> Evidence Records (${items.length})
                             </span>
-                            <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono uppercase">${edge.category}</span>
+                            <span class="text-[10px] text-theme-muted font-mono uppercase">${edge.category}</span>
                         </div>
                 `;
 
                 if (items.length === 0) {
-                    html += `<div class="text-slate-500 dark:text-slate-400 text-center py-4">No granular source citations recorded.</div>`;
+                    html += `<div class="text-theme-muted text-center py-4">No granular source citations recorded.</div>`;
                 } else {
                     items.forEach((ev, idx) => {
                         let specificFields = "";
 
                         if (edge.category === "FINANCIAL" || ev.narration || ev.debit_amount || ev.credit_amount) {
                             specificFields = `
-                                <div class="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[#805232]/20 dark:border-slate-800/60 font-mono">
-                                    ${ev.date ? `<div><span class="text-slate-500 dark:text-slate-400 block text-[10px]">Date</span><span class="text-slate-800 dark:text-slate-300 font-medium">${ev.date}</span></div>` : ''}
-                                    ${ev.ref_no ? `<div><span class="text-slate-500 dark:text-slate-400 block text-[10px]">Ref / UTR</span><span class="text-slate-800 dark:text-slate-300 font-medium">${ev.ref_no}</span></div>` : ''}
-                                    ${ev.account_no ? `<div><span class="text-slate-500 dark:text-slate-400 block text-[10px]">Source Account</span><span class="text-slate-800 dark:text-slate-300 font-medium">${ev.account_no}</span></div>` : ''}
-                                    ${ev.turnaround ? `<div><span class="text-slate-500 dark:text-slate-400 block text-[10px]">Turnaround</span><span class="text-rose-500 dark:text-rose-400 font-bold">${ev.turnaround}</span></div>` : ''}
+                                <div class="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-theme-border font-mono">
+                                    ${ev.date ? `<div><span class="text-theme-muted block text-[10px]">Date</span><span class="text-theme-text font-medium">${ev.date}</span></div>` : ''}
+                                    ${ev.ref_no ? `<div><span class="text-theme-muted block text-[10px]">Ref / UTR</span><span class="text-theme-text font-medium">${ev.ref_no}</span></div>` : ''}
+                                    ${ev.account_no ? `<div><span class="text-theme-muted block text-[10px]">Source Account</span><span class="text-theme-text font-medium">${ev.account_no}</span></div>` : ''}
+                                    ${ev.turnaround ? `<div><span class="text-theme-muted block text-[10px]">Turnaround</span><span class="text-rose-500 dark:text-rose-400 font-bold">${ev.turnaround}</span></div>` : ''}
                                 </div>
                                 ${ev.narration ? `
                                     <div class="mt-2 text-[11px]">
-                                        <span class="text-slate-500 dark:text-slate-400 block text-[10px]">Transaction Narration</span>
-                                        <div class="p-2 rounded bg-[#FFF1E7] dark:bg-slate-900 border border-[#805232]/30 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-mono text-[11px] break-all">
+                                        <span class="text-theme-muted block text-[10px]">Transaction Narration</span>
+                                        <div class="p-2 rounded bg-theme-surface border border-theme-border text-theme-text font-mono text-[11px] break-all">
                                             ${ev.narration}
                                         </div>
                                     </div>
@@ -943,15 +940,15 @@
 
                         if (ev.file_name || ev.page_number || edge.category === "DOCUMENT") {
                             specificFields += `
-                                <div class="space-y-1.5 pt-1 border-t border-[#805232]/20 dark:border-slate-800/60 text-[11px]">
+                                <div class="space-y-1.5 pt-1 border-t border-theme-border text-[11px]">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1 font-mono">
+                                        <span class="text-theme-muted flex items-center gap-1 font-mono">
                                             <i class="fa-solid fa-file-pdf text-rose-500 dark:text-rose-400"></i> ${ev.file_name || 'Document'}
                                         </span>
-                                        ${ev.page_number ? `<span class="px-1.5 py-0.2 rounded bg-[#FFF1E7] dark:bg-slate-800 text-amber-700 dark:text-amber-300 text-[10px] font-mono border border-[#805232]/20">Page ${ev.page_number}</span>` : ''}
+                                        ${ev.page_number ? `<span class="px-1.5 py-0.2 rounded bg-theme-surface text-amber-700 dark:text-amber-300 text-[10px] font-mono border border-theme-border">Page ${ev.page_number}</span>` : ''}
                                     </div>
                                     ${ev.snippet ? `
-                                        <div class="p-2 rounded bg-[#FFF1E7] dark:bg-slate-900/90 border-l-2 border-amber-500 text-slate-800 dark:text-slate-200 text-[11px] leading-relaxed">
+                                        <div class="p-2 rounded bg-theme-surface border-l-2 border-amber-500 text-theme-text text-[11px] leading-relaxed">
                                             "${ev.snippet}"
                                         </div>
                                     ` : ''}
@@ -961,9 +958,9 @@
 
                         if (edge.category === "VOICE" || ev.audio_file || ev.audio_timestamp) {
                             specificFields += `
-                                <div class="space-y-1.5 pt-1 border-t border-[#805232]/20 dark:border-slate-800/60 text-[11px]">
+                                <div class="space-y-1.5 pt-1 border-t border-theme-border text-[11px]">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-slate-600 dark:text-slate-400 flex items-center gap-1 font-mono">
+                                        <span class="text-theme-muted flex items-center gap-1 font-mono">
                                             <i class="fa-solid fa-waveform-lines text-cyan-600 dark:text-cyan-400"></i> ${ev.audio_file || 'Voice Recording'}
                                         </span>
                                         <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-mono font-bold text-[10px]">
@@ -971,7 +968,7 @@
                                         </span>
                                     </div>
                                     ${(ev.transcript_snippet || ev.snippet) ? `
-                                        <div class="p-2 rounded bg-[#FFF1E7] dark:bg-slate-900/90 border-l-2 border-cyan-500 text-slate-800 dark:text-slate-200 text-[11px] leading-relaxed">
+                                        <div class="p-2 rounded bg-theme-surface border-l-2 border-cyan-500 text-theme-text text-[11px] leading-relaxed">
                                             "${ev.transcript_snippet || ev.snippet}"
                                         </div>
                                     ` : ''}
@@ -986,12 +983,12 @@
 
                         if (edge.category === "CHAT") {
                             specificFields += `
-                                <div class="space-y-1.5 pt-1 border-t border-[#805232]/20 dark:border-slate-800/60 text-[11px]">
-                                    <div class="text-slate-600 dark:text-slate-400 flex items-center gap-1 font-mono">
+                                <div class="space-y-1.5 pt-1 border-t border-theme-border text-[11px]">
+                                    <div class="text-theme-muted flex items-center gap-1 font-mono">
                                         <i class="fa-brands fa-whatsapp text-emerald-500 dark:text-emerald-400"></i> ${ev.file_name || 'Chat Export'}
                                     </div>
                                     ${ev.snippet ? `
-                                        <div class="p-2 rounded bg-[#FFF1E7] dark:bg-slate-900/90 border-l-2 border-emerald-500 text-slate-800 dark:text-slate-200 text-[11px] leading-relaxed">
+                                        <div class="p-2 rounded bg-theme-surface border-l-2 border-emerald-500 text-theme-text text-[11px] leading-relaxed">
                                             "${ev.snippet}"
                                         </div>
                                     ` : ''}
@@ -1000,12 +997,12 @@
                         }
 
                         html += `
-                            <div class="p-3 rounded-xl bg-[#B5D2E6]/60 dark:bg-slate-950 border border-[#805232]/30 dark:border-slate-800 space-y-2">
+                            <div class="p-3 rounded-xl bg-theme-subtle border border-theme-border space-y-2">
                                 <div class="flex items-center justify-between text-[11px]">
                                     <span class="font-bold text-cyan-600 dark:text-cyan-400 font-mono uppercase">[${ev.source_module}] ${ev.source_model || ''}</span>
-                                    ${ev.occurred_at ? `<span class="text-slate-500 dark:text-slate-400 font-mono text-[10px]">${ev.occurred_at}</span>` : ''}
+                                    ${ev.occurred_at ? `<span class="text-theme-muted font-mono text-[10px]">${ev.occurred_at}</span>` : ''}
                                 </div>
-                                <p class="text-slate-800 dark:text-slate-300 text-xs">${ev.summary || ''}</p>
+                                <p class="text-theme-text text-xs">${ev.summary || ''}</p>
                                 ${specificFields}
                                 ${ev.evidence_url ? `
                                     <div class="pt-1.5">
@@ -1025,7 +1022,7 @@
 
             } catch (err) {
                 body.innerHTML = `
-                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 text-rose-400 text-center text-xs">
+                    <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-center text-xs">
                         <i class="fa-solid fa-triangle-exclamation text-base mb-1 block"></i>
                         Error fetching evidence trail: ${err}
                     </div>
@@ -1135,12 +1132,12 @@
         function setEntityFilter(type, btnElement) {
             document.querySelectorAll(".filter-chip").forEach(el => {
                 el.classList.remove("bg-amber-500", "text-slate-950", "font-bold");
-                el.classList.add("bg-[#B5D2E6]", "dark:bg-slate-800", "text-slate-800", "dark:text-slate-300");
+                el.classList.add("bg-theme-subtle", "text-theme-muted");
             });
             const targetBtn = btnElement || (window.event ? window.event.target.closest("button") : null);
             if (targetBtn) {
                 targetBtn.classList.add("bg-amber-500", "text-slate-950", "font-bold");
-                targetBtn.classList.remove("bg-[#B5D2E6]", "dark:bg-slate-800", "text-slate-800", "dark:text-slate-300");
+                targetBtn.classList.remove("bg-theme-subtle", "text-theme-muted");
             }
 
             if (!graphNodes) return;
@@ -1187,12 +1184,12 @@
                 if (e.aliases && e.aliases.length > 0) {
                     e.aliases.forEach(a => {
                         const span = document.createElement("span");
-                        span.className = "px-1.5 py-0.5 rounded bg-[#B5D2E6] dark:bg-slate-900 border border-[#B5D2E6] dark:border-slate-800 text-[10px] text-slate-800 dark:text-slate-300";
+                        span.className = "px-1.5 py-0.5 rounded bg-theme-subtle border border-theme-border text-[10px] text-theme-text";
                         span.innerText = a;
                         aliasContainer.appendChild(span);
                     });
                 } else {
-                    aliasContainer.innerHTML = "<span class='text-slate-700 dark:text-slate-400 text-[10px]'>None</span>";
+                    aliasContainer.innerHTML = "<span class='text-theme-muted text-[10px]'>None</span>";
                 }
 
                 // Render Tags & Classifications (Substantiated badge, External, Rapid Layering)
@@ -1210,7 +1207,7 @@
                                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
                                 badge.innerHTML = `<i class="fa-solid fa-circle-check text-[9px]"></i> Substantiated`;
                             } else if (t.toLowerCase().includes("external")) {
-                                badge.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700 border-dashed";
+                                badge.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-theme-subtle text-theme-muted border border-theme-border border-dashed";
                                 badge.innerText = t;
                             } else if (t.toLowerCase().includes("rapid layering")) {
                                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
@@ -1222,7 +1219,7 @@
                             tagsContainer.appendChild(badge);
                         });
                     } else {
-                        tagsContainer.innerHTML = "<span class='text-slate-700 dark:text-slate-400 text-[10px]'>None</span>";
+                        tagsContainer.innerHTML = "<span class='text-theme-muted text-[10px]'>None</span>";
                     }
                 }
 
@@ -1233,19 +1230,19 @@
                 if (allRels.length > 0) {
                     allRels.slice(0, 10).forEach(r => {
                         const item = document.createElement("div");
-                        item.className = "p-2 rounded bg-[#B5D2E6]/70 dark:bg-slate-950/70 border border-[#805232]/30 dark:border-slate-800/80 flex items-center justify-between text-[11px] cursor-pointer hover:border-amber-500/50 transition";
+                        item.className = "p-2 rounded bg-theme-subtle border border-theme-border flex items-center justify-between text-[11px] cursor-pointer hover:border-amber-500/50 transition";
                         item.onclick = () => inspectEdge(r.id);
                         item.innerHTML = `
                             <div>
-                                <span class="font-bold text-slate-900 dark:text-slate-200">${r.target_name || r.source_name}</span>
-                                <span class="text-slate-600 dark:text-slate-400 block text-[10px]">${r.type} (${r.module})</span>
+                                <span class="font-bold text-theme-text">${r.target_name || r.source_name}</span>
+                                <span class="text-theme-muted block text-[10px]">${r.type} (${r.module})</span>
                             </div>
                             <span class="text-amber-600 dark:text-amber-400 font-mono text-[10px]">₹${r.weight ? Number(r.weight).toLocaleString('en-IN') : '1'}</span>
                         `;
                         relList.appendChild(item);
                     });
                 } else {
-                    relList.innerHTML = "<div class='text-slate-500 dark:text-slate-400 text-[11px] py-1'>No direct relations recorded.</div>";
+                    relList.innerHTML = "<div class='text-theme-muted text-[11px] py-1'>No direct relations recorded.</div>";
                 }
 
                 // Underlying Evidence Citations
@@ -1254,19 +1251,19 @@
                 if (data.evidence && data.evidence.length > 0) {
                     data.evidence.forEach(ev => {
                         const card = document.createElement("div");
-                        card.className = "p-2 rounded bg-[#B5D2E6]/60 dark:bg-slate-950 border border-[#805232]/30 dark:border-slate-800 text-[11px] space-y-1";
+                        card.className = "p-2 rounded bg-theme-subtle border border-theme-border text-[11px] space-y-1";
                         card.innerHTML = `
                             <div class="flex items-center justify-between">
                                 <span class="font-bold text-cyan-600 dark:text-cyan-400 uppercase text-[10px]">[${ev.module}] ${ev.model}</span>
-                                <span class="text-slate-500 dark:text-slate-400 text-[10px]">${ev.date}</span>
+                                <span class="text-theme-muted text-[10px]">${ev.date}</span>
                             </div>
-                            <p class="text-slate-800 dark:text-slate-300 text-[11px]">${ev.summary}</p>
+                            <p class="text-theme-text text-[11px]">${ev.summary}</p>
                             ${ev.url ? `<a href="${ev.url}" target="_blank" class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:underline text-[10px] font-semibold mt-1"><span>Inspect Source Record</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>` : ''}
                         `;
                         evList.appendChild(card);
                     });
                 } else {
-                    evList.innerHTML = "<div class='text-slate-500 dark:text-slate-400 text-[11px] py-1'>No granular evidence citations.</div>";
+                    evList.innerHTML = "<div class='text-theme-muted text-[11px] py-1'>No granular evidence citations.</div>";
                 }
 
                 // Update Timeline Stream
@@ -1284,7 +1281,7 @@
             container.innerHTML = "";
 
             if (!events || events.length === 0) {
-                container.innerHTML = `<div class='text-slate-500 dark:text-slate-400 italic py-2 text-center'>No timeline events recorded for ${entityName || 'selected entity'}.</div>`;
+                container.innerHTML = `<div class='text-theme-muted italic py-2 text-center'>No timeline events recorded for ${entityName || 'selected entity'}.</div>`;
                 badge.innerText = "0 events";
                 return;
             }
@@ -1292,13 +1289,13 @@
             badge.innerText = `${events.length} events for ${entityName}`;
             events.forEach(ev => {
                 const row = document.createElement("div");
-                row.className = "flex items-start gap-3 p-2 rounded-lg bg-[#B5D2E6]/60 dark:bg-slate-950/60 border border-[#805232]/20 dark:border-slate-800/80";
+                row.className = "flex items-start gap-3 p-2 rounded-lg bg-theme-subtle border border-theme-border";
                 row.innerHTML = `
                     <span class="font-mono text-[10px] text-amber-600 dark:text-amber-400 whitespace-nowrap pt-0.5">${ev.date}</span>
-                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-[#FFF1E7] dark:bg-slate-900 border border-[#805232]/30 dark:border-slate-700 text-slate-700 dark:text-slate-400">${ev.module}</span>
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-theme-surface border border-theme-border text-theme-muted">${ev.module}</span>
                     <div class="flex-1">
-                        <span class="font-bold text-slate-900 dark:text-slate-200 text-xs">${ev.title}</span>
-                        <p class="text-slate-600 dark:text-slate-400 text-[11px] mt-0.5">${ev.description}</p>
+                        <span class="font-bold text-theme-text text-xs">${ev.title}</span>
+                        <p class="text-theme-muted text-[11px] mt-0.5">${ev.description}</p>
                     </div>
                 `;
                 container.appendChild(row);
@@ -1325,7 +1322,7 @@
 
             const stream = document.getElementById("copilot-stream");
             const loadingBubble = document.createElement("div");
-            loadingBubble.className = "p-2.5 rounded-xl bg-[#B5D2E6]/90 dark:bg-slate-950/90 border border-[#B5D2E6] dark:border-slate-800 text-slate-700 dark:text-slate-400 text-xs flex items-center gap-2";
+            loadingBubble.className = "p-2.5 rounded-xl bg-theme-subtle border border-theme-border text-theme-muted text-xs flex items-center gap-2";
             loadingBubble.id = "copilot-loading";
             loadingBubble.innerHTML = `<i class="fa-solid fa-gear fa-spin text-amber-400"></i> <span>Copilot is reasoning and executing tools across the graph...</span>`;
             stream.appendChild(loadingBubble);
@@ -1363,23 +1360,23 @@
             const bubble = document.createElement("div");
 
             if (role === "user") {
-                bubble.className = "bg-amber-500/10 border border-amber-500/20 text-slate-900 dark:text-slate-200 rounded-xl p-2.5 ml-4";
-                bubble.innerHTML = `<span class="font-bold text-amber-400 text-[10px] block uppercase mb-1">Investigator</span><p>${text}</p>`;
+                bubble.className = "bg-amber-500/10 border border-amber-500/20 text-theme-text rounded-xl p-2.5 ml-4";
+                bubble.innerHTML = `<span class="font-bold text-amber-500 text-[10px] block uppercase mb-1">Investigator</span><p>${text}</p>`;
             } else {
-                bubble.className = "bg-[#B5D2E6] dark:bg-slate-950 border border-[#B5D2E6] dark:border-slate-800 text-slate-800 dark:text-slate-300 rounded-xl p-3 mr-2 space-y-2";
+                bubble.className = "bg-theme-subtle border border-theme-border text-theme-text rounded-xl p-3 mr-2 space-y-2";
                 let toolHtml = "";
                 if (toolCalls && toolCalls.length > 0) {
-                    toolHtml = `<div class="p-2 rounded bg-[#B5D2E6] dark:bg-slate-900 border border-[#B5D2E6] dark:border-slate-800 font-mono text-[10px] text-cyan-400 space-y-1">
-                        <span class="text-slate-700 dark:text-slate-400 uppercase tracking-wider block font-bold">Executed Tools:</span>
+                    toolHtml = `<div class="p-2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-cyan-600 dark:text-cyan-400 space-y-1">
+                        <span class="text-theme-muted uppercase tracking-wider block font-bold">Executed Tools:</span>
                         ${toolCalls.map(tc => `<div>⚡ <b>${tc.tool}</b>(${JSON.stringify(tc.arguments)})</div>`).join("")}
                     </div>`;
                 }
 
                 let formatted = text
-                    .replace(/### (.*)/g, '<h4 class="font-bold text-sm text-amber-400 mt-2">$1</h4>')
-                    .replace(/#### (.*)/g, '<h5 class="font-bold text-xs text-slate-200 mt-1.5">$1</h5>')
+                    .replace(/### (.*)/g, '<h4 class="font-bold text-sm text-amber-500 dark:text-amber-400 mt-2">$1</h4>')
+                    .replace(/#### (.*)/g, '<h5 class="font-bold text-xs text-theme-text mt-1.5">$1</h5>')
                     .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                    .replace(/`([^`]+)`/g, '<code class="bg-[#B5D2E6] dark:bg-slate-900 px-1 py-0.5 rounded text-amber-600 dark:text-amber-300 text-[10px]">$1</code>')
+                    .replace(/`([^`]+)`/g, '<code class="bg-theme-surface px-1 py-0.5 rounded text-amber-600 dark:text-amber-300 text-[10px]">$1</code>')
                     .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-cyan-600 dark:text-cyan-400 font-semibold underline hover:text-cyan-500">$1</a>')
                     .replace(/\n/g, '<br/>');
 

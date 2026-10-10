@@ -61,7 +61,7 @@ Props: num, category, name, tagline, tag, accent, href
             </span>
 
             {% if t == 'BUILDING' %}
-            <span class="text-[10px] font-bold tracking-widest px-2 py-0.5 rounded font-mono uppercase bg-zinc-200/90 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700">
+            <span class="text-[10px] font-bold tracking-widest px-2 py-0.5 rounded font-mono uppercase bg-theme-subtle text-theme-muted border border-theme-border">
                 BUILDING
             </span>
             {% elif name == 'Link' %}
@@ -85,9 +85,9 @@ Props: num, category, name, tagline, tag, accent, href
         </div>
 
         <!-- Module Title: Q-Name -->
-        <h2 class="text-3xl font-extrabold tracking-tight {% if t == 'BUILDING' %}text-zinc-800 dark:text-zinc-200{% else %}text-theme-text dark:text-white{% endif %} mb-2 flex items-center">
+        <h2 class="text-3xl font-extrabold tracking-tight {% if t == 'BUILDING' %}text-theme-muted{% else %}text-theme-text{% endif %} mb-2 flex items-center">
             {% if t == 'BUILDING' %}
-                <span class="text-zinc-400 dark:text-zinc-500">Q</span>-{{ name }}
+                <span class="text-theme-muted">Q</span>-{{ name }}
             {% else %}
                 <span class="{% if name == 'Link' %} text-orange-500 dark:text-orange-400
                              {% elif a == 'orange' %} text-[#e87a4d] dark:text-[#f08a5d]
@@ -109,23 +109,23 @@ Props: num, category, name, tagline, tag, accent, href
 
         <!-- Catchphrase / Tagline -->
         {% if tagline %}
-        <p class="text-sm font-medium {% if t == 'BUILDING' %}text-zinc-500 dark:text-zinc-400{% else %}text-theme-text dark:text-zinc-300{% endif %} mb-3.5 leading-relaxed">
+        <p class="text-sm font-medium {% if t == 'BUILDING' %}text-theme-muted{% else %}text-theme-text{% endif %} mb-3.5 leading-relaxed">
             {{ tagline }}
         </p>
         {% endif %}
 
         <!-- Feature Bullets Slot / Content -->
         {% if slot %}
-        <div class="space-y-1.5 text-xs text-slate-400 dark:text-zinc-500 mt-auto">
+        <div class="space-y-1.5 text-xs text-theme-muted mt-auto">
             {{ slot }}
         </div>
         {% endif %}
     </div>
 
     <!-- Interactive Launch Link Indicator (Pinned to bottom) -->
-    <div class="mt-4 pt-3 border-t {% if t == 'BUILDING' %}border-zinc-200 dark:border-zinc-800/80{% else %}border-theme-border{% endif %} flex items-center justify-between text-xs font-semibold text-theme-muted group-hover:text-theme-text transition-colors relative z-10">
+    <div class="mt-4 pt-3 border-t border-theme-border flex items-center justify-between text-xs font-semibold text-theme-muted group-hover:text-theme-text transition-colors relative z-10">
         {% if t == 'BUILDING' %}
-        <span class="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+        <span class="flex items-center gap-1.5 text-theme-muted">
             <i class="fa-solid fa-code text-[10px]"></i> In Development
         </span>
         <i class="fa-solid fa-arrow-right text-[10px] transform group-hover:translate-x-1 transition-transform opacity-60"></i>

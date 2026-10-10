@@ -48,7 +48,7 @@
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-zinc-950/85 backdrop-blur-xl select-none">
+            class="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-theme-app/90 dark:bg-zinc-950/85 backdrop-blur-xl select-none">
 
             <!-- Glowing Animation & Reasoning Thoughts -->
             <div class="relative flex flex-col items-center max-w-lg px-6 text-center space-y-6">
@@ -58,7 +58,7 @@
                          style="animation-duration: 2.5s;"></div>
                     <div class="w-28 h-28 rounded-full border-2 border-dashed border-amber-500/40 animate-spin"
                          style="animation-duration: 8s;"></div>
-                    <div class="absolute w-20 h-20 rounded-full bg-zinc-900/90 border border-amber-500/50 shadow-2xl flex items-center justify-center">
+                    <div class="absolute w-20 h-20 rounded-full bg-theme-surface dark:bg-zinc-900/90 border border-amber-500/50 shadow-2xl flex items-center justify-center">
                         <i class="fa-solid fa-wand-magic-sparkles text-2xl text-amber-400 animate-bounce"
                            style="animation-duration: 1.8s;"></i>
                     </div>
@@ -66,42 +66,42 @@
 
                 <!-- Thinking Headline -->
                 <div class="space-y-1.5">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-xs">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/30 shadow-xs">
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
                         <span>AI Reasoning Engine</span>
-                        <span class="text-zinc-500">•</span>
-                        <span class="text-zinc-400">Tracing Money</span>
+                        <span class="text-theme-muted">•</span>
+                        <span class="text-theme-muted">Tracing Money</span>
                     </div>
-                    <h3 class="text-xl sm:text-2xl font-black tracking-tight text-white">
+                    <h3 class="text-xl sm:text-2xl font-black tracking-tight text-theme-text">
                         Following the Money Trail...
                     </h3>
-                    <p class="text-xs text-zinc-400">
+                    <p class="text-xs text-theme-muted">
                         Scanning bank statements and uncovering how funds moved between people
                     </p>
                 </div>
 
                 <!-- LLM Rotating Thought Stream (Layman Words) -->
-                <div class="w-full bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 shadow-xl min-h-[72px] flex items-center justify-center">
+                <div class="w-full bg-theme-surface border border-theme-border rounded-2xl p-4 shadow-xl min-h-[72px] flex items-center justify-center">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-brain text-amber-400 text-sm animate-pulse"></i>
-                        <p class="text-sm font-medium text-amber-100 transition-all duration-300"
+                        <i class="fa-solid fa-brain text-amber-500 text-sm animate-pulse"></i>
+                        <p class="text-sm font-medium text-theme-text transition-all duration-300"
                            x-text="currentThought"></p>
                     </div>
                 </div>
 
                 <!-- Shimmering Progress Bar -->
                 <div class="w-full max-w-xs space-y-2">
-                    <div class="h-1.5 w-full bg-zinc-800/80 rounded-full overflow-hidden relative">
+                    <div class="h-1.5 w-full bg-theme-subtle rounded-full overflow-hidden relative">
                         <div class="h-full bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-500 rounded-full w-1/2 absolute animate-pulse"></div>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+                    <div class="flex items-center justify-between text-[11px] text-theme-muted font-mono">
                         <span class="flex items-center gap-1">
-                            <i class="fa-solid fa-circle-check text-emerald-400"></i> Reading Data
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i> Reading Data
                         </span>
                         <span class="flex items-center gap-1">
-                            <i class="fa-solid fa-spinner fa-spin text-amber-400"></i> Finding Paths
+                            <i class="fa-solid fa-spinner fa-spin text-amber-500"></i> Finding Paths
                         </span>
-                        <span class="text-zinc-600">Drawing Map</span>
+                        <span class="text-theme-subtle">Drawing Map</span>
                     </div>
                 </div>
 
@@ -130,16 +130,16 @@
         </c-page_header>
 
         <!-- Profile Selection & Parameter Controls Card -->
-        <div class="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-slate-200 dark:border-zinc-800 shadow-sm mb-6">
+        <div class="bg-theme-surface rounded-xl p-5 border border-theme-border shadow-sm mb-6">
 
             <form method="POST" action="{% url 'q_trail:dashboard' %}" class="space-y-4" @submit="startLoading()">
                 {% csrf_token %}
                 <input type="hidden" name="scope" value="{{ scope }}">
 
                 <div
-                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-800 pb-3">
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-theme-border pb-3">
                     <div>
-                        <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                        <h3 class="font-bold text-sm text-theme-text flex items-center gap-2">
                             <i class="fa-solid fa-users-viewfinder text-amber-500"></i>
                             <span>Select People to Trace Money Between</span>
                         </h3>
@@ -151,14 +151,14 @@
                 <div class="flex flex-wrap items-center gap-2">
                     {% if active_audit %}
                     <!-- Audit Profiles vs All Profiles Segmented Switcher -->
-                    <div class="inline-flex p-0.5 rounded-lg bg-slate-200/70 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 text-xs">
+                    <div class="inline-flex p-0.5 rounded-lg bg-theme-subtle border border-theme-border text-xs">
                         <a href="?scope=audit"
-                           class="px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1.5 {% if scope != 'all' %}bg-amber-500 text-slate-950 font-bold shadow-xs{% else %}text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                           class="px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1.5 {% if scope != 'all' %}bg-amber-500 text-zinc-950 font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %}">
                             <i class="fa-solid fa-folder-tree text-[10px]"></i>
                             <span>Audit: {{ active_audit.name }} ({{ audit_profiles_count }})</span>
                         </a>
                         <a href="?scope=all"
-                           class="px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1.5 {% if scope == 'all' %}bg-amber-500 text-slate-950 font-bold shadow-xs{% else %}text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white{% endif %}">
+                           class="px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1.5 {% if scope == 'all' %}bg-amber-500 text-zinc-950 font-bold shadow-xs{% else %}text-theme-muted hover:text-theme-text{% endif %}">
                             <i class="fa-solid fa-globe text-[10px]"></i>
                             <span>All Profiles ({{ all_profiles_count }})</span>
                         </a>
@@ -166,7 +166,7 @@
                     {% endif %}
 
                     <button type="button" @click="toggleAll()"
-                        class="px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer">
+                        class="px-2.5 py-1 text-xs rounded-lg border border-theme-border text-theme-muted hover:text-theme-text hover:bg-theme-subtle transition cursor-pointer">
                         <i class="fa-solid fa-check-double mr-1 text-amber-500"></i>
                         <span x-text="selectAll ? 'Deselect All' : 'Select All'"></span>
                     </button>
@@ -180,14 +180,14 @@
                               {% if prof.id in selected_profile_ids %}
                                   border-amber-500/60 bg-amber-500/5 dark:bg-amber-500/10 shadow-sm
                               {% else %}
-                                  border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-slate-50/50 dark:bg-zinc-950/40
+                                  border-theme-border hover:border-theme-border-strong bg-theme-surface
                               {% endif %}">
                     <div class="flex items-start justify-between gap-2 mb-2">
                         <div class="flex items-center gap-2">
                             <input type="checkbox" name="profile_ids" value="{{ prof.id }}"
-                                class="profile-checkbox rounded border-slate-300 text-amber-600 focus:ring-amber-500 h-4 w-4 cursor-pointer"
+                                class="profile-checkbox rounded border-theme-border text-amber-600 focus:ring-amber-500 h-4 w-4 cursor-pointer"
                                 {% if prof.id in selected_profile_ids %}checked{% endif %}>
-                            <span class="font-bold text-xs text-slate-900 dark:text-white truncate"
+                            <span class="font-bold text-xs text-theme-text truncate"
                                 title="{{ prof.name }}">
                                 {{ prof.name }}
                             </span>
@@ -199,13 +199,13 @@
                         </span>
                         {% else %}
                         <span
-                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-theme-subtle text-theme-muted border border-theme-border">
                             No bank
                         </span>
                         {% endif %}
                     </div>
 
-                    <div class="text-[11px] text-slate-500 dark:text-zinc-400 space-y-0.5 mt-auto">
+                    <div class="text-[11px] text-theme-muted space-y-0.5 mt-auto">
                         <div class="truncate"><i class="fa-regular fa-building text-[10px] mr-1 text-slate-400"></i>{{ prof.department }}</div>
                         <div class="truncate">
                             <i class="fa-solid fa-landmark text-[10px] mr-1 text-amber-500/70"></i>
@@ -230,11 +230,11 @@
                 <div class="flex flex-wrap items-center gap-4">
                     <div class="flex items-center gap-2">
                         <label for="time_window_days"
-                            class="text-xs font-semibold text-slate-700 dark:text-zinc-300 whitespace-nowrap">
+                            class="text-xs font-semibold text-theme-text whitespace-nowrap">
                             <i class="fa-regular fa-clock text-amber-500 mr-1"></i>Time Gap Between Transfers:
                         </label>
                         <select id="time_window_days" name="time_window_days"
-                            class="rounded-lg border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold py-1.5 px-3 text-slate-800 dark:text-zinc-200 focus:ring-amber-500 focus:border-amber-500 cursor-pointer">
+                            class="rounded-lg border border-theme-border bg-theme-surface text-xs font-semibold py-1.5 px-3 text-theme-text focus:ring-amber-500 focus:border-amber-500 cursor-pointer">
                             <option value="0" {% if time_window_days == 0 %}selected{% endif %}>No Time Limit (Search All Dates)</option>
                             <option value="1" {% if time_window_days == 1 %}selected{% endif %}>Within 1 Day (Quick Hand-off)</option>
                             <option value="3" {% if time_window_days == 3 %}selected{% endif %}>Within 3 Days</option>
@@ -248,14 +248,14 @@
 
                     <div class="flex items-center gap-2">
                         <label for="min_amount"
-                            class="text-xs font-semibold text-slate-700 dark:text-zinc-300 whitespace-nowrap">
+                            class="text-xs font-semibold text-theme-text whitespace-nowrap">
                             <i class="fa-solid fa-filter-circle-dollar text-amber-500 mr-1"></i>Min Amount:
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-xs text-slate-400 font-mono">₹</span>
+                            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-xs text-theme-muted font-mono">₹</span>
                             <input type="number" id="min_amount" name="min_amount" min="0" step="100"
                                 value="{{ min_amount|default:1000|floatformat:0 }}"
-                                class="w-24 pl-5 pr-2 rounded-lg border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-semibold py-1.5 text-slate-800 dark:text-zinc-200 focus:ring-amber-500 focus:border-amber-500 cursor-pointer"
+                                class="w-24 pl-5 pr-2 rounded-lg border border-theme-border bg-theme-surface text-xs font-semibold py-1.5 text-theme-text focus:ring-amber-500 focus:border-amber-500 cursor-pointer"
                                 title="Exclude transactions below this threshold (default: ₹1,000)">
                         </div>
                     </div>
@@ -282,32 +282,32 @@
 
     <!-- Circular Loop Alert Banner (If Any Detected) -->
     {% if circular_trails %}
-    <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 flex items-start gap-3">
-        <div class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+    <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
             <i class="fa-solid fa-arrows-spin text-base animate-spin" style="animation-duration: 4s;"></i>
         </div>
         <div class="text-xs">
-            <h4 class="font-bold text-sm text-rose-200">Money Looped Back ({{ circular_trails|length }} Circular Loops Found)</h4>
-            <p class="text-rose-300/80 mt-0.5">
+            <h4 class="font-bold text-sm text-rose-700 dark:text-rose-200">Money Looped Back ({{ circular_trails|length }} Circular Loops Found)</h4>
+            <p class="text-rose-700/80 dark:text-rose-300/80 mt-0.5">
                 Funds were found leaving originating accounts and returning right back to the sender through middlemen.
             </p>
             <div class="mt-3 space-y-2.5">
                 {% for loop in circular_trails %}
-                <div class="bg-rose-950/40 p-3 rounded-lg border border-rose-500/20 text-[11px]">
+                <div class="bg-theme-surface dark:bg-rose-950/40 p-3 rounded-lg border border-rose-500/20 text-[11px]">
                     <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-                        <div class="font-mono text-rose-200 font-bold flex items-center gap-1.5">
-                            <i class="fa-solid fa-circle-exclamation text-rose-400"></i>
+                        <div class="font-mono text-rose-700 dark:text-rose-200 font-bold flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
                             <span>{{ loop.description }}</span>
                         </div>
                         <div class="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
-                            <span class="px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/30 text-rose-200 font-semibold">
+                            <span class="px-2 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-200 font-semibold">
                                 Started With: ₹{{ loop.initial_amount|floatformat:2 }}
                             </span>
-                            <span class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-200 font-semibold">
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-200 font-semibold">
                                 Came Back: ₹{{ loop.return_amount|floatformat:2 }}
                             </span>
                             {% if loop.retained_amount > 0 %}
-                            <span class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold">
+                            <span class="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-semibold">
                                 Middleman Kept: ₹{{ loop.retained_amount|floatformat:2 }}
                             </span>
                             {% endif %}
@@ -316,22 +316,22 @@
 
                     {% if loop.hops %}
                     <!-- Step-by-Step Flow Breakdown -->
-                    <div class="mt-2.5 pt-2 border-t border-rose-500/20 pl-2 border-l-2 border-rose-500/40 space-y-1.5 text-[11px] text-rose-300/90 font-sans">
+                    <div class="mt-2.5 pt-2 border-t border-rose-500/20 pl-2 border-l-2 border-rose-500/40 space-y-1.5 text-[11px] text-rose-700/90 dark:text-rose-300/90 font-sans">
                         {% for hop in loop.hops %}
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="font-mono px-1.5 py-0.2 rounded bg-rose-900/50 border border-rose-500/30 text-rose-200 font-bold text-[10px]">
+                            <span class="font-mono px-1.5 py-0.2 rounded bg-rose-500/20 dark:bg-rose-900/50 border border-rose-500/30 text-rose-700 dark:text-rose-200 font-bold text-[10px]">
                                 Step {{ hop.hop_number }}
                             </span>
-                            <span class="font-semibold text-rose-100">{{ hop.sender }}</span>
-                            <i class="fa-solid fa-arrow-right text-[9px] text-rose-400"></i>
+                            <span class="font-semibold text-rose-800 dark:text-rose-100">{{ hop.sender }}</span>
+                            <i class="fa-solid fa-arrow-right text-[9px] text-rose-500"></i>
                             {% if hop.has_intermediaries %}
-                            <span class="px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[10px]">
+                            <span class="px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-mono text-[10px]">
                                 through {{ hop.conduits_str }}
                             </span>
-                            <i class="fa-solid fa-arrow-right text-[9px] text-rose-400"></i>
+                            <i class="fa-solid fa-arrow-right text-[9px] text-rose-500"></i>
                             {% endif %}
-                            <span class="font-semibold text-rose-100">{{ hop.recipient }}</span>
-                            <span class="text-rose-400 font-mono text-[10px]">
+                            <span class="font-semibold text-rose-800 dark:text-rose-100">{{ hop.recipient }}</span>
+                            <span class="text-rose-600 dark:text-rose-400 font-mono text-[10px]">
                                 (Sent: ₹{{ hop.outflow_amount|floatformat:2 }} → Received: ₹{{ hop.inflow_amount|floatformat:2 }}{% if hop.retained_amount > 0 %}, Fee: ₹{{ hop.retained_amount|floatformat:2 }}{% endif %})
                             </span>
                         </div>
@@ -341,12 +341,12 @@
 
                     {% if loop.forensic_narrative %}
                     <!-- AI Summary of Money Loop -->
-                    <div class="mt-2.5 p-2.5 rounded bg-rose-950/70 border border-rose-500/30 text-xs text-rose-200/90 font-sans leading-relaxed">
-                        <div class="flex items-center gap-1.5 font-bold text-rose-300 mb-0.5 text-[11px]">
-                            <i class="fa-solid fa-microchip text-amber-400"></i>
+                    <div class="mt-2.5 p-2.5 rounded bg-theme-surface dark:bg-rose-950/70 border border-rose-500/30 text-xs text-rose-800 dark:text-rose-200/90 font-sans leading-relaxed">
+                        <div class="flex items-center gap-1.5 font-bold text-rose-700 dark:text-rose-300 mb-0.5 text-[11px]">
+                            <i class="fa-solid fa-microchip text-amber-500"></i>
                             <span>AI Summary of Money Loop</span>
                         </div>
-                        <p class="text-rose-100/90 text-xs">{{ loop.forensic_narrative }}</p>
+                        <p class="text-theme-text dark:text-rose-100/90 text-xs">{{ loop.forensic_narrative }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -365,25 +365,25 @@
 
     <!-- Executive Forensic Intelligence Findings Briefing -->
     {% if executive_findings %}
-    <div class="mb-6 p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-sm">
-        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+    <div class="mb-6 p-4 bg-theme-surface border border-theme-border rounded-2xl shadow-sm">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-theme-border">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-shield-halved text-amber-400 text-sm"></i>
-                <h3 class="font-bold text-sm text-white tracking-tight">Executive Forensic Intelligence Briefing</h3>
+                <i class="fa-solid fa-shield-halved text-amber-500 text-sm"></i>
+                <h3 class="font-bold text-sm text-theme-text tracking-tight">Executive Forensic Intelligence Briefing</h3>
             </div>
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                 {{ executive_findings|length }} Flagged Indicator(s)
             </span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             {% for item in executive_findings %}
-            <div class="p-3 rounded-xl border flex items-start gap-3 transition {% if item.severity == 'CRITICAL' %}bg-rose-950/20 border-rose-500/30 text-rose-200{% elif item.severity == 'WARNING' %}bg-amber-950/20 border-amber-500/30 text-amber-200{% else %}bg-sky-950/20 border-sky-500/30 text-sky-200{% endif %}">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 {% if item.severity == 'CRITICAL' %}bg-rose-500/20 text-rose-400{% elif item.severity == 'WARNING' %}bg-amber-500/20 text-amber-400{% else %}bg-sky-500/20 text-sky-400{% endif %}">
+            <div class="p-3 rounded-xl border flex items-start gap-3 transition {% if item.severity == 'CRITICAL' %}bg-rose-500/10 border-rose-500/25 text-rose-700 dark:text-rose-200{% elif item.severity == 'WARNING' %}bg-amber-500/10 border-amber-500/25 text-amber-800 dark:text-amber-200{% else %}bg-sky-500/10 border-sky-500/25 text-sky-800 dark:text-sky-200{% endif %}">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 {% if item.severity == 'CRITICAL' %}bg-rose-500/20 text-rose-600 dark:text-rose-400{% elif item.severity == 'WARNING' %}bg-amber-500/20 text-amber-600 dark:text-amber-400{% else %}bg-sky-500/20 text-sky-600 dark:text-sky-400{% endif %}">
                     <i class="{{ item.icon }} text-xs"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h4 class="font-bold text-xs text-white leading-snug">{{ item.title }}</h4>
-                    <p class="text-[11px] text-slate-300 mt-0.5 leading-relaxed">{{ item.detail }}</p>
+                    <h4 class="font-bold text-xs text-theme-text leading-snug">{{ item.title }}</h4>
+                    <p class="text-[11px] text-theme-muted mt-0.5 leading-relaxed">{{ item.detail }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -407,7 +407,7 @@
             </span>
             {% for kw in trail_keywords %}
             <span
-                class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded-md bg-white dark:bg-zinc-800 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 shadow-xs">
+                class="px-2 py-0.5 text-[11px] font-mono font-semibold rounded-md bg-theme-surface text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 shadow-xs">
                 {{ kw }}
             </span>
             {% endfor %}
@@ -442,14 +442,14 @@
 
     <!-- Cross-Profile Pairwise Flow Matrix (Who Paid Whom Summary Table) -->
     <div
-        class="bg-white dark:bg-zinc-900 rounded-xl p-5 border border-slate-200 dark:border-zinc-800 shadow-sm mb-8 overflow-hidden">
+        class="bg-theme-surface rounded-xl p-5 border border-theme-border shadow-sm mb-8 overflow-hidden">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-                <h3 class="font-bold text-base text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                <h3 class="font-bold text-base text-theme-text tracking-tight flex items-center gap-2">
                     <i class="fa-solid fa-table-cells text-amber-500"></i>
                     <span>Who Paid Whom Summary Table</span>
                 </h3>
-                <p class="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
+                <p class="text-xs text-theme-muted mt-0.5">
                     Total money moved between selected people (Direct payments + money passed through middlemen).
                 </p>
             </div>
@@ -464,22 +464,22 @@
         <div class="overflow-x-auto">
             <table class="w-full text-xs text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400">
-                        <th class="p-3 bg-slate-50 dark:bg-zinc-950/60 font-semibold rounded-tl-lg min-w-[160px]">
+                    <tr class="border-b border-theme-border text-theme-muted">
+                        <th class="p-3 bg-theme-surface font-semibold rounded-tl-lg min-w-[160px]">
                             Sender (From ↓) \ Receiver (To →)
                         </th>
                         {% for col_name in profile_names %}
-                        <th class="p-3 bg-slate-50 dark:bg-zinc-950/60 font-semibold text-center truncate min-w-[140px] max-w-[180px]"
+                        <th class="p-3 bg-theme-surface font-semibold text-center truncate min-w-[140px] max-w-[180px]"
                             title="{{ col_name }}">
                             {{ col_name }}
                         </th>
                         {% endfor %}
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-zinc-800/60 font-mono">
+                <tbody class="divide-y divide-theme-border font-mono">
                     {% for row in pairwise_matrix %}
-                    <tr class="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20 transition">
-                        <td class="p-3 font-sans font-bold text-slate-900 dark:text-white bg-slate-50/30 dark:bg-zinc-950/30 truncate max-w-[180px]"
+                    <tr class="hover:bg-theme-subtle transition">
+                        <td class="p-3 font-sans font-bold text-theme-text bg-theme-surface truncate max-w-[180px]"
                             title="{{ row.source_name }}">
                             {{ row.source_name }}
                         </td>
@@ -530,25 +530,25 @@
         }
     }">
         <!-- Tab Bar -->
-        <div class="flex items-center gap-2 border-b border-slate-200 dark:border-zinc-800 pb-2">
+        <div class="flex items-center gap-2 border-b border-theme-border pb-2">
             <button @click="switchTab('direct')"
-                :class="activeTab === 'direct' ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'text-slate-500 hover:text-slate-300 border-transparent'"
+                :class="activeTab === 'direct' ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'text-theme-muted hover:text-theme-text border-transparent'"
                 class="px-3.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-2 cursor-pointer">
                 <i class="fa-solid fa-arrows-split-up-and-left text-xs"></i>
                 <span>Direct Payments</span>
                 <span
-                    class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                    class="px-1.5 py-0.2 rounded-full text-[10px] bg-theme-subtle text-theme-muted border border-theme-border">
                     {{ direct_records|length }}
                 </span>
             </button>
 
             <button @click="switchTab('intermediate')"
-                :class="activeTab === 'intermediate' ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'text-slate-500 hover:text-slate-300 border-transparent'"
+                :class="activeTab === 'intermediate' ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'text-theme-muted hover:text-theme-text border-transparent'"
                 class="px-3.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-2 cursor-pointer">
                 <i class="fa-solid fa-network-wired text-xs"></i>
                 <span>Transfers via Middlemen</span>
                 <span
-                    class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                    class="px-1.5 py-0.2 rounded-full text-[10px] bg-theme-subtle text-theme-muted border border-theme-border">
                     {{ intermediate_records|length }}
                 </span>
             </button>
@@ -557,20 +557,20 @@
         <!-- 1. Direct Transfers Table -->
         <div x-show="activeTab === 'direct'" x-cloak>
             <div
-                class="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-zinc-800 shadow-sm w-full overflow-hidden">
+                class="bg-theme-surface rounded-xl p-4 sm:p-5 border border-theme-border shadow-sm w-full overflow-hidden">
                 <div class="flex items-center justify-between mb-3.5">
                     <div>
                         <h3
-                            class="font-bold text-base text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                            class="font-bold text-base text-theme-text tracking-tight flex items-center gap-2">
                             <i class="fa-solid fa-bolt text-emerald-500"></i>
                             <span>Direct Payments Between People</span>
                         </h3>
-                        <p class="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
+                        <p class="text-xs text-theme-muted mt-0.5">
                             Matched on exact bank reference numbers (UTR) or matching amounts and dates.
                         </p>
                     </div>
                     <span
-                        class="text-xs bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-2.5 py-1 rounded-full font-mono">
+                        class="text-xs bg-theme-subtle text-theme-muted border border-theme-border px-2.5 py-1 rounded-full font-mono">
                         {{ direct_records|length }} Verified
                     </span>
                 </div>
@@ -582,15 +582,15 @@
         <!-- 2. Intermediate Conduit Passes Table -->
         <div x-show="activeTab === 'intermediate'" x-cloak>
             <div
-                class="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-zinc-800 shadow-sm w-full overflow-hidden">
+                class="bg-theme-surface rounded-xl p-4 sm:p-5 border border-theme-border shadow-sm w-full overflow-hidden">
                 <div class="flex items-center justify-between mb-3.5">
                     <div>
                         <h3
-                            class="font-bold text-base text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                            class="font-bold text-base text-theme-text tracking-tight flex items-center gap-2">
                             <i class="fa-solid fa-user-secret text-amber-500"></i>
                             <span>Suspected Middlemen Passing Money</span>
                         </h3>
-                        <p class="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">
+                        <p class="text-xs text-theme-muted mt-0.5">
                             {% if time_window_days > 0 %}
                             Payments sent from Person A to a middleman, and then forwarded to Person B within {{ time_window_days }} days.
                             {% else %}
@@ -599,7 +599,7 @@
                         </p>
                     </div>
                     <span
-                        class="text-xs bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-2.5 py-1 rounded-full font-mono">
+                        class="text-xs bg-theme-subtle text-theme-muted border border-theme-border px-2.5 py-1 rounded-full font-mono">
                         {{ intermediate_records|length }} Middleman Passes
                     </span>
                 </div>
@@ -643,20 +643,20 @@
             },
             {
                 title: "Direction", field: "Direction", minWidth: 130, formatter: function (cell) {
-                    return '<span class="font-mono text-xs font-semibold text-slate-300">' + (cell.getValue() || '') + '</span>';
+                    return '<span class="font-mono text-xs font-semibold text-theme-text">' + (cell.getValue() || '') + '</span>';
                 }
             },
             { title: "Sender (From)", field: "Sender_Person", minWidth: 160 },
             { title: "Receiver (To)", field: "Recipient_Person", minWidth: 160 },
             {
                 title: "Amount Paid", field: "Amount_Formatted", minWidth: 135, hozAlign: "right", formatter: function (cell) {
-                    return '<span class="font-mono font-bold text-emerald-400">' + (cell.getValue() || '₹0.00') + '</span>';
+                    return '<span class="font-mono font-bold text-emerald-500 dark:text-emerald-400">' + (cell.getValue() || '₹0.00') + '</span>';
                 }
             },
             { title: "Date of Payment", field: "Transfer_Date", minWidth: 145 },
             {
                 title: "Bank Ref / UTR", field: "UTR", minWidth: 185, formatter: function (cell) {
-                    return '<span class="font-mono text-xs text-sky-400">' + (cell.getValue() || 'N/A') + '</span>';
+                    return '<span class="font-mono text-xs text-sky-600 dark:text-sky-400">' + (cell.getValue() || 'N/A') + '</span>';
                 }
             },
             { title: "Sender Description", field: "Sender_Narration", minWidth: 230, tooltip: true },
@@ -679,7 +679,7 @@
         const intermediateColumns = [
             {
                 title: "Middleman", field: "Intermediary_Entity", minWidth: 210, formatter: function (cell) {
-                    return '<span class="font-bold text-amber-400 flex items-center gap-1.5"><i class="fa-solid fa-user-tag text-xs"></i>' + (cell.getValue() || '') + '</span>';
+                    return '<span class="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5"><i class="fa-solid fa-user-tag text-xs"></i>' + (cell.getValue() || '') + '</span>';
                 }
             },
             { title: "Sender (From)", field: "Sender_Person", minWidth: 155 },
@@ -688,12 +688,12 @@
             { title: "Date Forwarded to Receiver", field: "Inflow_Date", minWidth: 140 },
             {
                 title: "Days Apart", field: "Time_Delta_Days", minWidth: 100, hozAlign: "center", formatter: function (cell) {
-                    return '<span class="font-mono text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">' + (cell.getValue() || 0) + ' d</span>';
+                    return '<span class="font-mono text-xs px-2 py-0.5 rounded bg-theme-subtle text-theme-muted">' + (cell.getValue() || 0) + ' d</span>';
                 }
             },
             {
                 title: "Paid to Middleman", field: "Outflow_Formatted", minWidth: 140, hozAlign: "right", formatter: function (cell) {
-                    return '<span class="font-mono font-semibold text-slate-300">' + (cell.getValue() || '₹0.00') + '</span>';
+                    return '<span class="font-mono font-semibold text-theme-text">' + (cell.getValue() || '₹0.00') + '</span>';
                 }
             },
             {
