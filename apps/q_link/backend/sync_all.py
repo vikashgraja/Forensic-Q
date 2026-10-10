@@ -650,28 +650,49 @@ def sync_all_modules() -> dict[str, int]:
 
                     matched_name = (name_b_lower in kws_a) or (name_a_lower in kws_b)
                     if matched_name or shared:
-                        rel_type = (
-                            "PARTNER"
-                            if (prof_a.is_substantiated or prof_b.is_substantiated)
-                            else "ASSOCIATE"
+                        cat_a = getattr(prof_a, "category", "EMPLOYEE")
+                        cat_b = getattr(prof_b, "category", "EMPLOYEE")
+                        type_a = (
+                            ForensicEntity.EntityType.VENDOR
+                            if cat_a == "VENDOR"
+                            else ForensicEntity.EntityType.EMPLOYEE
                         )
+                        type_b = (
+                            ForensicEntity.EntityType.VENDOR
+                            if cat_b == "VENDOR"
+                            else ForensicEntity.EntityType.EMPLOYEE
+                        )
+                        if cat_a == "RELATIVE_OF_EMPLOYEE" or cat_b == "RELATIVE_OF_EMPLOYEE":
+                            rel_type = "RELATIVE_NEXUS"
+                        elif (cat_a == "VENDOR" and cat_b == "EMPLOYEE") or (
+                            cat_a == "EMPLOYEE" and cat_b == "VENDOR"
+                        ):
+                            rel_type = "EMPLOYEE_VENDOR_NEXUS"
+                        else:
+                            rel_type = (
+                                "PARTNER"
+                                if (prof_a.is_substantiated or prof_b.is_substantiated)
+                                else "ASSOCIATE"
+                            )
                         emit_forensic_finding(
                             source_module="core",
                             event_type="PROFILE_KEYWORD_NEXUS",
                             primary_entity_data={
                                 "name": prof_a.full_name,
-                                "type": ForensicEntity.EntityType.EMPLOYEE,
+                                "type": type_a,
                                 "is_target": True,
                             },
                             secondary_entities_data=[
                                 {
                                     "name": prof_b.full_name,
-                                    "type": ForensicEntity.EntityType.EMPLOYEE,
+                                    "type": type_b,
                                     "relation_type": rel_type,
                                     "direction": "out",
                                     "metadata": {
                                         "shared_keywords": list(shared),
                                         "name_nexus": matched_name,
+                                        "category_a": cat_a,
+                                        "category_b": cat_b,
                                     },
                                 }
                             ],

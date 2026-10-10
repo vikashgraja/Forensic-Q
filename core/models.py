@@ -50,8 +50,27 @@ class InvestigationProfile(ForensicBaseModel):
         CLEARED = "CLEARED", "Cleared / Closed"
         FLAGGED = "FLAGGED", "High Risk / Flagged"
 
+    class Category(models.TextChoices):
+        EMPLOYEE = "EMPLOYEE", "Employee"
+        VENDOR = "VENDOR", "Vendor"
+        RELATIVE_OF_EMPLOYEE = "RELATIVE_OF_EMPLOYEE", "Relative of Employee"
+        OTHER = "OTHER", "Other / Third Party"
+
     full_name = models.CharField(
         max_length=255, db_index=True, help_text="Target / Auditee Full Name"
+    )
+    category = models.CharField(
+        max_length=32,
+        choices=Category.choices,
+        default=Category.EMPLOYEE,
+        db_index=True,
+        help_text="Target profile category / affiliation",
+    )
+    related_employee = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Related employee name, ID, or relationship details",
     )
     employee_id = models.CharField(
         max_length=64,
@@ -134,6 +153,9 @@ class InvestigationProfile(ForensicBaseModel):
         return {
             "id": str(self.id),
             "full_name": self.full_name,
+            "category": self.category,
+            "category_display": self.get_category_display(),
+            "related_employee": self.related_employee,
             "employee_id": self.employee_id,
             "department": self.department,
             "designation": self.designation,

@@ -141,6 +141,8 @@ def create_profile_view(request: HttpRequest) -> HttpResponse:
 
     profile = create_investigation_profile(
         full_name=full_name,
+        category=str(payload.get("category") or "EMPLOYEE").strip(),
+        related_employee=str(payload.get("related_employee") or "").strip(),
         employee_id=str(payload.get("employee_id") or "").strip(),
         department=str(payload.get("department") or "").strip(),
         designation=str(payload.get("designation") or "").strip(),
@@ -217,6 +219,10 @@ def edit_profile_view(request: HttpRequest, profile_id: str) -> HttpResponse:
         profile = update_investigation_profile(
             profile_id=profile_id,
             full_name=full_name,
+            category=str(payload["category"]).strip() if "category" in payload else None,
+            related_employee=str(payload["related_employee"]).strip()
+            if "related_employee" in payload
+            else None,
             employee_id=str(payload.get("employee_id") or "").strip(),
             department=str(payload.get("department") or "").strip(),
             designation=str(payload.get("designation") or "").strip(),

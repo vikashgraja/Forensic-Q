@@ -315,6 +315,8 @@ def get_profile_keywords(
 def create_investigation_profile(
     *,
     full_name: str,
+    category: str = "EMPLOYEE",
+    related_employee: str = "",
     employee_id: str = "",
     department: str = "",
     designation: str = "",
@@ -334,9 +336,14 @@ def create_investigation_profile(
         raise ValueError("Profile full name cannot be blank.")
 
     keywords_list = _normalize_keywords(keywords)
+    category_clean = (category or "EMPLOYEE").strip().upper()
+    if category_clean not in dict(InvestigationProfile.Category.choices):
+        category_clean = "EMPLOYEE"
 
     profile = InvestigationProfile.objects.create(
         full_name=clean_name,
+        category=category_clean,
+        related_employee=related_employee.strip(),
         employee_id=employee_id.strip(),
         department=department.strip(),
         designation=designation.strip(),
@@ -374,6 +381,8 @@ def update_investigation_profile(
     profile_id: str | uuid.UUID,
     *,
     full_name: str,
+    category: str | None = None,
+    related_employee: str | None = None,
     employee_id: str = "",
     department: str = "",
     designation: str = "",
@@ -398,6 +407,13 @@ def update_investigation_profile(
         raise ValueError("Profile full name cannot be blank.")
 
     profile.full_name = clean_name
+    if category is not None:
+        cat_clean = category.strip().upper()
+        if cat_clean in dict(InvestigationProfile.Category.choices):
+            profile.category = cat_clean
+    if related_employee is not None:
+        profile.related_employee = related_employee.strip()
+
     profile.employee_id = employee_id.strip()
     profile.department = department.strip()
     profile.designation = designation.strip()
@@ -727,6 +743,8 @@ def resolve_or_create_profile_from_request(
 
         profile = create_investigation_profile(
             full_name=new_profile_name,
+            category=request.POST.get("new_profile_category", "EMPLOYEE"),
+            related_employee=request.POST.get("new_profile_related_employee", ""),
             department=new_profile_dept,
             designation=new_profile_role,
         )

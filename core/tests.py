@@ -329,6 +329,57 @@ class CoreInvestigationProfilesTests(TestCase):
         self.assertEqual(p.full_name, "New Auditee B")
         self.assertTrue(p.is_substantiated)
         self.assertEqual(p.status, "ACTIVE")
+        self.assertEqual(p.category, "EMPLOYEE")
+        self.assertEqual(p.related_employee, "")
+
+    def test_create_investigation_profile_categories(self):
+        from core.profiles import create_investigation_profile
+
+        # Vendor
+        v = create_investigation_profile(
+            full_name="Apex Logistics Inc",
+            category="VENDOR",
+            department="Transport",
+        )
+        self.assertEqual(v.category, "VENDOR")
+        self.assertEqual(v.get_category_display(), "Vendor")
+        d_v = v.to_dict()
+        self.assertEqual(d_v["category"], "VENDOR")
+        self.assertEqual(d_v["category_display"], "Vendor")
+
+        # Relative of Employee with details
+        rel = create_investigation_profile(
+            full_name="Pooja Sharma",
+            category="RELATIVE_OF_EMPLOYEE",
+            related_employee="Spouse of Rajesh Sharma (EMP-102)",
+        )
+        self.assertEqual(rel.category, "RELATIVE_OF_EMPLOYEE")
+        self.assertEqual(rel.related_employee, "Spouse of Rajesh Sharma (EMP-102)")
+        d_rel = rel.to_dict()
+        self.assertEqual(d_rel["category"], "RELATIVE_OF_EMPLOYEE")
+        self.assertEqual(d_rel["related_employee"], "Spouse of Rajesh Sharma (EMP-102)")
+
+        # Fallback invalid category to EMPLOYEE
+        other = create_investigation_profile(
+            full_name="Third Party Contractor",
+            category="INVALID_TYPE",
+        )
+        self.assertEqual(other.category, "EMPLOYEE")
+
+    def test_update_investigation_profile_categories(self):
+        from core.profiles import update_investigation_profile
+
+        updated = update_investigation_profile(
+            self.profile.id,
+            full_name="Target Custodian A",
+            category="RELATIVE_OF_EMPLOYEE",
+            related_employee="Brother of VP Procurement",
+        )
+        self.assertEqual(updated.category, "RELATIVE_OF_EMPLOYEE")
+        self.assertEqual(updated.related_employee, "Brother of VP Procurement")
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.category, "RELATIVE_OF_EMPLOYEE")
+        self.assertEqual(self.profile.related_employee, "Brother of VP Procurement")
 
     def test_resolve_or_create_profile_from_request(self):
         from core.profiles import resolve_or_create_profile_from_request, set_active_profile
@@ -454,6 +505,40 @@ class CoreProfileViewsTests(TestCase):
         self.assertTrue(
             InvestigationProfile.objects.filter(full_name="Form Created Person").exists()
         )
+
+    def test_create_profile_view_with_category_json(self):
+        res = self.client.post(
+            reverse("create_profile"),
+            data=json.dumps(
+                {
+                    "full_name": "Vendor Profile Alpha",
+                    "category": "VENDOR",
+                    "department": "Supply Chain",
+                }
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data["status"], "success")
+        self.assertEqual(data["profile"]["category"], "VENDOR")
+        self.assertEqual(data["profile"]["category_display"], "Vendor")
+
+    def test_create_profile_view_with_relative_category_form(self):
+        res = self.client.post(
+            reverse("create_profile"),
+            data={
+                "full_name": "Kavita Verma",
+                "category": "RELATIVE_OF_EMPLOYEE",
+                "related_employee": "Daughter of GM Operations",
+                "department": "External",
+            },
+        )
+        self.assertEqual(res.status_code, 302)
+        prof = InvestigationProfile.objects.filter(full_name="Kavita Verma").first()
+        self.assertIsNotNone(prof)
+        self.assertEqual(prof.category, "RELATIVE_OF_EMPLOYEE")
+        self.assertEqual(prof.related_employee, "Daughter of GM Operations")
 
     def test_set_active_profile_view_json(self):
         # Set active
@@ -766,6 +851,8 @@ class CoreProfileViewsTests(TestCase):
             data=json.dumps(
                 {
                     "full_name": "Updated Custodian A",
+                    "category": "RELATIVE_OF_EMPLOYEE",
+                    "related_employee": "Brother of VP Procurement",
                     "department": "Internal Audit",
                     "designation": "Director",
                     "is_substantiated": True,
@@ -780,6 +867,8 @@ class CoreProfileViewsTests(TestCase):
         data = res.json()
         self.assertEqual(data["status"], "success")
         self.assertEqual(data["profile"]["full_name"], "Updated Custodian A")
+        self.assertEqual(data["profile"]["category"], "RELATIVE_OF_EMPLOYEE")
+        self.assertEqual(data["profile"]["related_employee"], "Brother of VP Procurement")
         self.assertEqual(data["profile"]["department"], "Internal Audit")
         self.assertTrue(data["profile"]["is_substantiated"])
         self.assertEqual(data["profile"]["status"], "FLAGGED")
@@ -788,6 +877,8 @@ class CoreProfileViewsTests(TestCase):
         # Check DB updated
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.full_name, "Updated Custodian A")
+        self.assertEqual(self.profile.category, "RELATIVE_OF_EMPLOYEE")
+        self.assertEqual(self.profile.related_employee, "Brother of VP Procurement")
         self.assertTrue(self.profile.is_substantiated)
         self.assertEqual(self.profile.status, "FLAGGED")
         self.assertEqual(self.profile.keywords, ["kickback", "shell company"])
@@ -798,6 +889,7 @@ class CoreProfileViewsTests(TestCase):
             url,
             data={
                 "full_name": "Form Edited Target",
+                "category": "VENDOR",
                 "department": "Finance",
                 "designation": "CFO",
                 "is_substantiated": "true",
@@ -808,6 +900,7 @@ class CoreProfileViewsTests(TestCase):
         self.assertEqual(res.status_code, 302)
         self.profile.refresh_from_db()
         self.assertEqual(self.profile.full_name, "Form Edited Target")
+        self.assertEqual(self.profile.category, "VENDOR")
         self.assertTrue(self.profile.is_substantiated)
         self.assertEqual(self.profile.keywords, ["bribe", "hawala"])
 
