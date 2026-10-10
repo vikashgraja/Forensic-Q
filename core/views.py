@@ -122,7 +122,7 @@ def create_profile_view(request: HttpRequest) -> HttpResponse:
     else:
         payload = request.POST
 
-    full_name = payload.get("full_name", "").strip()
+    full_name = str(payload.get("full_name") or "").strip()
     if not full_name:
         if is_json:
             return JsonResponse(
@@ -141,14 +141,14 @@ def create_profile_view(request: HttpRequest) -> HttpResponse:
 
     profile = create_investigation_profile(
         full_name=full_name,
-        employee_id=payload.get("employee_id", "").strip(),
-        department=payload.get("department", "").strip(),
-        designation=payload.get("designation", "").strip(),
-        email=payload.get("email", "").strip(),
-        phone=payload.get("phone", "").strip(),
+        employee_id=str(payload.get("employee_id") or "").strip(),
+        department=str(payload.get("department") or "").strip(),
+        designation=str(payload.get("designation") or "").strip(),
+        email=str(payload.get("email") or "").strip(),
+        phone=str(payload.get("phone") or "").strip(),
         is_substantiated=is_substantiated,
-        notes=payload.get("notes", "").strip(),
-        avatar_color=payload.get("avatar_color", "indigo").strip() or "indigo",
+        notes=str(payload.get("notes") or "").strip(),
+        avatar_color=str(payload.get("avatar_color") or "indigo").strip() or "indigo",
         keywords=keywords_input,
     )
 
@@ -197,7 +197,7 @@ def edit_profile_view(request: HttpRequest, profile_id: str) -> HttpResponse:
     else:
         payload = request.POST
 
-    full_name = payload.get("full_name", "").strip()
+    full_name = str(payload.get("full_name") or "").strip()
     if not full_name:
         if is_json:
             return JsonResponse(
@@ -217,15 +217,15 @@ def edit_profile_view(request: HttpRequest, profile_id: str) -> HttpResponse:
         profile = update_investigation_profile(
             profile_id=profile_id,
             full_name=full_name,
-            employee_id=payload.get("employee_id", "").strip(),
-            department=payload.get("department", "").strip(),
-            designation=payload.get("designation", "").strip(),
-            email=payload.get("email", "").strip(),
-            phone=payload.get("phone", "").strip(),
+            employee_id=str(payload.get("employee_id") or "").strip(),
+            department=str(payload.get("department") or "").strip(),
+            designation=str(payload.get("designation") or "").strip(),
+            email=str(payload.get("email") or "").strip(),
+            phone=str(payload.get("phone") or "").strip(),
             is_substantiated=is_substantiated,
-            status=payload.get("status", "ACTIVE").strip() or "ACTIVE",
-            notes=payload.get("notes", "").strip(),
-            avatar_color=payload.get("avatar_color", "").strip(),
+            status=str(payload.get("status") or "ACTIVE").strip() or "ACTIVE",
+            notes=str(payload.get("notes") or "").strip(),
+            avatar_color=str(payload.get("avatar_color") or "").strip(),
             keywords=keywords_input if keywords_input is not None else None,
         )
 
@@ -463,7 +463,7 @@ def set_active_profile_view(request: HttpRequest) -> HttpResponse:
     else:
         payload = request.POST
 
-    profile_id = payload.get("profile_id", "").strip()
+    profile_id = str(payload.get("profile_id") or "").strip()
     profile = set_active_profile(request, profile_id if profile_id else None)
 
     if is_json:
@@ -495,7 +495,7 @@ def set_active_audit_view(request: HttpRequest) -> HttpResponse:
     else:
         payload = request.POST
 
-    audit_id = payload.get("audit_id", "").strip()
+    audit_id = str(payload.get("audit_id") or "").strip()
     audit = set_active_audit(request, audit_id if audit_id else None)
 
     if is_json:
@@ -543,10 +543,11 @@ def create_audit_view(request: HttpRequest) -> HttpResponse:
     else:
         payload = request.POST
 
-    title = payload.get("title", "").strip()
-    description = payload.get("description", "").strip()
-    status = payload.get("status", "ACTIVE").strip() or "ACTIVE"
-    name = payload.get("name", "").strip() or None
+    title = str(payload.get("title") or "").strip()
+    description = str(payload.get("description") or "").strip()
+    status = str(payload.get("status") or "ACTIVE").strip() or "ACTIVE"
+    raw_name = payload.get("name")
+    name = str(raw_name).strip() if raw_name and str(raw_name).strip() else None
 
     # Handle profile IDs from JSON list or form getlist
     profile_ids = []

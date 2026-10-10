@@ -1304,6 +1304,26 @@ class CoreAuditTests(TestCase):
         self.assertEqual(data["audit"]["profiles_count"], 2)
         self.assertTrue(data["audit"]["name"].endswith("-01") or "-WB-" in data["audit"]["name"])
 
+    def test_create_audit_view_json_with_null_name(self):
+        payload = {
+            "name": None,
+            "title": "Null Name Audit",
+            "description": None,
+            "status": None,
+            "profile_ids": [str(self.profile1.id)],
+        }
+        response = self.client.post(
+            reverse("create_audit"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "success")
+        self.assertEqual(data["audit"]["title"], "Null Name Audit")
+        self.assertEqual(data["audit"]["status"], "ACTIVE")
+        self.assertTrue("-WB-" in data["audit"]["name"])
+
     def test_create_audit_view_form_post(self):
         # 1. Standard list in POST
         response = self.client.post(
